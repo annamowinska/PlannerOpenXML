@@ -1,0 +1,48 @@
+﻿<Window x:Class="Planner.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:vm="clr-namespace:Planner.ViewModel"
+        mc:Ignorable="d"
+        Icon="/Resources/icon.png"
+        Title="Planner Generator" Height="450" Width="350">
+    <Window.Resources>
+        <Style x:Key="CustomButtonStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <Border x:Name="border" Background="#007ACC" CornerRadius="5"/>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#D6D6D6"/>
+                                <Setter Property="Foreground" Value="#007ACC"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Grid Background="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}">
+        <Grid.DataContext>
+            <vm:MainViewModel />
+        </Grid.DataContext>
+        <Image Source="/Resources/logo.png" Margin="62,16,60,0" VerticalAlignment="Top" Height="66"/>
+        <TextBlock HorizontalAlignment="Center" Height="34" Margin="0,98,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="260" FontSize="22" FontWeight="Bold" TextAlignment="Center" Text="Planner Generator" Foreground="#FF333333"/>
+        <xctk:WatermarkTextBox Watermark="Enter year" Text="{Binding Year, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" Height="26" Margin="0,168,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="150" VerticalContentAlignment="Center" Padding="3, 0, 0, 0"/>
+        <xctk:WatermarkTextBox Watermark="Enter first month" Text="{Binding FirstMonth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" Height="26" TextWrapping="Wrap" VerticalAlignment="Top" Width="150" Margin="0,220,0,0" VerticalContentAlignment="Center" Padding="3, 0, 0, 0"/>
+        <xctk:WatermarkTextBox Watermark="Enter number of months" Text="{Binding NumberOfMonths, Mode=TwoWay}"  HorizontalAlignment="Center" Height="28" Margin="0,272,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="150" VerticalContentAlignment="Center" Padding="3, 0, 0, 0"/>
+        <Button Content="Generate" Command="{Binding GenerateCommand}" HorizontalAlignment="Center" Height="40" Margin="0,338,0,0" VerticalAlignment="Top" Width="114" Style="{StaticResource CustomButtonStyle}"/>
+    </Grid>
+</Window>
