@@ -19,19 +19,19 @@ using Newtonsoft.Json;
 using Planner.Services;
 using System.Windows.Controls;
 using Planner.Model;
+using System.Windows.Input;
+using Microsoft.Toolkit.Mvvm.ComponentModel;
 
 namespace Planner.ViewModel
 {
     public class MainViewModel : INotifyPropertyChanged
     {
-        
-
         private RelayCommand _generateCommand;
         public RelayCommand GenerateCommand
         {
             get
             {
-                if(_generateCommand == null)
+                if (_generateCommand == null)
                 {
                     _generateCommand = new RelayCommand(GeneratePlanner);
                 }
@@ -79,6 +79,65 @@ namespace Planner.ViewModel
             }
         }
 
+        private List<int> _months;
+        public List<int> Months
+        {
+            get => _months;
+            set
+            {
+                if (_months != value)
+                {
+                    _months = value;
+                }
+            }
+        }
+
+        private Visibility _labelVisibility = Visibility.Visible;
+        public Visibility LabelVisibility
+        {
+            get => _labelVisibility;
+            set
+            {
+                if (_labelVisibility != value)
+                {
+                    _labelVisibility = value;
+                    OnPropertyChanged(nameof(LabelVisibility));
+                }
+            }
+        }
+
+        private Visibility _comboBoxVisibility = Visibility.Collapsed;
+        public Visibility ComboBoxVisibility
+        {
+            get => _comboBoxVisibility;
+            set
+            {
+                if (_comboBoxVisibility != value)
+                {
+                    _comboBoxVisibility = value;
+                    OnPropertyChanged(nameof(ComboBoxVisibility));
+                }
+            }
+        }
+
+        private RelayCommand _labelClickedCommand;
+        public RelayCommand LabelClickedCommand
+        {
+            get
+            {
+                if (_labelClickedCommand == null)
+                {
+                    _labelClickedCommand = new RelayCommand(LabelClicked);
+                }
+                return _labelClickedCommand;
+            }
+        }
+        public void LabelClicked()
+        {
+            LabelVisibility = Visibility.Collapsed;
+            ComboBoxVisibility = Visibility.Visible;
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         private void OnPropertyChanged(string propertyName)
@@ -86,12 +145,17 @@ namespace Planner.ViewModel
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-
         private readonly ApiService _apiService;
 
         public MainViewModel()
         {
             _apiService = new ApiService();
+            InitializeMonths();
+        }
+
+        private void InitializeMonths()
+        {
+            Months = Enumerable.Range(1, 12).ToList();
         }
 
         public async void GeneratePlanner()
