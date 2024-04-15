@@ -6,12 +6,10 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:vm="clr-namespace:Planner.ViewModel"
-        xmlns:conv="clr-namespace:Planner.Converters"
         mc:Ignorable="d"
         Icon="/Resources/icon.png"
         Title="Planner Generator" Height="450" Width="350">
     <Window.Resources>
-        <conv:BooleanToVisibilityConverter x:Key="booleanToVisibilityConverter"/>
         <Style x:Key="CustomButtonStyle" TargetType="Button">
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontSize" Value="16"/>
