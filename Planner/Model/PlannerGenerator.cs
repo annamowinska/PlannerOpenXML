@@ -1,24 +1,20 @@
-﻿using ClosedXML.Excel;
+﻿using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Spreadsheet;
+//using System.Windows.Media;
+using System.Collections.Generic;
 using Microsoft.Win32;
-using Planner.Services;
 using System;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+//using System.Windows.Controls;
 
 namespace Planner.Model
 {
     public class PlannerGenerator
     {
-        private readonly ApiService _apiService;
-
-        public PlannerGenerator()
-        {
-            _apiService = new ApiService();
-        }
-
         public async Task GeneratePlanner(int? year, int? firstMonth, int? numberOfMonths)
         {
             if (year == null || firstMonth == null || numberOfMonths == null)
@@ -36,137 +32,164 @@ namespace Planner.Model
             {
                 try
                 {
-                    string plannerName = Path.GetFileNameWithoutExtension(saveFileDialog.FileName);
-                    string savePath = Path.GetDirectoryName(saveFileDialog.FileName);
-                    CultureInfo culture = new CultureInfo("de-DE");
-
-                    using (var workbook = new XLWorkbook())
+                    using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Create(saveFileDialog.FileName, SpreadsheetDocumentType.Workbook))
                     {
-                        var worksheet = workbook.Worksheets.Add("Planner");
-                        worksheet.PageSetup.PaperSize = XLPaperSize.A2Paper;
+                        WorkbookPart workbookPart = spreadsheetDocument.AddWorkbookPart();
+                        workbookPart.Workbook = new Workbook();
 
-                        int currentRow = 1;
-                        int currentColumn = 1;
+                        WorksheetPart worksheetPart = workbookPart.AddNewPart<WorksheetPart>();
+                        worksheetPart.Worksheet = new Worksheet(new SheetData());
 
-                        int currentYear = year ?? 0;
-                        int currentMonth = firstMonth ?? 0;
+                        WorkbookStylesPart stylePart = workbookPart.AddNewPart<WorkbookStylesPart>();
+                        stylePart.Stylesheet = GenerateStylesheet();
+                        stylePart.Stylesheet.Save();
 
-                        var germanHolidaysTask = _apiService.GetHolidaysAsync(currentYear, "DE");
-                        var hungarianHolidaysTask = _apiService.GetHolidaysAsync(currentYear, "HU");
+                        Sheets sheets = spreadsheetDocument.WorkbookPart.Workbook.AppendChild(new Sheets());
+                        Sheet sheet = new Sheet() { Id = spreadsheetDocument.WorkbookPart.GetIdOfPart(worksheetPart), SheetId = 1, Name = "Planner" };
+                        sheets.Append(sheet);
 
-                        var germanHolidays = await germanHolidaysTask;
-                        var hungarianHolidays = await hungarianHolidaysTask;
+                        CultureInfo culture = new CultureInfo("de-DE");
+                        //CultureInfo culture = CultureInfo.CurrentCulture;
 
                         for (int i = 0; i < numberOfMonths; i++)
                         {
+                            int currentYear = year.Value;
+                            int currentMonth = firstMonth.Value + i;
+
                             while (currentMonth > 12)
                             {
-                                currentMonth -= 12;
                                 currentYear++;
-
-                                germanHolidaysTask = _apiService.GetHolidaysAsync(currentYear, "DE");
-                                hungarianHolidaysTask = _apiService.GetHolidaysAsync(currentYear, "HU");
-                                
-                                germanHolidays = await germanHolidaysTask;
-                                hungarianHolidays = await hungarianHolidaysTask;
+                                currentMonth -= 12;
                             }
 
                             DateTime monthDate = new DateTime(currentYear, currentMonth, 1);
-                            string monthName = monthDate.ToString("MMMM", culture);
-                            string yearMonth = $"{monthName} {currentYear}";
+                            string monthName = monthDate.ToString("MMMM yyyy", culture);
+                            
+                            uint styleIndex = 0;
+                            Cell monthYearCell = new Cell(new CellValue($"{monthName}"))
+                            {
+                                DataType = CellValues.String,
+                                StyleIndex = styleIndex
+                            };
+                             
+                            AppendCellToWorksheet(spreadsheetDocument, worksheetPart, monthYearCell, 1, (uint)(i + 1));
 
-                            var monthCell = worksheet.Cell(currentRow, currentColumn);
-                            monthCell.Value = yearMonth;
-                            monthCell.Style.Font.Bold = true;
-                            monthCell.Style.Border.OutsideBorder = XLBorderStyleValues.Thick;
+                            int currentRow = 2;
 
                             DateTime currentDate = monthDate;
                             while (currentDate.Month == monthDate.Month)
                             {
                                 string dayOfWeek = currentDate.ToString("ddd", culture);
                                 string cellValue = $"{currentDate.Day} {dayOfWeek}";
-                                var cell = worksheet.Cell(currentRow + 1, currentColumn);
-
-                                foreach (var holiday in germanHolidays)
+                                Cell dateCell = new Cell(new CellValue(cellValue))
                                 {
-                                    DateTime holidayDate = DateTime.Parse(holiday.Date);
-                                    if (holidayDate.Date == currentDate.Date)
-                                    {
-                                        if (hungarianHolidays.Any(h => DateTime.Parse(h.Date).Date == currentDate.Date))
-                                        {
-                                            cellValue += $"  DE & HU: {holiday.Name}";
-                                            cell.Style.Fill.BackgroundColor = XLColor.LightPink;
-                                            cell.Style.Font.Bold = true;
-                                            cell.Style.Font.FontColor = XLColor.DarkPink;
-                                        }
-                                        else
-                                        {
-                                            cellValue += $"  DE: {holiday.Name}";
-                                            cell.Style.Fill.BackgroundColor = XLColor.LightBlue;
-                                            cell.Style.Font.Bold = true;
-                                            cell.Style.Font.FontColor = XLColor.DarkBlue;
-                                        }
-                                        break;
-                                    }
-                                }
-
-                                foreach (var holiday in hungarianHolidays)
-                                {
-                                    DateTime holidayDate = DateTime.Parse(holiday.Date);
-                                    if (holidayDate.Date == currentDate.Date)
-                                    {
-                                        if (!germanHolidays.Any(h => DateTime.Parse(h.Date).Date == currentDate.Date))
-                                        {
-                                            cellValue += $"  HU: {holiday.Name}";
-                                            cell.Style.Fill.BackgroundColor = XLColor.LightGreen;
-                                            cell.Style.Font.Bold = true;
-                                            cell.Style.Font.FontColor = XLColor.DarkGreen;
-                                        }
-                                        break;
-                                    }
-                                }
+                                    DataType = CellValues.String,
+                                };
+                                AppendCellToWorksheet(spreadsheetDocument, worksheetPart, dateCell, (uint)currentRow, (uint)(i + 1));
                                 
-                                cell.Value = cellValue;
-                                worksheet.Column(currentColumn).Width = 35;
-                                cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-
-                                if (currentDate.DayOfWeek == DayOfWeek.Sunday)
-                                {
-                                    cell.Style.Fill.BackgroundColor = XLColor.LightSalmon;
-                                    cell.Style.Font.Bold = true;
-                                    cell.Style.Font.FontColor = XLColor.Red;
-                                }
-
-                                if (currentDate.DayOfWeek == DayOfWeek.Saturday)
-                                {
-                                    cell.Style.Fill.BackgroundColor = XLColor.LightGray;
-                                    cell.Style.Font.Bold = true;
-                                    cell.Style.Font.FontColor = XLColor.DimGray;
-                                }
-
                                 currentDate = currentDate.AddDays(1);
                                 currentRow++;
                             }
 
-                            var columnRange = worksheet.Range(currentRow - DateTime.DaysInMonth(currentYear, currentMonth), currentColumn, currentRow, currentColumn);
-                            columnRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thick;
-
-                            currentMonth++;
-                            currentColumn++;
-                            currentRow = 1;
+                            SetColumnWidth(worksheetPart, (uint)(i + 1), 30);
                         }
 
-                        string fullPath = Path.Combine(savePath, plannerName + ".xlsx");
-                        workbook.SaveAs(fullPath);
-
-                        MessageBox.Show($"Planner has been generated and saved as: {fullPath}", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                        workbookPart.Workbook.Save();
                     }
+
+                    MessageBox.Show($"Planner has been generated and saved as: {saveFileDialog.FileName}", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
+
                 catch (Exception ex)
                 {
                     MessageBox.Show($"An error occurred while generating the planner: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
+        }
+
+        #region AppendCellToWorksheet
+        private void AppendCellToWorksheet(SpreadsheetDocument spreadsheetDocument, WorksheetPart worksheetPart, Cell cell, uint rowIndex, uint columnIndex)
+        {
+            SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
+            Row row = sheetData.Elements<Row>().FirstOrDefault(r => r.RowIndex == rowIndex);
+            if (row == null)
+            {
+                row = new Row() { RowIndex = rowIndex };
+                sheetData.Append(row);
+            }
+            else
+            {
+                Cell existingCell = row.Elements<Cell>().FirstOrDefault(c => c.CellReference == $"{GetColumnName(columnIndex)}{rowIndex}");
+
+                if (existingCell != null)
+                {
+                    row.RemoveChild(existingCell);
+                }
+            }
+            cell.CellReference = $"{GetColumnName(columnIndex)}{rowIndex}";
+            row.Append(cell);
+        }
+        #endregion
+
+        private string GetColumnName(uint columnIndex)
+        {
+            uint dividend = columnIndex;
+            string columnName = String.Empty;
+            uint modifier;
+
+            while (dividend > 0)
+            {
+                modifier = (dividend - 1) % 26;
+                columnName = Convert.ToChar(65 + modifier).ToString() + columnName;
+                dividend = (uint)((dividend - modifier) / 26);
+            }
+
+            return columnName;
+        }
+
+        private static void SetColumnWidth(WorksheetPart worksheetPart, uint columnIndex, double width)
+        {
+            DocumentFormat.OpenXml.Spreadsheet.Columns columns = worksheetPart.Worksheet.GetFirstChild<DocumentFormat.OpenXml.Spreadsheet.Columns>();
+            if (columns == null)
+            {
+                columns = new DocumentFormat.OpenXml.Spreadsheet.Columns();
+                worksheetPart.Worksheet.InsertAt(columns, 0);
+            }
+
+            DocumentFormat.OpenXml.Spreadsheet.Column column = new DocumentFormat.OpenXml.Spreadsheet.Column()
+            {
+                Min = columnIndex,
+                Max = columnIndex,
+                Width = width,
+                CustomWidth = true
+            };
+
+            columns.Append(column);
+        }
+
+        private Stylesheet GenerateStylesheet()
+        {
+            Stylesheet styleSheet = new Stylesheet();
+
+            Borders borders = new Borders(
+            new Border( // index 1 black border
+                new LeftBorder(new Color() { Auto = true }) { Style = BorderStyleValues.Thin },
+                new RightBorder(new Color() { Auto = true }) { Style = BorderStyleValues.Thin },
+                new TopBorder(new Color() { Auto = true }) { Style = BorderStyleValues.Thin },
+                new BottomBorder(new Color() { Auto = true }) { Style = BorderStyleValues.Thin })
+        );
+            DocumentFormat.OpenXml.Spreadsheet.Font boldFont = new DocumentFormat.OpenXml.Spreadsheet.Font(new DocumentFormat.OpenXml.Spreadsheet.Bold());
+            
+            CellFormats cellFormats = new CellFormats();
+              CellFormat boldCellFormat = new CellFormat()
+              {
+                FontId = 0,
+                BorderId = 1
+              };
+              cellFormats.Append(boldCellFormat);
+              styleSheet.CellFormats = cellFormats;
+
+            return styleSheet;
         }
     }
 }
