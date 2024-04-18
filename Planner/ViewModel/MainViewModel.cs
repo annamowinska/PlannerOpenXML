@@ -1,25 +1,6 @@
-﻿using CommunityToolkit.Mvvm.Input;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Configuration;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 using System.Windows;
-using System.Windows.Data;
-using System.Globalization;
-using Microsoft.Win32;
-using DocumentFormat.OpenXml.Spreadsheet;
-using Newtonsoft.Json;
-using Planner.Services;
-using System.Windows.Controls;
 using Planner.Model;
-using System.Windows.Input;
-using Microsoft.Toolkit.Mvvm.Input;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
 using RelayCommand = CommunityToolkit.Mvvm.Input.RelayCommand;
 
