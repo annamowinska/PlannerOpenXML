@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 using System.Net.Http;
-using Planner.Model;
+using PlannerOpenXML.Model;
 
-namespace Planner.Services
+namespace PlannerOpenXML.Services
 {
     public class ApiService
     {

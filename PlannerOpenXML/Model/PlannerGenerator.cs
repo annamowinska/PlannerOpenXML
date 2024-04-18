@@ -4,9 +4,9 @@ using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.Win32;
 using System.Globalization;
 using System.Windows;
-using Planner.Services;
+using PlannerOpenXML.Services;
 
-namespace Planner.Model
+namespace PlannerOpenXML.Model
 {
     public class PlannerGenerator
     {

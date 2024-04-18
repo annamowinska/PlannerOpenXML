@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel;
 using System.Windows;
-using Planner.Model;
+using PlannerOpenXML.Model;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
 using RelayCommand = CommunityToolkit.Mvvm.Input.RelayCommand;
 
-namespace Planner.ViewModel
+namespace PlannerOpenXML.ViewModel
 {
     public class MainViewModel : ObservableObject, INotifyPropertyChanged
     {
