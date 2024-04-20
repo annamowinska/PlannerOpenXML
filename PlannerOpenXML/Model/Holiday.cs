@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace PlannerOpenXML.Model;
 
-namespace PlannerOpenXML.Model
+public class Holiday
 {
-    public class Holiday
-    {
-        public string Name { get; set; }
-        public string Date { get; set; }
-    }
+    #region properties
+    public string Name { get; set; } = string.Empty;
+    public string Date { get; set; } = string.Empty;
+    #endregion properties
 }

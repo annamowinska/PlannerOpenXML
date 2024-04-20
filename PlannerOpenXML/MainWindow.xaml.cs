@@ -1,15 +1,14 @@
 ﻿using PlannerOpenXML.ViewModel;
 using System.Windows;
 
-namespace PlannerOpenXML
+namespace PlannerOpenXML;
+
+public partial class MainWindow
 {
-    public partial class MainWindow : Window
+    public MainWindow()
     {
-        public MainWindow()
-        {
-            InitializeComponent();
-            DataContext = new MainViewModel();
-            WindowStartupLocation = WindowStartupLocation.CenterScreen;
-        }
+        InitializeComponent();
+        DataContext = new MainViewModel();
+        WindowStartupLocation = WindowStartupLocation.CenterScreen;
     }
 }
