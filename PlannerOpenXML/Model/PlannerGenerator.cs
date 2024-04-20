@@ -1,7 +1,6 @@
 ﻿using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
-using Microsoft.Win32;
 using System.Globalization;
 using System.Windows;
 using PlannerOpenXML.Services;
@@ -15,156 +14,146 @@ public class PlannerGenerator
     #endregion fields
 
     #region methods
-    public async Task GeneratePlanner(int year, int firstMonth, int numberOfMonths)
+    public async Task GeneratePlanner(int year, int firstMonth, int numberOfMonths, string path)
     {
-        var saveFileDialog = new SaveFileDialog
+        try
         {
-            Title = "Select file path to save the planner",
-            Filter = "Excel files (*.xlsx)|*.xlsx",
-            FileName = "Planner"
-        };
-
-        if (saveFileDialog.ShowDialog() == true)
-        {
-            try
+            using (var spreadsheetDocument = SpreadsheetDocument.Create(path, SpreadsheetDocumentType.Workbook))
             {
-                using (var spreadsheetDocument = SpreadsheetDocument.Create(saveFileDialog.FileName, SpreadsheetDocumentType.Workbook))
+                var workbookPart = spreadsheetDocument.AddWorkbookPart();
+                workbookPart.Workbook = new Workbook();
+
+                var worksheetPart = workbookPart.AddNewPart<WorksheetPart>();
+                worksheetPart.Worksheet = new Worksheet(new SheetData());
+
+                Stylesheet workbookstylesheet = GeneratorStylesheet();
+
+                WorkbookStylesPart stylesheet = workbookPart.AddNewPart<WorkbookStylesPart>();
+                stylesheet.Stylesheet = workbookstylesheet;
+
+                var sheets = spreadsheetDocument.WorkbookPart.Workbook.AppendChild(new Sheets());
+                var sheet = new Sheet() { Id = spreadsheetDocument.WorkbookPart.GetIdOfPart(worksheetPart), SheetId = 1, Name = "Planner" };
+                sheets.Append(sheet);
+
+                CultureInfo culture = new CultureInfo("de-DE");
+
+                int currentYear = year;
+                int currentMonth = firstMonth;
+
+                var germanHolidaysTask = m_ApiService.GetHolidaysAsync(currentYear, "DE");
+                var hungarianHolidaysTask = m_ApiService.GetHolidaysAsync(currentYear, "HU");
+
+                var germanHolidays = await germanHolidaysTask;
+                var hungarianHolidays = await hungarianHolidaysTask;
+
+                for (int i = 0; i < numberOfMonths; i++)
                 {
-                    var workbookPart = spreadsheetDocument.AddWorkbookPart();
-                    workbookPart.Workbook = new Workbook();
+                    currentYear = year;
+                    currentMonth = firstMonth + i;
 
-                    var worksheetPart = workbookPart.AddNewPart<WorksheetPart>();
-                    worksheetPart.Worksheet = new Worksheet(new SheetData());
-
-                    Stylesheet workbookstylesheet = GeneratorStylesheet();
-
-                    WorkbookStylesPart stylesheet = workbookPart.AddNewPart<WorkbookStylesPart>();
-                    stylesheet.Stylesheet = workbookstylesheet;
-
-                    var sheets = spreadsheetDocument.WorkbookPart.Workbook.AppendChild(new Sheets());
-                    var sheet = new Sheet() { Id = spreadsheetDocument.WorkbookPart.GetIdOfPart(worksheetPart), SheetId = 1, Name = "Planner" };
-                    sheets.Append(sheet);
-
-                    CultureInfo culture = new CultureInfo("de-DE");
-
-                    int currentYear = year;
-                    int currentMonth = firstMonth;
-
-                    var germanHolidaysTask = m_ApiService.GetHolidaysAsync(currentYear, "DE");
-                    var hungarianHolidaysTask = m_ApiService.GetHolidaysAsync(currentYear, "HU");
-
-                    var germanHolidays = await germanHolidaysTask;
-                    var hungarianHolidays = await hungarianHolidaysTask;
-
-                    for (int i = 0; i < numberOfMonths; i++)
+                    while (currentMonth > 12)
                     {
-                        currentYear = year;
-                        currentMonth = firstMonth + i;
+                        currentYear++;
+                        currentMonth -= 12;
 
-                        while (currentMonth > 12)
-                        {
-                            currentYear++;
-                            currentMonth -= 12;
+                        germanHolidaysTask = m_ApiService.GetHolidaysAsync(currentYear, "DE");
+                        hungarianHolidaysTask = m_ApiService.GetHolidaysAsync(currentYear, "HU");
 
-                            germanHolidaysTask = m_ApiService.GetHolidaysAsync(currentYear, "DE");
-                            hungarianHolidaysTask = m_ApiService.GetHolidaysAsync(currentYear, "HU");
-
-                            germanHolidays = await germanHolidaysTask;
-                            hungarianHolidays = await hungarianHolidaysTask;
-                        }
-
-                        DateTime monthDate = new DateTime(currentYear, currentMonth, 1);
-                        string monthName = monthDate.ToString("MMMM yyyy", culture);
-
-                        Cell monthYearCell = new Cell(new CellValue($"{monthName}"))
-                        {
-                            DataType = CellValues.String,
-                            StyleIndex = 1
-                        };
-
-                        AppendCellToWorksheet(spreadsheetDocument, worksheetPart, monthYearCell, 1, (uint)(i + 1));
-
-                        int currentRow = 2;
-
-                        DateTime currentDate = monthDate;
-                        while (currentDate.Month == monthDate.Month)
-                        {
-                            string dayOfWeek = currentDate.ToString("ddd", culture);
-                            string cellValue = $"{currentDate.Day} {dayOfWeek}";
-
-                            string germanHolidayName = GetHolidayName(currentDate, (List<Holiday>)germanHolidays);
-                            string hungarianHolidayName = GetHolidayName(currentDate, (List<Holiday>)hungarianHolidays);
-
-                            DateTime nextMonth = monthDate.AddMonths(1);
-                            bool isLastDayOfMonth = currentDate.AddDays(1).Month != nextMonth.Month;
-
-                            Cell dateCell = new Cell(new CellValue(cellValue))
-                            {
-                                StyleIndex = 2
-                            };
-
-                            if (!string.IsNullOrEmpty(germanHolidayName) && !string.IsNullOrEmpty(hungarianHolidayName))
-                                cellValue += $" DE&HU: {germanHolidayName}";
-                            else if (!string.IsNullOrEmpty(germanHolidayName))
-                                cellValue += $" DE: {germanHolidayName}";
-                            else if (!string.IsNullOrEmpty(hungarianHolidayName))
-                                cellValue += $" HU: {hungarianHolidayName}";
-
-                            dateCell = new Cell(new CellValue(cellValue))
-                            {
-                                DataType = CellValues.String,
-                                StyleIndex = 2
-                            };
-
-                            if (!isLastDayOfMonth)
-                            {
-                                if (currentDate.DayOfWeek == DayOfWeek.Saturday)
-                                    dateCell.StyleIndex = 9;
-                                else if (currentDate.DayOfWeek == DayOfWeek.Sunday)
-                                    dateCell.StyleIndex = 10;
-                                else if (cellValue.Contains(" DE:"))
-                                    dateCell.StyleIndex = 11;
-                                else if (cellValue.Contains(" HU:"))
-                                    dateCell.StyleIndex = 12;
-                                else if (cellValue.Contains(" DE&HU:"))
-                                    dateCell.StyleIndex = 13;
-                                else
-                                    dateCell.StyleIndex = 8;
-                            }
-                            else if (currentDate.DayOfWeek == DayOfWeek.Saturday)
-                                dateCell.StyleIndex = 3;
-                            else if (currentDate.DayOfWeek == DayOfWeek.Sunday)
-                                dateCell.StyleIndex = 4;
-                            else if (cellValue.Contains(" DE:"))
-                                dateCell.StyleIndex = 5;
-                            else if (cellValue.Contains(" HU:"))
-                                dateCell.StyleIndex = 6;
-                            else if (cellValue.Contains(" DE&HU:"))
-                                dateCell.StyleIndex = 7;
-
-                            AppendCellToWorksheet(spreadsheetDocument, worksheetPart, dateCell, (uint)currentRow, (uint)(i + 1));
-
-                            currentDate = currentDate.AddDays(1);
-                            currentRow++;
-                        }
-
-                        SetColumnWidth(worksheetPart, (uint)(i + 1), 35);
+                        germanHolidays = await germanHolidaysTask;
+                        hungarianHolidays = await hungarianHolidaysTask;
                     }
 
-                    workbookPart.Workbook.Save();
+                    DateTime monthDate = new DateTime(currentYear, currentMonth, 1);
+                    string monthName = monthDate.ToString("MMMM yyyy", culture);
+
+                    Cell monthYearCell = new Cell(new CellValue($"{monthName}"))
+                    {
+                        DataType = CellValues.String,
+                        StyleIndex = 1
+                    };
+
+                    AppendCellToWorksheet(spreadsheetDocument, worksheetPart, monthYearCell, 1, (uint)(i + 1));
+
+                    int currentRow = 2;
+
+                    DateTime currentDate = monthDate;
+                    while (currentDate.Month == monthDate.Month)
+                    {
+                        string dayOfWeek = currentDate.ToString("ddd", culture);
+                        string cellValue = $"{currentDate.Day} {dayOfWeek}";
+
+                        string germanHolidayName = GetHolidayName(currentDate, germanHolidays);
+                        string hungarianHolidayName = GetHolidayName(currentDate, hungarianHolidays);
+
+                        DateTime nextMonth = monthDate.AddMonths(1);
+                        bool isLastDayOfMonth = currentDate.AddDays(1).Month != nextMonth.Month;
+
+                        Cell dateCell = new Cell(new CellValue(cellValue))
+                        {
+                            StyleIndex = 2
+                        };
+
+                        if (!string.IsNullOrEmpty(germanHolidayName) && !string.IsNullOrEmpty(hungarianHolidayName))
+                            cellValue += $" DE&HU: {germanHolidayName}";
+                        else if (!string.IsNullOrEmpty(germanHolidayName))
+                            cellValue += $" DE: {germanHolidayName}";
+                        else if (!string.IsNullOrEmpty(hungarianHolidayName))
+                            cellValue += $" HU: {hungarianHolidayName}";
+
+                        dateCell = new Cell(new CellValue(cellValue))
+                        {
+                            DataType = CellValues.String,
+                            StyleIndex = 2
+                        };
+
+                        if (!isLastDayOfMonth)
+                        {
+                            if (currentDate.DayOfWeek == DayOfWeek.Saturday)
+                                dateCell.StyleIndex = 9;
+                            else if (currentDate.DayOfWeek == DayOfWeek.Sunday)
+                                dateCell.StyleIndex = 10;
+                            else if (cellValue.Contains(" DE:"))
+                                dateCell.StyleIndex = 11;
+                            else if (cellValue.Contains(" HU:"))
+                                dateCell.StyleIndex = 12;
+                            else if (cellValue.Contains(" DE&HU:"))
+                                dateCell.StyleIndex = 13;
+                            else
+                                dateCell.StyleIndex = 8;
+                        }
+                        else if (currentDate.DayOfWeek == DayOfWeek.Saturday)
+                            dateCell.StyleIndex = 3;
+                        else if (currentDate.DayOfWeek == DayOfWeek.Sunday)
+                            dateCell.StyleIndex = 4;
+                        else if (cellValue.Contains(" DE:"))
+                            dateCell.StyleIndex = 5;
+                        else if (cellValue.Contains(" HU:"))
+                            dateCell.StyleIndex = 6;
+                        else if (cellValue.Contains(" DE&HU:"))
+                            dateCell.StyleIndex = 7;
+
+                        AppendCellToWorksheet(spreadsheetDocument, worksheetPart, dateCell, (uint)currentRow, (uint)(i + 1));
+
+                        currentDate = currentDate.AddDays(1);
+                        currentRow++;
+                    }
+
+                    SetColumnWidth(worksheetPart, (uint)(i + 1), 35);
                 }
 
-                MessageBox.Show($"Planner has been generated and saved as: {saveFileDialog.FileName}", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                workbookPart.Workbook.Save();
             }
 
-            catch (Exception ex)
-            {
-                MessageBox.Show($"An error occurred while generating the planner: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            MessageBox.Show($"Planner has been generated and saved as: {path}", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        catch (Exception ex)
+        {
+            MessageBox.Show($"An error occurred while generating the planner: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
     #endregion methods
-    
+
     #region private methods
     private static Stylesheet GeneratorStylesheet()
     {
@@ -396,12 +385,7 @@ public class PlannerGenerator
 
         return workbookstylesheet;
     }
-    #endregion private methods
 
-    #region GeneratorStylesheet
-    #endregion GeneratorStylesheet
-
-    #region AppendCellToWorksheet
     private void AppendCellToWorksheet(SpreadsheetDocument spreadsheetDocument, WorksheetPart worksheetPart, Cell cell, uint rowIndex, uint columnIndex)
     {
         SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
@@ -423,9 +407,7 @@ public class PlannerGenerator
         cell.CellReference = $"{GetColumnName(columnIndex)}{rowIndex}";
         row.Append(cell);
     }
-    #endregion AppendCellToWorksheet
 
-    #region GetColumnName
     private string GetColumnName(uint columnIndex)
     {
         uint dividend = columnIndex;
@@ -441,19 +423,17 @@ public class PlannerGenerator
 
         return columnName;
     }
-    #endregion GetColumnName
 
-    #region SetColumnWidth
     private static void SetColumnWidth(WorksheetPart worksheetPart, uint columnIndex, double width)
     {
-        DocumentFormat.OpenXml.Spreadsheet.Columns columns = worksheetPart.Worksheet.GetFirstChild<DocumentFormat.OpenXml.Spreadsheet.Columns>();
+        var columns = worksheetPart.Worksheet.GetFirstChild<Columns>();
         if (columns == null)
         {
-            columns = new DocumentFormat.OpenXml.Spreadsheet.Columns();
+            columns = new Columns();
             worksheetPart.Worksheet.InsertAt(columns, 0);
         }
 
-        DocumentFormat.OpenXml.Spreadsheet.Column column = new DocumentFormat.OpenXml.Spreadsheet.Column()
+        var column = new Column()
         {
             Min = columnIndex,
             Max = columnIndex,
@@ -463,20 +443,18 @@ public class PlannerGenerator
 
         columns.Append(column);
     }
-    #endregion SetColumnWidth
 
-    #region GetHolidayName
-    private string GetHolidayName(DateTime date, List<Holiday> holidays)
+    private static string GetHolidayName(DateTime date, IEnumerable<Holiday> holidays)
     {
         foreach (var holiday in holidays)
         {
-            DateTime holidayDate = DateTime.Parse(holiday.Date);
+            var holidayDate = DateTime.Parse(holiday.Date);
             if (holidayDate.Date == date.Date)
             {
                 return holiday.Name;
             }
         }
-        return null;
+        return string.Empty;
     }
-    #endregion GetHolidayName
+    #endregion private methods
 }

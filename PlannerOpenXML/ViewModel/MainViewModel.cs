@@ -41,7 +41,16 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
             return;
         }
 
-        await m_PlannerGenerator.GeneratePlanner(Year.Value, FirstMonth.Value, NumberOfMonths.Value);
+        // normal workflow: get the service trough IOC container
+        var dialogService = new Services.DialogService();
+        var path = dialogService.SaveFileDialog(
+            "Select file path to save the planner",
+            "Excel files (*.xlsx)|*.xlsx",
+            "Planner");
+        if (path == null)
+            return;
+
+        await m_PlannerGenerator.GeneratePlanner(Year.Value, FirstMonth.Value, NumberOfMonths.Value, path);
         Year = null;
         FirstMonth = null;
         NumberOfMonths = null;
