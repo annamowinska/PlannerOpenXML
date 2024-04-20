@@ -11,6 +11,12 @@ public class ApiService
     #endregion fields
 
     #region methods
+    /// <summary>
+    /// Connects to a web service and collects holidays for a given year and country.
+    /// </summary>
+    /// <param name="year">The year</param>
+    /// <param name="countryCode">The country code</param>
+    /// <returns>A list of holidays</returns>
     public async Task<IEnumerable<Holiday>> GetHolidaysAsync(int year, string countryCode)
     {
         try
@@ -45,6 +51,12 @@ public class ApiService
         return Array.Empty<Holiday>();
     }
 
+    /// <summary>
+    /// Collects holidays for multiple countries for a given year.
+    /// </summary>
+    /// <param name="year">The year</param>
+    /// <param name="countryCodes">A list of countries</param>
+    /// <returns>a single list of holidays from all selected countries at once.</returns>
     public async Task<IEnumerable<Holiday>> GetHolidaysForCountriesAsync(int year, IEnumerable<string> countryCodes)
     {
         var result = new List<Holiday>();

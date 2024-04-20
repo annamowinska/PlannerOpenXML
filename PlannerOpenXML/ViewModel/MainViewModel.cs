@@ -13,6 +13,9 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     #endregion fields
 
     #region properties
+    /// <summary>
+    /// Pregenerated list of month numbers: 1 - 12.
+    /// </summary>
     public List<int> Months { get; } = Enumerable.Range(1, 12).ToList();
 
     [ObservableProperty]
@@ -35,6 +38,7 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     [RelayCommand]
     private async Task Generate()
     {
+        // if user forgot to select informations inform him
         if (!Year.HasValue || !FirstMonth.HasValue || !NumberOfMonths.HasValue)
         {
             MessageBox.Show("Please fill in all the fields.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -50,6 +54,7 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
         if (path == null)
             return;
 
+        // only one reference to the instance of "m_PlannerGenerator". Do we need to keep it in the class as a local variable?
         await m_PlannerGenerator.GeneratePlanner(Year.Value, FirstMonth.Value, NumberOfMonths.Value, path);
         Year = null;
         FirstMonth = null;

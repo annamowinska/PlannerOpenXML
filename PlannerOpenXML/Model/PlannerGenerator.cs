@@ -14,6 +14,14 @@ public class PlannerGenerator
     #endregion fields
 
     #region methods
+    /// <summary>
+    /// Generates an excel with a calendar for a given time period for german and hungarian holidays.
+    /// </summary>
+    /// <param name="year">Starting year</param>
+    /// <param name="firstMonth">Staring month</param>
+    /// <param name="numberOfMonths">Amount of months to generate</param>
+    /// <param name="path">Path for destination file</param>
+    /// <returns>Nothing. Async task.</returns>
     public async Task GeneratePlanner(int year, int firstMonth, int numberOfMonths, string path)
     {
         try
@@ -386,7 +394,7 @@ public class PlannerGenerator
         return workbookstylesheet;
     }
 
-    private void AppendCellToWorksheet(SpreadsheetDocument spreadsheetDocument, WorksheetPart worksheetPart, Cell cell, uint rowIndex, uint columnIndex)
+    private static void AppendCellToWorksheet(SpreadsheetDocument spreadsheetDocument, WorksheetPart worksheetPart, Cell cell, uint rowIndex, uint columnIndex)
     {
         SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
         Row row = sheetData.Elements<Row>().FirstOrDefault(r => r.RowIndex == rowIndex);
@@ -408,7 +416,7 @@ public class PlannerGenerator
         row.Append(cell);
     }
 
-    private string GetColumnName(uint columnIndex)
+    private static string GetColumnName(uint columnIndex)
     {
         uint dividend = columnIndex;
         string columnName = String.Empty;
