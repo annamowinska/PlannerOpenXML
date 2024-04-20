@@ -25,17 +25,23 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     private int? m_NumberOfMonths;
 
     [ObservableProperty]
-    private Visibility m_LabelVisibility = Visibility.Visible;
+    private bool m_LabelVisibility = true;
 
     [ObservableProperty]
-    private Visibility m_ComboBoxVisibility = Visibility.Collapsed;
+    private bool m_ComboBoxVisibility = false;
     #endregion properties
 
     #region commands
     [RelayCommand]
     private async Task Generate()
     {
-        await m_PlannerGenerator.GeneratePlanner(Year, FirstMonth, NumberOfMonths);
+        if (!Year.HasValue || !FirstMonth.HasValue || !NumberOfMonths.HasValue)
+        {
+            MessageBox.Show("Please fill in all the fields.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
+
+        await m_PlannerGenerator.GeneratePlanner(Year.Value, FirstMonth.Value, NumberOfMonths.Value);
         Year = null;
         FirstMonth = null;
         NumberOfMonths = null;
@@ -44,8 +50,8 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     [RelayCommand]
     private void LabelClicked()
     {
-        LabelVisibility = Visibility.Collapsed;
-        ComboBoxVisibility = Visibility.Visible;
+        LabelVisibility = false;
+        ComboBoxVisibility = true;
     }
     #endregion commands
 }

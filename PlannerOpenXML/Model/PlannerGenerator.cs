@@ -15,14 +15,8 @@ public class PlannerGenerator
     #endregion fields
 
     #region methods
-    public async Task GeneratePlanner(int? year, int? firstMonth, int? numberOfMonths)
+    public async Task GeneratePlanner(int year, int firstMonth, int numberOfMonths)
     {
-        if (year == null || firstMonth == null || numberOfMonths == null)
-        {
-            MessageBox.Show("Please fill in all the fields.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            return;
-        }
-
         var saveFileDialog = new SaveFileDialog
         {
             Title = "Select file path to save the planner",
@@ -53,8 +47,8 @@ public class PlannerGenerator
 
                     CultureInfo culture = new CultureInfo("de-DE");
 
-                    int currentYear = year ?? 0;
-                    int currentMonth = firstMonth ?? 0;
+                    int currentYear = year;
+                    int currentMonth = firstMonth;
 
                     var germanHolidaysTask = m_ApiService.GetHolidaysAsync(currentYear, "DE");
                     var hungarianHolidaysTask = m_ApiService.GetHolidaysAsync(currentYear, "HU");
@@ -64,8 +58,8 @@ public class PlannerGenerator
 
                     for (int i = 0; i < numberOfMonths; i++)
                     {
-                        currentYear = year.Value;
-                        currentMonth = firstMonth.Value + i;
+                        currentYear = year;
+                        currentMonth = firstMonth + i;
 
                         while (currentMonth > 12)
                         {

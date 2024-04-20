@@ -6,11 +6,13 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:vm="clr-namespace:PlannerOpenXML.ViewModel"
+        xmlns:conv="clr-namespace:PlannerOpenXML.Converters"
         d:DataContext="{d:DesignInstance Type={x:Type vm:MainViewModel}}"
         mc:Ignorable="d"
         Icon="/Resources/icon.png"
         Title="Planner Generator" Height="450" Width="350">
     <Window.Resources>
+        <conv:BooleanToVisibilityConverter x:Key="BoolToVis" />
         <Style x:Key="CustomButtonStyle" TargetType="Button">
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontSize" Value="16"/>
@@ -38,17 +40,72 @@
     </Window.Resources>
     <Grid Background="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}">
         <Image Source="/Resources/logo.png" Margin="62,16,60,0" VerticalAlignment="Top" Height="66"/>
-        <TextBlock HorizontalAlignment="Center" Height="34" Margin="0,98,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="260" FontSize="22" FontWeight="Bold" TextAlignment="Center" Text="Planner Generator" Foreground="#FF333333"/>
-        <xctk:WatermarkTextBox Watermark="Enter year" Text="{Binding Year, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" Height="26" Margin="0,168,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="150" VerticalContentAlignment="Center" Padding="3, 0, 0, 0"/>
-        <Label x:Name="Label" Content="Select first month" Foreground="Gray" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,220,0,0" Width="150" Background="White" Visibility="{Binding LabelVisibility}">
+        <TextBlock
+            HorizontalAlignment="Center"
+            Height="34"
+            Margin="0,98,0,0"
+            TextWrapping="Wrap"
+            VerticalAlignment="Top"
+            Width="260"
+            FontSize="22"
+            FontWeight="Bold"
+            TextAlignment="Center"
+            Text="Planner Generator"
+            Foreground="#FF333333"/>
+        <xctk:WatermarkTextBox
+            Watermark="Enter year"
+            Text="{Binding Year, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            HorizontalAlignment="Center"
+            Height="26" Margin="0,168,0,0"
+            TextWrapping="Wrap"
+            VerticalAlignment="Top"
+            Width="150"
+            VerticalContentAlignment="Center"
+            Padding="3, 0, 0, 0"/>
+        <Label x:Name="Label"
+               Content="Select first month"
+               Foreground="Gray"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Top"
+               Margin="0,220,0,0"
+               Width="150"
+               Background="White"
+               Visibility="{Binding LabelVisibility, Converter={StaticResource BoolToVis}}">
             <i:Interaction.Triggers>
                 <i:EventTrigger EventName="MouseLeftButtonDown">
                     <i:InvokeCommandAction Command="{Binding LabelClickedCommand}"/>
                 </i:EventTrigger>
             </i:Interaction.Triggers>
         </Label>
-            <ComboBox x:Name="MonthsComboBox" SelectedItem="{Binding FirstMonth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding Months}"  HorizontalAlignment="Center" Height="26" VerticalAlignment="Top" Width="150" Margin="0,220,0,0" VerticalContentAlignment="Center" Padding="3, 0, 0, 0" Visibility="{Binding ComboBoxVisibility}"/>
-        <xctk:WatermarkTextBox Watermark="Enter number of months" Text="{Binding NumberOfMonths, Mode=TwoWay}"  HorizontalAlignment="Center" Height="28" Margin="0,272,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="150" VerticalContentAlignment="Center" Padding="3, 0, 0, 0"/>
-        <Button Content="Generate" Command="{Binding GenerateCommand}" HorizontalAlignment="Center" Height="40" Margin="0,338,0,0" VerticalAlignment="Top" Width="114" Style="{StaticResource CustomButtonStyle}"/>
+        <ComboBox
+            x:Name="MonthsComboBox"
+            SelectedItem="{Binding FirstMonth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            ItemsSource="{Binding Months}"
+            HorizontalAlignment="Center"
+            Height="26"
+            VerticalAlignment="Top"
+            Width="150"
+            Margin="0,220,0,0"
+            VerticalContentAlignment="Center"
+            Padding="3, 0, 0, 0" Visibility="{Binding ComboBoxVisibility, Converter={StaticResource BoolToVis}}"/>
+        <xctk:WatermarkTextBox
+            Watermark="Enter number of months"
+            Text="{Binding NumberOfMonths, Mode=TwoWay}"
+            HorizontalAlignment="Center"
+            Height="28" Margin="0,272,0,0"
+            TextWrapping="Wrap"
+            VerticalAlignment="Top"
+            Width="150"
+            VerticalContentAlignment="Center"
+            Padding="3, 0, 0, 0"/>
+        <Button
+            Content="Generate"
+            Command="{Binding GenerateCommand}"
+            HorizontalAlignment="Center"
+            Height="40"
+            Margin="0,338,0,0"
+            VerticalAlignment="Top"
+            Width="114"
+            Style="{StaticResource CustomButtonStyle}"/>
     </Grid>
 </Window>
