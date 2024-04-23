@@ -78,7 +78,7 @@ public class PlannerGenerator
                         hungarianHolidays = await hungarianHolidaysTask;
                     }
 
-                    DateTime monthDate = new DateTime(currentYear, currentMonth, 1);
+                    DateOnly monthDate = new DateOnly(currentYear, currentMonth, 1);
                     string monthName = monthDate.ToString("MMMM yyyy", culture);
 
                     Cell monthYearCell = new Cell(new CellValue($"{monthName}"))
@@ -91,7 +91,7 @@ public class PlannerGenerator
 
                     int currentRow = 2;
 
-                    DateTime currentDate = monthDate;
+                    DateOnly currentDate = monthDate;
                     while (currentDate.Month == monthDate.Month)
                     {
                         string dayOfWeek = currentDate.ToString("ddd", culture);
@@ -100,7 +100,7 @@ public class PlannerGenerator
                         string germanHolidayName = GetHolidayName(currentDate, germanHolidays);
                         string hungarianHolidayName = GetHolidayName(currentDate, hungarianHolidays);
 
-                        DateTime nextMonth = monthDate.AddMonths(1);
+                        DateOnly nextMonth = monthDate.AddMonths(1);
                         bool isLastDayOfMonth = currentDate.AddDays(1).Month != nextMonth.Month;
 
                         Cell dateCell = new Cell(new CellValue(cellValue))
@@ -459,12 +459,12 @@ public class PlannerGenerator
         columns.Append(column);
     }
 
-    private static string GetHolidayName(DateTime date, IEnumerable<Holiday> holidays)
+    private static string GetHolidayName(DateOnly date, IEnumerable<Holiday> holidays)
     {
         foreach (var holiday in holidays)
         {
-            var holidayDate = DateTime.Parse(holiday.Date);
-            if (holidayDate.Date == date.Date)
+            //var holidayDate = DateTime.Parse(holiday.Date);
+            if (holiday.Date == date)
             {
                 return holiday.Name;
             }

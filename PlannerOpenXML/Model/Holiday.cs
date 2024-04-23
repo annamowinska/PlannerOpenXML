@@ -10,6 +10,6 @@ public class Holiday
     /// <summary>
     /// Date of holiday
     /// </summary>
-    public string Date { get; set; } = string.Empty;
+    public DateOnly Date { get; set; } = new DateOnly();
     #endregion properties
 }

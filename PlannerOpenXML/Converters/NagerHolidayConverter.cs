@@ -1,4 +1,5 @@
 ﻿using PlannerOpenXML.Model;
+using System.Globalization;
 
 namespace PlannerOpenXML.Converters;
 
@@ -12,10 +13,12 @@ public class NagerHolidayConverter : IHolidayConverter
         var holidays = new List<Holiday>();
         foreach (var nagerHoliday in nagerHolidays)
         {
+            DateOnly date = DateOnly.ParseExact(nagerHoliday.Date, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
             var holiday = new Holiday
             {
                 Name = nagerHoliday.Name,
-                Date = nagerHoliday.Date
+                Date = date
             };
             holidays.Add(holiday);
         }
