@@ -1,16 +1,23 @@
 ﻿using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
+using PlannerOpenXML.Services;
 using System.Globalization;
 using System.Windows;
-using PlannerOpenXML.Services;
 
 namespace PlannerOpenXML.Model;
 
 public class PlannerGenerator
 {
+    #region constructor
+    public PlannerGenerator(IApiService apiService)
+    {
+        m_ApiService = apiService;
+    }
+    #endregion constructor
+
     #region fields
-    private readonly ApiService m_ApiService = new();
+    private readonly IApiService m_ApiService;
     #endregion fields
 
     #region methods

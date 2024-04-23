@@ -1,14 +1,34 @@
-﻿using PlannerOpenXML.ViewModel;
+﻿using Microsoft.Extensions.DependencyInjection;
+using PlannerOpenXML.Converters;
+using PlannerOpenXML.Model;
+using PlannerOpenXML.Services;
+using PlannerOpenXML.ViewModel;
 using System.Windows;
 
 namespace PlannerOpenXML;
 
-public partial class MainWindow
+/// <summary>
+/// Interaction logic for MainWindow.xaml
+/// </summary>
+public partial class MainWindow : Window
 {
     public MainWindow()
     {
+        ServiceContainer.Services = ConfigureInternalServices();
         InitializeComponent();
-        DataContext = new MainViewModel();
+        DataContext = ConfigureInternalServices().GetRequiredService<MainViewModel>();
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
+    }
+
+    private IServiceProvider ConfigureInternalServices()
+    {
+        var services = new ServiceCollection();
+
+        services.AddTransient<IHolidayConverter, NagerHolidayConverter>();
+        services.AddTransient<IApiService, ApiNagerService>();
+        services.AddTransient<PlannerGenerator>();
+        services.AddTransient<MainViewModel>();
+
+        return services.BuildServiceProvider();
     }
 }

@@ -1,13 +1,22 @@
 ﻿using Newtonsoft.Json;
-using System.Net.Http;
+using PlannerOpenXML.Converters;
 using PlannerOpenXML.Model;
+using System.Net.Http;
 
 namespace PlannerOpenXML.Services;
 
-public class ApiService
+public class ApiNagerService : IApiService
 {
+    #region constructor
+    public ApiNagerService(IHolidayConverter holidayConverter)
+    {
+        m_HolidayConverter = holidayConverter;
+    }
+    #endregion constructor
+
     #region fields
     private readonly HttpClient m_HttpClient = new();
+    private readonly IHolidayConverter m_HolidayConverter;
     #endregion fields
 
     #region methods
@@ -24,12 +33,14 @@ public class ApiService
             var response = await m_HttpClient.GetAsync($"https://date.nager.at/api/v3/PublicHolidays/{year}/{countryCode}");
             response.EnsureSuccessStatusCode();
             var json = await response.Content.ReadAsStringAsync();
-            var holidays = JsonConvert.DeserializeObject<IEnumerable<Holiday>>(json);
-            if (holidays == null)
+            var nagerHolidays = JsonConvert.DeserializeObject<IEnumerable<NagerHoliday>>(json);
+            if (nagerHolidays == null)
             {
                 Console.WriteLine($"Could not deserialize content for {countryCode}: \"{json}\"");
                 return Array.Empty<Holiday>();
             }
+
+            var holidays = m_HolidayConverter.Convert(nagerHolidays);
             return holidays;
         }
 

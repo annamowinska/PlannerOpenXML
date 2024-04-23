@@ -1,15 +1,25 @@
-﻿using System.ComponentModel;
-using System.Windows;
-using PlannerOpenXML.Model;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.ComponentModel;
+using PlannerOpenXML.Model;
+using PlannerOpenXML.Services;
+using System.ComponentModel;
+using System.Windows;
 
 namespace PlannerOpenXML.ViewModel;
 
 public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
 {
+    #region constructor
+    public MainViewModel(IApiService apiService)
+    {
+        m_ApiService = apiService;
+        m_PlannerGenerator = new PlannerGenerator(apiService);
+    }
+    #endregion constructor
+
     #region fields
-    private readonly PlannerGenerator m_PlannerGenerator = new();
+    private readonly IApiService m_ApiService;
+    private readonly PlannerGenerator m_PlannerGenerator;
     #endregion fields
 
     #region properties
