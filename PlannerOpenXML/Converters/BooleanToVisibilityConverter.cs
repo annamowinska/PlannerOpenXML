@@ -10,8 +10,8 @@ namespace PlannerOpenXML.Converters;
 public class BooleanToVisibilityConverter : IValueConverter
 {
     #region properties
-    public Visibility WhenFalse { get; set; } = Visibility.Collapsed;
-    public Visibility WhenTrue { get; set; } = Visibility.Visible;
+    public Visibility LabelCollapsed { get; set; } = Visibility.Collapsed;
+    public Visibility LabelVisible { get; set; } = Visibility.Visible;
     public Visibility Default { get; set; } = Visibility.Collapsed;
     #endregion properties
 
@@ -21,7 +21,7 @@ public class BooleanToVisibilityConverter : IValueConverter
         if (value is not bool boolean)
             return Default;
 
-        return boolean ? WhenTrue : WhenFalse;
+        return boolean ? LabelVisible : LabelCollapsed;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
