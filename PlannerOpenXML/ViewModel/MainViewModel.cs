@@ -10,16 +10,19 @@ namespace PlannerOpenXML.ViewModel;
 public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
 {
     #region constructor
-    public MainViewModel(IApiService apiService)
+    public MainViewModel(IApiService apiService, HolidayNameService holidayNameService, PlannerStyleService plannerStyleService)
     {
         m_ApiService = apiService;
-        m_PlannerGenerator = new PlannerGenerator(apiService);
+        m_HolidayNameService = holidayNameService;
+        m_PlannerGenerator = new PlannerGenerator(apiService, holidayNameService, plannerStyleService);
     }
     #endregion constructor
 
     #region fields
     private readonly IApiService m_ApiService;
+    private readonly HolidayNameService m_HolidayNameService;
     private readonly PlannerGenerator m_PlannerGenerator;
+    private readonly PlannerStyleService plannerStyleService;
     #endregion fields
 
     #region properties
