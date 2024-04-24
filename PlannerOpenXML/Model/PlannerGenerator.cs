@@ -4,6 +4,7 @@ using DocumentFormat.OpenXml.Spreadsheet;
 using PlannerOpenXML.Services;
 using System.Globalization;
 using System.Windows;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace PlannerOpenXML.Model;
 
@@ -33,10 +34,13 @@ public class PlannerGenerator
     /// <param name="numberOfMonths">Amount of months to generate</param>
     /// <param name="path">Path for destination file</param>
     /// <returns>Nothing. Async task.</returns>
-    public async Task GeneratePlanner(int year, int firstMonth, int numberOfMonths, string path)
+    public async Task GeneratePlanner(DateOnly from, DateOnly to, IEnumerable<Holiday> allHolidays, string path)
     {
         try
         {
+            List<Holiday> germanHolidays = new List<Holiday>();
+            List<Holiday> hungarianHolidays = new List<Holiday>();
+
             using (var spreadsheetDocument = SpreadsheetDocument.Create(path, SpreadsheetDocumentType.Workbook))
             {
                 var workbookPart = spreadsheetDocument.AddWorkbookPart();
@@ -56,34 +60,22 @@ public class PlannerGenerator
 
                 CultureInfo culture = new CultureInfo("de-DE");
 
-                int currentYear = year;
-                int currentMonth = firstMonth;
-
-                var germanHolidaysTask = m_ApiService.GetHolidaysAsync(currentYear, "DE");
-                var hungarianHolidaysTask = m_ApiService.GetHolidaysAsync(currentYear, "HU");
-
-                var germanHolidays = await germanHolidaysTask;
-                var hungarianHolidays = await hungarianHolidaysTask;
-
-                for (int i = 0; i < numberOfMonths; i++)
+                foreach (var holiday in allHolidays)
                 {
-                    currentYear = year;
-                    currentMonth = firstMonth + i;
-
-                    while (currentMonth > 12)
+                    if (holiday.CountryCode == "DE")
                     {
-                        currentYear++;
-                        currentMonth -= 12;
-
-                        germanHolidaysTask = m_ApiService.GetHolidaysAsync(currentYear, "DE");
-                        hungarianHolidaysTask = m_ApiService.GetHolidaysAsync(currentYear, "HU");
-
-                        germanHolidays = await germanHolidaysTask;
-                        hungarianHolidays = await hungarianHolidaysTask;
+                        germanHolidays.Add(holiday);
                     }
-
-                    DateOnly monthDate = new DateOnly(currentYear, currentMonth, 1);
-                    string monthName = monthDate.ToString("MMMM yyyy", culture);
+                    else if (holiday.CountryCode == "HU")
+                    {
+                        hungarianHolidays.Add(holiday);
+                    }
+                }
+                
+                var columnIndex = 0;
+                for (DateOnly date = from; date <= to; date = date.AddMonths(1))
+                {
+                    string monthName = date.ToString("MMMM yyyy", culture);
 
                     Cell monthYearCell = new Cell(new CellValue($"{monthName}"))
                     {
@@ -91,12 +83,10 @@ public class PlannerGenerator
                         StyleIndex = 1
                     };
 
-                    AppendCellToWorksheet(spreadsheetDocument, worksheetPart, monthYearCell, 1, (uint)(i + 1));
+                    AppendCellToWorksheet(spreadsheetDocument, worksheetPart, monthYearCell, 1, (uint)(columnIndex + 1));
 
-                    int currentRow = 2;
-
-                    DateOnly currentDate = monthDate;
-                    while (currentDate.Month == monthDate.Month)
+                    var currentRow = 2;
+                    for (DateOnly currentDate = date; currentDate.Month == date.Month; currentDate = currentDate.AddDays(1))
                     {
                         string dayOfWeek = currentDate.ToString("ddd", culture);
                         string cellValue = $"{currentDate.Day} {dayOfWeek}";
@@ -104,7 +94,7 @@ public class PlannerGenerator
                         string germanHolidayName = m_HolidayNameService.GetHolidayName(currentDate, germanHolidays);
                         string hungarianHolidayName = m_HolidayNameService.GetHolidayName(currentDate, hungarianHolidays);
 
-                        DateOnly nextMonth = monthDate.AddMonths(1);
+                        DateOnly nextMonth = date.AddMonths(1);
                         bool isLastDayOfMonth = currentDate.AddDays(1).Month != nextMonth.Month;
 
                         Cell dateCell = new Cell(new CellValue(cellValue))
@@ -151,13 +141,13 @@ public class PlannerGenerator
                         else if (cellValue.Contains(" DE&HU:"))
                             dateCell.StyleIndex = 7;
 
-                        AppendCellToWorksheet(spreadsheetDocument, worksheetPart, dateCell, (uint)currentRow, (uint)(i + 1));
+                        AppendCellToWorksheet(spreadsheetDocument, worksheetPart, dateCell, (uint)currentRow, (uint)(columnIndex + 1));
 
-                        currentDate = currentDate.AddDays(1);
                         currentRow++;
                     }
 
-                    SetColumnWidth(worksheetPart, (uint)(i + 1), 35);
+                    SetColumnWidth(worksheetPart, (uint)(columnIndex + 1), 35);
+                    columnIndex++;
                 }
 
                 workbookPart.Workbook.Save();
@@ -199,7 +189,7 @@ public class PlannerGenerator
     private static string GetColumnName(uint columnIndex)
     {
         uint dividend = columnIndex;
-        string columnName = String.Empty;
+        string columnName = System.String.Empty;
         uint modifier;
 
         while (dividend > 0)

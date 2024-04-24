@@ -18,7 +18,8 @@ public class NagerHolidayConverter : IHolidayConverter
             var holiday = new Holiday
             {
                 Name = nagerHoliday.Name,
-                Date = date
+                Date = date,
+                CountryCode = nagerHoliday.CountryCode
             };
             holidays.Add(holiday);
         }

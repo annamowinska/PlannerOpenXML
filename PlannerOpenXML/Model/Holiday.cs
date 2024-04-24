@@ -11,5 +11,9 @@ public class Holiday
     /// Date of holiday
     /// </summary>
     public DateOnly Date { get; set; } = new DateOnly();
+    /// <summary>
+    /// Country code of the holiday
+    /// </summary>
+    public string CountryCode { get; set; } = string.Empty;
     #endregion properties
 }

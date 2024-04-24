@@ -9,4 +9,3 @@ public interface IApiService
 {
     Task<IEnumerable<Holiday>> GetHolidaysAsync(int year, string countryCode);
 }
-

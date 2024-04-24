@@ -13,16 +13,13 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     public MainViewModel(IApiService apiService, HolidayNameService holidayNameService, PlannerStyleService plannerStyleService)
     {
         m_ApiService = apiService;
-        m_HolidayNameService = holidayNameService;
         m_PlannerGenerator = new PlannerGenerator(apiService, holidayNameService, plannerStyleService);
     }
     #endregion constructor
 
     #region fields
     private readonly IApiService m_ApiService;
-    private readonly HolidayNameService m_HolidayNameService;
     private readonly PlannerGenerator m_PlannerGenerator;
-    private readonly PlannerStyleService plannerStyleService;
     #endregion fields
 
     #region properties
@@ -67,8 +64,22 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
         if (path == null)
             return;
 
+        var from = new DateOnly(Year.Value, FirstMonth.Value, 1);
+        var to = from.AddMonths(NumberOfMonths.Value).AddDays(-1);
+
+        var countryCodes = new List<string> { "DE", "HU" };
+        var allHolidays = new List<Holiday>();
+
+        for (var currentDate = from; currentDate <= to; currentDate = currentDate.AddMonths(1))
+        {
+            foreach (string countryCode in countryCodes)
+            {
+                allHolidays.AddRange(await m_ApiService.GetHolidaysAsync(currentDate.Year, countryCode));
+            }
+        }
+
         // only one reference to the instance of "m_PlannerGenerator". Do we need to keep it in the class as a local variable?
-        await m_PlannerGenerator.GeneratePlanner(Year.Value, FirstMonth.Value, NumberOfMonths.Value, path);
+        await m_PlannerGenerator.GeneratePlanner(from, to, allHolidays, path);
         Year = null;
         FirstMonth = null;
         NumberOfMonths = null;
