@@ -27,7 +27,7 @@ public partial class MainWindow : Window
         services.AddTransient<IHolidayConverter, NagerHolidayConverter>();
         services.AddTransient<IApiService, ApiNagerService>();
         services.AddTransient<HolidayNameService>();
-        services.AddTransient<HolidayCacheService>(provider => new HolidayCacheService("holiday.json"));
+        services.AddTransient<HolidayCacheService>();
         services.AddTransient<PlannerStyleService>();
         services.AddTransient<PlannerGenerator>();
         services.AddTransient<MainViewModel>();
