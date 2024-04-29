@@ -10,6 +10,12 @@ namespace PlannerOpenXML.Model;
 
 public class PlannerGenerator
 {
+    #region fields
+    private readonly IApiService m_ApiService;
+    private readonly HolidayNameService m_HolidayNameService;
+    private readonly PlannerStyleService m_PlannerStyleService;
+    #endregion fields
+
     #region constructor
     public PlannerGenerator(IApiService apiService, HolidayNameService holidayNameService, PlannerStyleService plannerStyleService)
     {
@@ -18,12 +24,6 @@ public class PlannerGenerator
         m_PlannerStyleService = plannerStyleService;
     }
     #endregion constructor
-
-    #region fields
-    private readonly IApiService m_ApiService;
-    private readonly HolidayNameService m_HolidayNameService;
-    private readonly PlannerStyleService m_PlannerStyleService;
-    #endregion fields
 
     #region methods
     /// <summary>

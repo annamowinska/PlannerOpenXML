@@ -6,15 +6,20 @@ namespace PlannerOpenXML.Services;
 
 public class HolidayCacheService
 {
+    #region fields
     private readonly string m_FilePath;
     private readonly IApiService m_ApiService;
+    #endregion fields
 
+    #region constructor
     public HolidayCacheService(IApiService apiService, string filePath = "holiday.json")
     {
         m_FilePath = filePath;
         m_ApiService = apiService;
     }
+    #endregion constructor
 
+    #region methods
     public async Task<List<Holiday>> GetAllHolidaysInRangeAsync(DateOnly fromDate, DateOnly toDate)
     {
         var allHolidays = new List<Holiday>();
@@ -77,7 +82,9 @@ public class HolidayCacheService
 
         return allHolidays;
     }
+    #endregion methods
 
+    #region private methods
     private void SaveHolidaysToFile(IEnumerable<Holiday> holidays)
     {
         try
@@ -112,4 +119,5 @@ public class HolidayCacheService
             throw;
         }
     }
+    #endregion private methods
 }

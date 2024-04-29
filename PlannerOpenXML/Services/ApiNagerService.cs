@@ -7,17 +7,17 @@ namespace PlannerOpenXML.Services;
 
 public class ApiNagerService : IApiService
 {
+    #region fields
+    private readonly HttpClient m_HttpClient = new();
+    private readonly IHolidayConverter m_HolidayConverter;
+    #endregion fields
+
     #region constructor
     public ApiNagerService(IHolidayConverter holidayConverter)
     {
         m_HolidayConverter = holidayConverter;
     }
     #endregion constructor
-
-    #region fields
-    private readonly HttpClient m_HttpClient = new();
-    private readonly IHolidayConverter m_HolidayConverter;
-    #endregion fields
 
     #region methods
     /// <summary>
