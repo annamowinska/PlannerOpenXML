@@ -4,7 +4,6 @@ using DocumentFormat.OpenXml.Spreadsheet;
 using PlannerOpenXML.Services;
 using System.Globalization;
 using System.Windows;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace PlannerOpenXML.Model;
 
@@ -77,7 +76,7 @@ public class PlannerGenerator
                 {
                     string monthName = date.ToString("MMMM yyyy", culture);
 
-                    Cell monthYearCell = new Cell(new CellValue($"{monthName}"))
+                    Cell monthYearCell = new Cell(new CellValue(monthName))
                     {
                         DataType = CellValues.String,
                         StyleIndex = 1

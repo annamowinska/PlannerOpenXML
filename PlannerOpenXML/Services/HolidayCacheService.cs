@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using PlannerOpenXML.Model;
 using System.IO;
+using System.Windows;
 
 namespace PlannerOpenXML.Services;
 
@@ -31,20 +32,29 @@ public class HolidayCacheService
             var holidaysFromFile = ReadHolidaysFromFile().ToList();
             var yearsInFile = holidaysFromFile.Select(h => h.Date.Year).Distinct().ToList();
             var missingYears = yearsFromUserInput.Except(yearsInFile).ToList();
+            var missingYearsMessage = string.Join(", ", missingYears);
 
             if (missingYears.Any())
             {
-                foreach (var missingYear in missingYears)
+                if (!InternetAvailabilityService.IsInternetAvailable())
                 {
-                    foreach (var countryCode in countryCodes)
-                    {
-                        var fetchedHolidays = await m_ApiService.GetHolidaysAsync(missingYear, countryCode);
-                        allHolidays.AddRange(fetchedHolidays);
-                    }
+                    MessageBox.Show($"No internet connection. Failed to download {missingYearsMessage} holidays. A planner will be created without {missingYearsMessage} holidays applied.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return new List<Holiday>();
                 }
-                allHolidays.AddRange(holidaysFromFile);
-                allHolidays.Sort((x, y) => x.Date.CompareTo(y.Date));
-                SaveHolidaysToFile(allHolidays);
+                else
+                {
+                    foreach (var missingYear in missingYears)
+                    {
+                        foreach (var countryCode in countryCodes)
+                        {
+                            var fetchedHolidays = await m_ApiService.GetHolidaysAsync(missingYear, countryCode);
+                            allHolidays.AddRange(fetchedHolidays);
+                        }
+                    }
+                    allHolidays.AddRange(holidaysFromFile);
+                    allHolidays.Sort((x, y) => x.Date.CompareTo(y.Date));
+                    SaveHolidaysToFile(allHolidays);
+                }
             }
             else
             {
@@ -53,29 +63,37 @@ public class HolidayCacheService
         }
         else
         {
-            if (!Enumerable.Range(2023, 2033 - 2023 + 1).Intersect(yearsFromUserInput).Any())
+            if (!InternetAvailabilityService.IsInternetAvailable())
             {
-                foreach (var year in Enumerable.Range(2023, 2033 - 2023 + 1).Union(yearsFromUserInput))
-                {
-                    foreach (var countryCode in countryCodes)
-                    {
-                        var fetchedHolidays = await m_ApiService.GetHolidaysAsync(year, countryCode);
-                        allHolidays.AddRange(fetchedHolidays);
-                    }
-                }
+                MessageBox.Show("No internet connection. Failed to download the holidays. An empty planner will be created, with no holidays applied.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return new List<Holiday>();
             }
             else
             {
-                for (var year = 2023; year <= 2033; year++)
+                if (!Enumerable.Range(2023, 2033 - 2023 + 1).Intersect(yearsFromUserInput).Any())
                 {
-                    foreach (var countryCode in countryCodes)
+                    foreach (var year in Enumerable.Range(2023, 2033 - 2023 + 1).Union(yearsFromUserInput))
                     {
-                        var fetchedHolidays = await m_ApiService.GetHolidaysAsync(year, countryCode);
-                        allHolidays.AddRange(fetchedHolidays);
+                        foreach (var countryCode in countryCodes)
+                        {
+                            var fetchedHolidays = await m_ApiService.GetHolidaysAsync(year, countryCode);
+                            allHolidays.AddRange(fetchedHolidays);
+                        }
+                    }
+                }
+                else
+                {
+                    for (var year = 2023; year <= 2033; year++)
+                    {
+                        foreach (var countryCode in countryCodes)
+                        {
+                            var fetchedHolidays = await m_ApiService.GetHolidaysAsync(year, countryCode);
+                            allHolidays.AddRange(fetchedHolidays);
+                        }
                     }
                 }
             }
-            
+
             allHolidays.Sort((x, y) => x.Date.CompareTo(y.Date));
             SaveHolidaysToFile(allHolidays);
         }
