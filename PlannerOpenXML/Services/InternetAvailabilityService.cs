@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 namespace PlannerOpenXML.Services;
 public class InternetAvailabilityService
 {
+    #region methods
     public static bool IsInternetAvailable()
     {
         try
@@ -21,5 +22,6 @@ public class InternetAvailabilityService
             return false;
         }
     }
+    #endregion methods
 }
 

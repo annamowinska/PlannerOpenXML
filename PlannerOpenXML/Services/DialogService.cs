@@ -4,6 +4,7 @@ namespace PlannerOpenXML.Services;
 
 public class DialogService
 {
+    #region methods
     /// <summary>
     /// Opens a file save dialog for the user.
     /// </summary>
@@ -37,4 +38,5 @@ public class DialogService
 
         return null;
     }
+    #endregion methods
 }

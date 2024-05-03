@@ -8,6 +8,7 @@ namespace PlannerOpenXML.Converters;
 /// </summary>
 public class NagerHolidayConverter : IHolidayConverter
 {
+    #region methods
     public IEnumerable<Holiday> Convert(IEnumerable<NagerHoliday> nagerHolidays)
     {
         var holidays = new List<Holiday>();
@@ -26,4 +27,5 @@ public class NagerHolidayConverter : IHolidayConverter
 
         return holidays;
     }
+    #endregion methods
 }

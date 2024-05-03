@@ -4,6 +4,7 @@ namespace PlannerOpenXML.Services;
 
 public class HolidayNameService
 {
+    #region methods
     public string GetHolidayName(DateOnly date, IEnumerable<Holiday> holidays)
     {
         foreach (var holiday in holidays)
@@ -15,4 +16,5 @@ public class HolidayNameService
         }
         return string.Empty;
     }
+    #endregion methods
 }

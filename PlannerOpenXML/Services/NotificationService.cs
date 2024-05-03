@@ -5,13 +5,18 @@ namespace PlannerOpenXML.Services;
 
 public class NotificationService
 {
+    #region fields
     private readonly INotificationManager m_NotificationManager;
+    #endregion fields
 
+    #region constructor
     public NotificationService(INotificationManager notificationManager)
     {
         m_NotificationManager = notificationManager;
     }
+    #endregion constructor
 
+    #region methods
     public void ShowNotification()
     {
         var content = new NotificationContent()
@@ -26,5 +31,5 @@ public class NotificationService
         };
         m_NotificationManager.Show(content);
     }
+    #endregion methods
 }
-

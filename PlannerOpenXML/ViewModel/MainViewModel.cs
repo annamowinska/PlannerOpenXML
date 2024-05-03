@@ -7,10 +7,13 @@ using System.Windows;
 
 namespace PlannerOpenXML.ViewModel;
 
-public partial class MainViewModel(IApiService apiService, HolidayNameService holidayNameService, PlannerStyleService plannerStyleService, HolidayCacheService holidayCacheService, NotificationService notificationService) : ObservableObject, INotifyPropertyChanged
+public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
 {
     #region fields
-    private readonly PlannerGenerator m_PlannerGenerator = new PlannerGenerator(apiService, holidayNameService, plannerStyleService);
+    private readonly DialogService m_DialogService;
+    private readonly PlannerGenerator m_PlannerGenerator;
+    private readonly HolidayCacheService m_HolidayCacheService;
+    private readonly NotificationService m_NotificationService;
     #endregion fields
 
     #region properties
@@ -46,9 +49,7 @@ public partial class MainViewModel(IApiService apiService, HolidayNameService ho
             return;
         }
 
-        // normal workflow: get the service trough IOC container
-        var dialogService = new DialogService();
-        var path = dialogService.SaveFileDialog(
+        var path = m_DialogService.SaveFileDialog(
             "Select file path to save the planner",
             "Excel files (*.xlsx)|*.xlsx",
             "Planner");
@@ -57,9 +58,8 @@ public partial class MainViewModel(IApiService apiService, HolidayNameService ho
 
         var from = new DateOnly(Year.Value, FirstMonth.Value, 1);
         var to = from.AddMonths(NumberOfMonths.Value).AddDays(-1);
-        var allHolidays = await holidayCacheService.GetAllHolidaysInRangeAsync(from, to);
+        var allHolidays = await m_HolidayCacheService.GetAllHolidaysInRangeAsync(from, to);
 
-        // only one reference to the instance of "m_PlannerGenerator". Do we need to keep it in the class as a local variable?
         await m_PlannerGenerator.GeneratePlanner(from, to, allHolidays, path);
  
         Year = null;
@@ -79,8 +79,24 @@ public partial class MainViewModel(IApiService apiService, HolidayNameService ho
     {
         if (!string.IsNullOrEmpty(input) && !input.All(char.IsDigit))
         {
-            notificationService.ShowNotification();
+            m_NotificationService.ShowNotification();
         }
     }
     #endregion commands
+
+    #region constructors
+    public MainViewModel(
+        IApiService apiService, 
+        HolidayNameService holidayNameService, 
+        PlannerStyleService plannerStyleService, 
+        HolidayCacheService holidayCacheService, 
+        NotificationService notificationService, 
+        DialogService dialogService)
+    {
+        m_DialogService = dialogService;
+        m_PlannerGenerator = new PlannerGenerator(apiService, holidayNameService, plannerStyleService);
+        m_HolidayCacheService = holidayCacheService;
+        m_NotificationService = notificationService;
+    }
+    #endregion constructors
 }

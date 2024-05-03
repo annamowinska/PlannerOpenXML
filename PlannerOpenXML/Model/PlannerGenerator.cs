@@ -15,14 +15,14 @@ public class PlannerGenerator
     private readonly PlannerStyleService m_PlannerStyleService;
     #endregion fields
 
-    #region constructor
+    #region constructors
     public PlannerGenerator(IApiService apiService, HolidayNameService holidayNameService, PlannerStyleService plannerStyleService)
     {
         m_ApiService = apiService;
         m_HolidayNameService = holidayNameService;
         m_PlannerStyleService = plannerStyleService;
     }
-    #endregion constructor
+    #endregion constructors
 
     #region methods
     /// <summary>

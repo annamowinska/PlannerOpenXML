@@ -12,12 +12,12 @@ public class ApiNagerService : IApiService
     private readonly IHolidayConverter m_HolidayConverter;
     #endregion fields
 
-    #region constructor
+    #region constructors
     public ApiNagerService(IHolidayConverter holidayConverter)
     {
         m_HolidayConverter = holidayConverter;
     }
-    #endregion constructor
+    #endregion constructors
 
     #region methods
     /// <summary>

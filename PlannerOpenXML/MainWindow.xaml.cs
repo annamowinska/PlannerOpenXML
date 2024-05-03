@@ -22,6 +22,7 @@ public partial class MainWindow : Window
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
     }
 
+    #region private methods
     private IServiceProvider ConfigureInternalServices()
     {
         var services = new ServiceCollection();
@@ -34,8 +35,10 @@ public partial class MainWindow : Window
         services.AddSingleton<NotificationService>();
         services.AddTransient<PlannerStyleService>();
         services.AddTransient<PlannerGenerator>();
+        services.AddTransient<DialogService>();
         services.AddTransient<MainViewModel>();
 
         return services.BuildServiceProvider();
     }
+    #endregion private methods
 }

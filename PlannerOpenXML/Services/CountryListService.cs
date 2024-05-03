@@ -2,15 +2,19 @@
 
 public static class CountryListService
 {
-    private static List<string> _countryCodes = new List<string> { "DE", "HU" };
+    #region fields
+    private static List<string> m_CountryCodes = new List<string> { "DE", "HU" };
+    #endregion fields
 
+    #region methods
     public static List<string> GetCountryCodes()
     {
-        return _countryCodes;
+        return m_CountryCodes;
     }
 
     public static void UpdateCountryCodes(List<string> newCountryCodes)
     {
-        _countryCodes = newCountryCodes;
+        m_CountryCodes = newCountryCodes;
     }
+    #endregion methods
 }
