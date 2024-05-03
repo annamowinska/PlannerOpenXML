@@ -1,9 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Notification.Wpf;
 using PlannerOpenXML.Converters;
 using PlannerOpenXML.Model;
 using PlannerOpenXML.Services;
 using PlannerOpenXML.ViewModel;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace PlannerOpenXML;
 
@@ -28,6 +30,8 @@ public partial class MainWindow : Window
         services.AddTransient<IApiService, ApiNagerService>();
         services.AddTransient<HolidayNameService>();
         services.AddTransient<HolidayCacheService>();
+        services.AddTransient<INotificationManager, NotificationManager>();
+        services.AddSingleton<NotificationService>();
         services.AddTransient<PlannerStyleService>();
         services.AddTransient<PlannerGenerator>();
         services.AddTransient<MainViewModel>();

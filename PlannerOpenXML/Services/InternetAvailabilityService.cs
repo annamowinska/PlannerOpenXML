@@ -13,7 +13,7 @@ public class InternetAvailabilityService
         try
         {
             Ping ping = new Ping();
-            PingReply reply = ping.Send("8.8.8.8"); // Adres IP Google DNS
+            PingReply reply = ping.Send("8.8.8.8");
             return reply.Status == IPStatus.Success;
         }
         catch (PingException)

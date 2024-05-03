@@ -2,27 +2,15 @@
 using CommunityToolkit.Mvvm.Input;
 using PlannerOpenXML.Model;
 using PlannerOpenXML.Services;
-using System.IO;
 using System.ComponentModel;
 using System.Windows;
 
 namespace PlannerOpenXML.ViewModel;
 
-public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
+public partial class MainViewModel(IApiService apiService, HolidayNameService holidayNameService, PlannerStyleService plannerStyleService, HolidayCacheService holidayCacheService, NotificationService notificationService) : ObservableObject, INotifyPropertyChanged
 {
-    #region constructor
-    public MainViewModel(IApiService apiService, HolidayNameService holidayNameService, PlannerStyleService plannerStyleService, HolidayCacheService holidayCacheService)
-    {
-        m_ApiService = apiService;
-        m_PlannerGenerator = new PlannerGenerator(apiService, holidayNameService, plannerStyleService);
-        m_HolidayCacheService = holidayCacheService;
-    }
-    #endregion constructor
-
     #region fields
-    private readonly IApiService m_ApiService;
-    private readonly PlannerGenerator m_PlannerGenerator;
-    private readonly HolidayCacheService m_HolidayCacheService;
+    private readonly PlannerGenerator m_PlannerGenerator = new PlannerGenerator(apiService, holidayNameService, plannerStyleService);
     #endregion fields
 
     #region properties
@@ -51,7 +39,7 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     [RelayCommand]
     private async Task Generate()
     {
-        // if user forgot to select informations inform him
+        //if user forgot to select informations inform him
         if (!Year.HasValue || !FirstMonth.HasValue || !NumberOfMonths.HasValue)
         {
             MessageBox.Show("Please fill in all the fields.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -59,7 +47,7 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
         }
 
         // normal workflow: get the service trough IOC container
-        var dialogService = new Services.DialogService();
+        var dialogService = new DialogService();
         var path = dialogService.SaveFileDialog(
             "Select file path to save the planner",
             "Excel files (*.xlsx)|*.xlsx",
@@ -69,7 +57,7 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
 
         var from = new DateOnly(Year.Value, FirstMonth.Value, 1);
         var to = from.AddMonths(NumberOfMonths.Value).AddDays(-1);
-        var allHolidays = await m_HolidayCacheService.GetAllHolidaysInRangeAsync(from, to);
+        var allHolidays = await holidayCacheService.GetAllHolidaysInRangeAsync(from, to);
 
         // only one reference to the instance of "m_PlannerGenerator". Do we need to keep it in the class as a local variable?
         await m_PlannerGenerator.GeneratePlanner(from, to, allHolidays, path);
@@ -84,6 +72,15 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     {
         LabelVisibility = false;
         ComboBoxVisibility = true;
+    }
+
+    [RelayCommand]
+    private void CheckNumericInput(string input)
+    {
+        if (!string.IsNullOrEmpty(input) && !input.All(char.IsDigit))
+        {
+            notificationService.ShowNotification();
+        }
     }
     #endregion commands
 }
