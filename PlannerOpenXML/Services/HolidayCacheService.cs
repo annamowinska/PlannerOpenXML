@@ -25,7 +25,8 @@ public class HolidayCacheService
     {
         var allHolidays = new List<Holiday>();
         var yearsFromUserInput = Enumerable.Range(fromDate.Year, toDate.Year - fromDate.Year + 1).ToList();
-        var countryCodes = CountryListService.GetCountryCodes();
+        var countryservice = ServiceContainer.GetService<ICountryListService>();
+        var countryCodes = countryservice.GetCountryCodes();
 
         if (File.Exists(m_FilePath))
         {

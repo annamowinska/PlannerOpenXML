@@ -27,6 +27,7 @@ public partial class MainWindow : Window
     {
         var services = new ServiceCollection();
 
+        services.AddSingleton<ICountryListService, CountryListService>();
         services.AddTransient<IHolidayConverter, NagerHolidayConverter>();
         services.AddTransient<IApiService, ApiNagerService>();
         services.AddTransient<HolidayNameService>();

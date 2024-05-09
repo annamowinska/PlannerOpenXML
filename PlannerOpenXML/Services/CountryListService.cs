@@ -1,18 +1,18 @@
 ﻿namespace PlannerOpenXML.Services;
 
-public static class CountryListService
+public class CountryListService : ICountryListService
 {
     #region fields
-    private static List<string> m_CountryCodes = new List<string> { "DE", "HU" };
+    private List<string> m_CountryCodes = new List<string> { "DE", "HU" };
     #endregion fields
 
     #region methods
-    public static List<string> GetCountryCodes()
+    public List<string> GetCountryCodes()
     {
         return m_CountryCodes;
     }
 
-    public static void UpdateCountryCodes(List<string> newCountryCodes)
+    public void UpdateCountryCodes(List<string> newCountryCodes)
     {
         m_CountryCodes = newCountryCodes;
     }
