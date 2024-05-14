@@ -2,8 +2,10 @@
 using CommunityToolkit.Mvvm.Input;
 using PlannerOpenXML.Model;
 using PlannerOpenXML.Services;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace PlannerOpenXML.ViewModel;
 
@@ -14,6 +16,7 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     private readonly PlannerGenerator m_PlannerGenerator;
     private readonly HolidayCacheService m_HolidayCacheService;
     private readonly NotificationService m_NotificationService;
+    private readonly ICountryListService m_CountryListService;
     #endregion fields
 
     #region properties
@@ -21,6 +24,13 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     /// Pregenerated list of month numbers: 1 - 12.
     /// </summary>
     public List<int> Months { get; } = Enumerable.Range(1, 12).ToList();
+    public List<string> Countries { get; } = new List<string>
+    {
+        "DE", 
+        "HU",
+        "PL", 
+        "US",
+    };
 
     [ObservableProperty]
     private int? m_Year;
@@ -32,10 +42,28 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     private int? m_NumberOfMonths;
 
     [ObservableProperty]
-    private bool m_LabelVisibility = true;
+    private bool m_MonthsLabelVisibility = true;
 
     [ObservableProperty]
-    private bool m_ComboBoxVisibility = false;
+    private bool m_MonthsComboBoxVisibility = false;
+    
+    [ObservableProperty]
+    private bool m_FirstCountryHolidaysLabelVisibility = true;
+
+    [ObservableProperty]
+    private bool m_FirstCountryHolidaysComboBoxVisibility = false;
+
+    [ObservableProperty]
+    private bool m_SecondCountryHolidaysLabelVisibility = true;
+
+    [ObservableProperty]
+    private bool m_SecondCountryHolidaysComboBoxVisibility = false;
+
+    [ObservableProperty]
+    private string? m_FirstCountryHolidays;
+
+    [ObservableProperty]
+    private string? m_SecondCountryHolidays;
     #endregion properties
 
     #region commands
@@ -56,22 +84,52 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
         if (path == null)
             return;
 
+        var firstCountryCode = FirstCountryHolidays;
+        var secondCountryCode = SecondCountryHolidays;
+
+        var countryCodes = new List<string>();
+
+        if (!string.IsNullOrEmpty(firstCountryCode))
+            countryCodes.Add(firstCountryCode);
+        if (!string.IsNullOrEmpty(secondCountryCode))
+            countryCodes.Add(secondCountryCode);
+
+        m_CountryListService.UpdateCountryCodes(countryCodes);
+
         var from = new DateOnly(Year.Value, FirstMonth.Value, 1);
         var to = from.AddMonths(NumberOfMonths.Value).AddDays(-1);
-        var allHolidays = await m_HolidayCacheService.GetAllHolidaysInRangeAsync(from, to);
+        var allHolidays = await m_HolidayCacheService.GetAllHolidaysInRangeAsync(from, to, countryCodes);
+        
 
-        await m_PlannerGenerator.GeneratePlanner(from, to, allHolidays, path);
+        await m_PlannerGenerator.GeneratePlanner(from, to, allHolidays, path, firstCountryCode, secondCountryCode);
  
         Year = null;
         FirstMonth = null;
         NumberOfMonths = null;
+        FirstCountryHolidays = null;
+        SecondCountryHolidays = null;
     }
 
     [RelayCommand]
-    private void LabelClicked()
+    private void LabelClicked(string LabelName)
     {
-        LabelVisibility = false;
-        ComboBoxVisibility = true;
+        switch (LabelName)
+        {
+            case "MonthsLabel":
+                MonthsLabelVisibility = false;
+                MonthsComboBoxVisibility = true;
+                break;
+            case "FirstCountryHolidaysLabel":
+                FirstCountryHolidaysLabelVisibility = false;
+                FirstCountryHolidaysComboBoxVisibility = true;
+                break;
+            case "SecondCountryHolidaysLabel":
+                SecondCountryHolidaysLabelVisibility = false;
+                SecondCountryHolidaysComboBoxVisibility = true;
+                break;
+            default:
+                break;
+        }
     }
 
     [RelayCommand]
@@ -91,12 +149,14 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
         PlannerStyleService plannerStyleService, 
         HolidayCacheService holidayCacheService, 
         NotificationService notificationService, 
-        DialogService dialogService)
+        DialogService dialogService,
+        ICountryListService countryListService)
     {
         m_DialogService = dialogService;
-        m_PlannerGenerator = new PlannerGenerator(apiService, holidayNameService, plannerStyleService);
+        m_PlannerGenerator = new PlannerGenerator(apiService, holidayNameService, plannerStyleService, "", "");
         m_HolidayCacheService = holidayCacheService;
         m_NotificationService = notificationService;
+        m_CountryListService = countryListService;
     }
     #endregion constructors
 }

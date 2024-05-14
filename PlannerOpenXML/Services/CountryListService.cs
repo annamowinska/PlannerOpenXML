@@ -3,7 +3,7 @@
 public class CountryListService : ICountryListService
 {
     #region fields
-    private List<string> m_CountryCodes = new List<string> { "DE", "HU" };
+    public List<string> m_CountryCodes = new List<string>();
     #endregion fields
 
     #region methods
@@ -12,9 +12,16 @@ public class CountryListService : ICountryListService
         return m_CountryCodes;
     }
 
+    // Implementacja metody z interfejsu ICountryListService
     public void UpdateCountryCodes(List<string> newCountryCodes)
     {
         m_CountryCodes = newCountryCodes;
+    }
+
+    // Metoda do dodawania kodu kraju do listy
+    public void AddCountryCode(string countryCode)
+    {
+        m_CountryCodes.Add(countryCode);
     }
     #endregion methods
 }

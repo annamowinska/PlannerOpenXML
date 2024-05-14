@@ -10,7 +10,7 @@
         d:DataContext="{d:DesignInstance Type={x:Type vm:MainViewModel}}"
         mc:Ignorable="d"
         Icon="/Resources/icon.png"
-        Title="Planner Generator" Height="450" Width="350">
+        Title="Planner Generator" Height="500" Width="350">
     <Window.Resources>
         <conv:BooleanToVisibilityConverter x:Key="BoolToVis" />
         <Style x:Key="CustomButtonStyle" TargetType="Button">
@@ -38,7 +38,7 @@
             </Setter>
         </Style>
     </Window.Resources>
-    <Grid Background="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}">
+    <Grid Background="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" Margin="0,0,0,-2">
         <Image Source="/Resources/logo.png" Margin="62,16,60,0" VerticalAlignment="Top" Height="66"/>
         <TextBlock
             HorizontalAlignment="Center"
@@ -57,10 +57,10 @@
             Watermark="Enter year"
             Text="{Binding Year, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}"
             HorizontalAlignment="Center"
-            Height="26" Margin="0,168,0,0"
+            Height="26" Margin="0,160,0,0"
             TextWrapping="Wrap"
             VerticalAlignment="Top"
-            Width="150"
+            Width="180"
             VerticalContentAlignment="Center"
             Padding="3, 0, 0, 0">
             <i:Interaction.Triggers>
@@ -69,18 +69,18 @@
                 </i:EventTrigger>
             </i:Interaction.Triggers>
         </xctk:WatermarkTextBox>
-        <Label x:Name="Label"
+        <Label x:Name="MonthsLabel"
                Content="Select first month"
                Foreground="Gray"
                HorizontalAlignment="Center"
                VerticalAlignment="Top"
-               Margin="0,220,0,0"
-               Width="150"
+               Margin="0,200,0,0"
+               Width="180"
                Background="White"
-               Visibility="{Binding LabelVisibility, Converter={StaticResource BoolToVis}}">
+               Visibility="{Binding MonthsLabelVisibility, Converter={StaticResource BoolToVis}}">
             <i:Interaction.Triggers>
                 <i:EventTrigger EventName="MouseLeftButtonDown">
-                    <i:InvokeCommandAction Command="{Binding LabelClickedCommand}"/>
+                    <i:InvokeCommandAction Command="{Binding LabelClickedCommand}" CommandParameter="MonthsLabel"/>
                 </i:EventTrigger>
             </i:Interaction.Triggers>
         </Label>
@@ -91,19 +91,20 @@
             HorizontalAlignment="Center"
             Height="26"
             VerticalAlignment="Top"
-            Width="150"
-            Margin="0,220,0,0"
+            Width="180"
+            Margin="0,200,0,0"
             VerticalContentAlignment="Center"
-            Padding="3, 0, 0, 0" Visibility="{Binding ComboBoxVisibility, Converter={StaticResource BoolToVis}}"/>
+            Padding="7, 0, 0, 0" 
+            Visibility="{Binding MonthsComboBoxVisibility, Converter={StaticResource BoolToVis}}"/>
         <xctk:WatermarkTextBox
             Watermark="Enter number of months"
             x:Name="NumberOfMonths"
             Text="{Binding NumberOfMonths, Mode=TwoWay}"
             HorizontalAlignment="Center"
-            Height="28" Margin="0,272,0,0"
+            Height="28" Margin="0,240,0,0"
             TextWrapping="Wrap"
             VerticalAlignment="Top"
-            Width="150"
+            Width="180"
             VerticalContentAlignment="Center"
             Padding="3, 0, 0, 0">
             <i:Interaction.Triggers>
@@ -112,12 +113,66 @@
                 </i:EventTrigger>
             </i:Interaction.Triggers>
         </xctk:WatermarkTextBox>
+        <Label x:Name="FirstCountryHolidaysLabel"
+               Content="Select first country holidays"
+               Foreground="Gray"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Top"
+               Margin="0,280,0,0"
+               Width="180"
+               Background="White"
+               Visibility="{Binding FirstCountryHolidaysLabelVisibility, Converter={StaticResource BoolToVis}}">
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="MouseLeftButtonDown">
+                    <i:InvokeCommandAction Command="{Binding LabelClickedCommand}" CommandParameter="FirstCountryHolidaysLabel"/>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+        </Label>
+        <ComboBox
+            x:Name="FirstCountryHolidaysCombobox"
+            SelectedItem="{Binding FirstCountryHolidays, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            ItemsSource="{Binding Countries}"
+            HorizontalAlignment="Center"
+            Height="26"
+            VerticalAlignment="Top"
+            Width="180"
+            Margin="0,280,0,0"
+            VerticalContentAlignment="Center"
+            Padding="7, 0, 0, 0"
+            Visibility="{Binding FirstCountryHolidaysComboBoxVisibility, Converter={StaticResource BoolToVis}}"/>
+        <Label x:Name="SecondCountryHolidaysLabel"
+               Content="Select second country holidays"
+               Foreground="Gray"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Top"
+               Margin="0,320,0,0"
+               Width="180"
+               Background="White"
+               Visibility="{Binding SecondCountryHolidaysLabelVisibility, Converter={StaticResource BoolToVis}}">
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="MouseLeftButtonDown">
+                    <i:InvokeCommandAction Command="{Binding LabelClickedCommand}" CommandParameter="SecondCountryHolidaysLabel"/>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+        </Label>
+        <ComboBox
+            x:Name="SecondCountryHolidaysCombobox"
+            SelectedItem="{Binding SecondCountryHolidays, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            ItemsSource="{Binding Countries}"
+            HorizontalAlignment="Center"
+            Height="26"
+            VerticalAlignment="Top"
+            Width="180"
+            Margin="0,320,0,0"
+            VerticalContentAlignment="Center"
+            Padding="7, 0, 0, 0"
+            Visibility="{Binding SecondCountryHolidaysComboBoxVisibility, Converter={StaticResource BoolToVis}}"/>
         <Button
             Content="Generate"
             Command="{Binding GenerateCommand}"
             HorizontalAlignment="Center"
             Height="40"
-            Margin="0,338,0,0"
+            Margin="0,380,0,0"
             VerticalAlignment="Top"
             Width="114"
             Style="{StaticResource CustomButtonStyle}"/>

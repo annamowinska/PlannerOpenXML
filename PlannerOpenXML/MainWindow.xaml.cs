@@ -16,9 +16,9 @@ public partial class MainWindow : Window
 {
     public MainWindow()
     {
-        ServiceContainer.Services = ConfigureInternalServices();
         InitializeComponent();
-        DataContext = ConfigureInternalServices().GetRequiredService<MainViewModel>();
+        ServiceContainer.Services = ConfigureInternalServices();
+        DataContext = ServiceContainer.Services.GetRequiredService<MainViewModel>();
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
     }
 

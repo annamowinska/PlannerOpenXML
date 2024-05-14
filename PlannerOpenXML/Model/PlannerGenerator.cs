@@ -13,14 +13,18 @@ public class PlannerGenerator
     private readonly IApiService m_ApiService;
     private readonly HolidayNameService m_HolidayNameService;
     private readonly PlannerStyleService m_PlannerStyleService;
+    private readonly string m_FirstCountryCode;
+    private readonly string m_SecondCountryCode;
     #endregion fields
 
     #region constructors
-    public PlannerGenerator(IApiService apiService, HolidayNameService holidayNameService, PlannerStyleService plannerStyleService)
+    public PlannerGenerator(IApiService apiService, HolidayNameService holidayNameService, PlannerStyleService plannerStyleService, string firstCountryCode, string secondCountryCode)
     {
         m_ApiService = apiService;
         m_HolidayNameService = holidayNameService;
         m_PlannerStyleService = plannerStyleService;
+        m_FirstCountryCode = firstCountryCode;
+        m_SecondCountryCode = secondCountryCode;
     }
     #endregion constructors
 
@@ -33,12 +37,12 @@ public class PlannerGenerator
     /// <param name="numberOfMonths">Amount of months to generate</param>
     /// <param name="path">Path for destination file</param>
     /// <returns>Nothing. Async task.</returns>
-    public async Task GeneratePlanner(DateOnly from, DateOnly to, IEnumerable<Holiday> allHolidays, string path)
+    public async Task GeneratePlanner(DateOnly from, DateOnly to, IEnumerable<Holiday> allHolidays, string path, string firstCountryCode, string secondCountryCode)
     {
         try
         {
-            List<Holiday> germanHolidays = new List<Holiday>();
-            List<Holiday> hungarianHolidays = new List<Holiday>();
+            List<Holiday> firstCountryHolidaysList = new List<Holiday>();
+            List<Holiday> secondCountryHolidaysList = new List<Holiday>();
 
             using (var spreadsheetDocument = SpreadsheetDocument.Create(path, SpreadsheetDocumentType.Workbook))
             {
@@ -61,13 +65,13 @@ public class PlannerGenerator
 
                 foreach (var holiday in allHolidays)
                 {
-                    if (holiday.CountryCode == "DE")
+                    if (holiday.CountryCode == firstCountryCode)
                     {
-                        germanHolidays.Add(holiday);
+                        firstCountryHolidaysList.Add(holiday);
                     }
-                    else if (holiday.CountryCode == "HU")
+                    else if (holiday.CountryCode == secondCountryCode)
                     {
-                        hungarianHolidays.Add(holiday);
+                        secondCountryHolidaysList.Add(holiday);
                     }
                 }
                 
@@ -90,8 +94,8 @@ public class PlannerGenerator
                         string dayOfWeek = currentDate.ToString("ddd", culture);
                         string cellValue = $"{currentDate.Day} {dayOfWeek}";
 
-                        string germanHolidayName = m_HolidayNameService.GetHolidayName(currentDate, germanHolidays);
-                        string hungarianHolidayName = m_HolidayNameService.GetHolidayName(currentDate, hungarianHolidays);
+                        string firstCountryHolidayName = m_HolidayNameService.GetHolidayName(currentDate, firstCountryHolidaysList);
+                        string secondCountryHolidayName = m_HolidayNameService.GetHolidayName(currentDate, secondCountryHolidaysList);
 
                         DateOnly nextMonth = date.AddMonths(1);
                         bool isLastDayOfMonth = currentDate.AddDays(1).Month != nextMonth.Month;
@@ -101,12 +105,12 @@ public class PlannerGenerator
                             StyleIndex = 2
                         };
 
-                        if (!string.IsNullOrEmpty(germanHolidayName) && !string.IsNullOrEmpty(hungarianHolidayName))
-                            cellValue += $" DE&HU: {germanHolidayName}";
-                        else if (!string.IsNullOrEmpty(germanHolidayName))
-                            cellValue += $" DE: {germanHolidayName}";
-                        else if (!string.IsNullOrEmpty(hungarianHolidayName))
-                            cellValue += $" HU: {hungarianHolidayName}";
+                        if (!string.IsNullOrEmpty(firstCountryHolidayName) && !string.IsNullOrEmpty(secondCountryHolidayName))
+                            cellValue += $" {firstCountryCode}&{secondCountryCode}: {firstCountryHolidayName}";
+                        else if (!string.IsNullOrEmpty(firstCountryHolidayName))
+                            cellValue += $" {firstCountryCode}: {firstCountryHolidayName}";
+                        else if (!string.IsNullOrEmpty(secondCountryHolidayName))
+                            cellValue += $" {secondCountryCode}: {secondCountryHolidayName}";
 
                         dateCell = new Cell(new CellValue(cellValue))
                         {
@@ -120,11 +124,11 @@ public class PlannerGenerator
                                 dateCell.StyleIndex = 9;
                             else if (currentDate.DayOfWeek == DayOfWeek.Sunday)
                                 dateCell.StyleIndex = 10;
-                            else if (cellValue.Contains(" DE:"))
+                            else if (cellValue.Contains($" {firstCountryCode}:"))
                                 dateCell.StyleIndex = 11;
-                            else if (cellValue.Contains(" HU:"))
+                            else if (cellValue.Contains($" {secondCountryCode}:"))
                                 dateCell.StyleIndex = 12;
-                            else if (cellValue.Contains(" DE&HU:"))
+                            else if (cellValue.Contains($" {firstCountryCode}&{secondCountryCode}:"))
                                 dateCell.StyleIndex = 13;
                             else
                                 dateCell.StyleIndex = 8;
@@ -133,11 +137,11 @@ public class PlannerGenerator
                             dateCell.StyleIndex = 3;
                         else if (currentDate.DayOfWeek == DayOfWeek.Sunday)
                             dateCell.StyleIndex = 4;
-                        else if (cellValue.Contains(" DE:"))
+                        else if (cellValue.Contains($" {firstCountryCode}:"))
                             dateCell.StyleIndex = 5;
-                        else if (cellValue.Contains(" HU:"))
+                        else if (cellValue.Contains($" {secondCountryCode}:"))
                             dateCell.StyleIndex = 6;
-                        else if (cellValue.Contains(" DE&HU:"))
+                        else if (cellValue.Contains($" {firstCountryCode}&{secondCountryCode}:"))
                             dateCell.StyleIndex = 7;
 
                         AppendCellToWorksheet(spreadsheetDocument, worksheetPart, dateCell, (uint)currentRow, (uint)(columnIndex + 1));
@@ -219,6 +223,11 @@ public class PlannerGenerator
         };
 
         columns.Append(column);
+    }
+
+    internal async Task GeneratePlanner(DateOnly from, DateOnly to, List<Holiday> allHolidays, string path)
+    {
+        throw new NotImplementedException();
     }
     #endregion private methods
 }

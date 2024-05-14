@@ -21,7 +21,7 @@ public class HolidayCacheService
     #endregion constructor
 
     #region methods
-    public async Task<List<Holiday>> GetAllHolidaysInRangeAsync(DateOnly fromDate, DateOnly toDate)
+    public async Task<List<Holiday>> GetAllHolidaysInRangeAsync(DateOnly fromDate, DateOnly toDate, List<string> selectedCountryCodes)
     {
         var allHolidays = new List<Holiday>();
         var yearsFromUserInput = Enumerable.Range(fromDate.Year, toDate.Year - fromDate.Year + 1).ToList();
@@ -31,6 +31,7 @@ public class HolidayCacheService
         if (File.Exists(m_FilePath))
         {
             var holidaysFromFile = ReadHolidaysFromFile().ToList();
+            var holidaysGroupedByCountryAndYear = holidaysFromFile.GroupBy(h => new { h.CountryCode, h.Date.Year }).ToList();
             var yearsInFile = holidaysFromFile.Select(h => h.Date.Year).Distinct().ToList();
             var missingYears = yearsFromUserInput.Except(yearsInFile).ToList();
             var missingYearsMessage = string.Join(", ", missingYears);
@@ -46,7 +47,7 @@ public class HolidayCacheService
                 {
                     foreach (var missingYear in missingYears)
                     {
-                        foreach (var countryCode in countryCodes)
+                        foreach (var countryCode in selectedCountryCodes)
                         {
                             var fetchedHolidays = await m_ApiService.GetHolidaysAsync(missingYear, countryCode);
                             allHolidays.AddRange(fetchedHolidays);
@@ -59,7 +60,62 @@ public class HolidayCacheService
             }
             else
             {
-                allHolidays.AddRange(holidaysFromFile);
+                if (holidaysFromFile.Any(h => selectedCountryCodes.Contains(h.CountryCode)))
+                {
+                    foreach (var countryCode in selectedCountryCodes)
+                    {
+                        var missingYearsForCountry = yearsFromUserInput.Except(holidaysGroupedByCountryAndYear
+                            .Where(g => g.Key.CountryCode == countryCode)
+                            .Select(g => g.Key.Year))
+                            .ToList();
+                        if (missingYearsForCountry.Any())
+                        {
+                            if (!InternetAvailabilityService.IsInternetAvailable())
+                            {
+                                MessageBox.Show($"No internet connection. Failed to download {missingYearsMessage} holidays. A planner will be created without {missingYearsMessage} holidays applied.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                                return new List<Holiday>();
+                            }
+                            else
+                            {
+                                foreach (var year in missingYearsForCountry)
+                                {
+                                    var fetchedHolidays = await m_ApiService.GetHolidaysAsync(year, countryCode);
+                                    allHolidays.AddRange(fetchedHolidays);
+                                }
+                            }
+                            allHolidays.AddRange(holidaysFromFile);
+                            allHolidays.Sort((x, y) => x.Date.CompareTo(y.Date));
+                            SaveHolidaysToFile(allHolidays);
+                        }
+                        else
+                        {
+                            allHolidays.AddRange(holidaysFromFile);
+                        }
+                    }
+                }
+                else
+                {
+                    if (!InternetAvailabilityService.IsInternetAvailable())
+                    {
+                        MessageBox.Show($"No internet connection. Failed to download {countryCodes} holidays. A planner will be created without {countryCodes} holidays applied.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return new List<Holiday>();
+                    }
+                    else
+                    {
+                        foreach (var year in yearsFromUserInput)
+                        {
+                            foreach (var countryCode in countryCodes)
+                            {
+                                var fetchedHolidays = await m_ApiService.GetHolidaysAsync(year, countryCode);
+                                allHolidays.AddRange(fetchedHolidays);
+                            }
+                            allHolidays.AddRange(holidaysFromFile);
+                            allHolidays.Sort((x, y) => x.Date.CompareTo(y.Date));
+                            SaveHolidaysToFile(allHolidays);
+                        }
+                    }
+
+                }
             }
         }
         else
