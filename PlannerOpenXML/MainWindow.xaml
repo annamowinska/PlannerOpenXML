@@ -10,7 +10,7 @@
         d:DataContext="{d:DesignInstance Type={x:Type vm:MainViewModel}}"
         mc:Ignorable="d"
         Icon="/Resources/icon.png"
-        Title="Planner Generator" Height="500" Width="350">
+        Title="Planner Generator" Height="550" Width="350">
     <Window.Resources>
         <conv:BooleanToVisibilityConverter x:Key="BoolToVis" />
         <Style x:Key="CustomButtonStyle" TargetType="Button">
@@ -38,12 +38,12 @@
             </Setter>
         </Style>
     </Window.Resources>
-    <Grid Background="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" Margin="0,0,0,-2">
+    <Grid Background="#FFB4B4B4" Margin="0,0,-9,-5">
         <Image Source="/Resources/logo.png" Margin="62,16,60,0" VerticalAlignment="Top" Height="66"/>
         <TextBlock
             HorizontalAlignment="Center"
-            Height="34"
-            Margin="0,98,0,0"
+            Height="35"
+            Margin="0,100,0,0"
             TextWrapping="Wrap"
             VerticalAlignment="Top"
             Width="260"
@@ -57,7 +57,7 @@
             Watermark="Enter year"
             Text="{Binding Year, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}"
             HorizontalAlignment="Center"
-            Height="26" Margin="0,160,0,0"
+            Height="25" Margin="0,160,0,0"
             TextWrapping="Wrap"
             VerticalAlignment="Top"
             Width="180"
@@ -75,6 +75,7 @@
                HorizontalAlignment="Center"
                VerticalAlignment="Top"
                Margin="0,200,0,0"
+               Height="25"
                Width="180"
                Background="White"
                Visibility="{Binding MonthsLabelVisibility, Converter={StaticResource BoolToVis}}">
@@ -89,7 +90,7 @@
             SelectedItem="{Binding FirstMonth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
             ItemsSource="{Binding Months}"
             HorizontalAlignment="Center"
-            Height="26"
+            Height="25"
             VerticalAlignment="Top"
             Width="180"
             Margin="0,200,0,0"
@@ -101,7 +102,7 @@
             x:Name="NumberOfMonths"
             Text="{Binding NumberOfMonths, Mode=TwoWay}"
             HorizontalAlignment="Center"
-            Height="28" Margin="0,240,0,0"
+            Height="25" Margin="0,240,0,0"
             TextWrapping="Wrap"
             VerticalAlignment="Top"
             Width="180"
@@ -113,66 +114,40 @@
                 </i:EventTrigger>
             </i:Interaction.Triggers>
         </xctk:WatermarkTextBox>
-        <Label x:Name="FirstCountryHolidaysLabel"
-               Content="Select first country holidays"
-               Foreground="Gray"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Top"
-               Margin="0,280,0,0"
-               Width="180"
-               Background="White"
-               Visibility="{Binding FirstCountryHolidaysLabelVisibility, Converter={StaticResource BoolToVis}}">
-            <i:Interaction.Triggers>
-                <i:EventTrigger EventName="MouseLeftButtonDown">
-                    <i:InvokeCommandAction Command="{Binding LabelClickedCommand}" CommandParameter="FirstCountryHolidaysLabel"/>
-                </i:EventTrigger>
-            </i:Interaction.Triggers>
-        </Label>
-        <ComboBox
-            x:Name="FirstCountryHolidaysCombobox"
-            SelectedItem="{Binding FirstCountryHolidays, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-            ItemsSource="{Binding Countries}"
-            HorizontalAlignment="Center"
-            Height="26"
-            VerticalAlignment="Top"
+        <TextBlock
+            Text="Choose a holiday country"
+            HorizontalAlignment="Center" 
+            Height="25"
+            VerticalAlignment="Top" 
             Width="180"
             Margin="0,280,0,0"
-            VerticalContentAlignment="Center"
-            Padding="7, 0, 0, 0"
-            Visibility="{Binding FirstCountryHolidaysComboBoxVisibility, Converter={StaticResource BoolToVis}}"/>
-        <Label x:Name="SecondCountryHolidaysLabel"
-               Content="Select second country holidays"
-               Foreground="Gray"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Top"
-               Margin="0,320,0,0"
-               Width="180"
-               Background="White"
-               Visibility="{Binding SecondCountryHolidaysLabelVisibility, Converter={StaticResource BoolToVis}}">
-            <i:Interaction.Triggers>
-                <i:EventTrigger EventName="MouseLeftButtonDown">
-                    <i:InvokeCommandAction Command="{Binding LabelClickedCommand}" CommandParameter="SecondCountryHolidaysLabel"/>
-                </i:EventTrigger>
-            </i:Interaction.Triggers>
-        </Label>
-        <ComboBox
-            x:Name="SecondCountryHolidaysCombobox"
-            SelectedItem="{Binding SecondCountryHolidays, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-            ItemsSource="{Binding Countries}"
-            HorizontalAlignment="Center"
-            Height="26"
-            VerticalAlignment="Top"
-            Width="180"
-            Margin="0,320,0,0"
-            VerticalContentAlignment="Center"
-            Padding="7, 0, 0, 0"
-            Visibility="{Binding SecondCountryHolidaysComboBoxVisibility, Converter={StaticResource BoolToVis}}"/>
+            Padding="7, 0, 0, 0"/>
+        <ListBox 
+            ItemsSource="{Binding CountryList.Countries}"
+            SelectionMode="Extended"
+            HorizontalAlignment="Center" 
+            Height="85" 
+            Margin="0,300,0,0" 
+            VerticalAlignment="Top" 
+            Width="180" 
+            Background="{x:Null}" 
+            BorderBrush="{x:Null}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <CheckBox 
+                        Content="{Binding Name}" 
+                        IsChecked="{Binding IsChecked, Mode=TwoWay}" 
+                        Command="{Binding DataContext.CheckCountryCommand, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" 
+                        CommandParameter="{Binding}"/>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
         <Button
             Content="Generate"
             Command="{Binding GenerateCommand}"
             HorizontalAlignment="Center"
             Height="40"
-            Margin="0,380,0,0"
+            Margin="0,420,0,0"
             VerticalAlignment="Top"
             Width="114"
             Style="{StaticResource CustomButtonStyle}"/>

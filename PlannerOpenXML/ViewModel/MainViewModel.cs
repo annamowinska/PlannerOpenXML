@@ -2,10 +2,8 @@
 using CommunityToolkit.Mvvm.Input;
 using PlannerOpenXML.Model;
 using PlannerOpenXML.Services;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
-using System.Windows.Controls;
 
 namespace PlannerOpenXML.ViewModel;
 
@@ -24,13 +22,7 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     /// Pregenerated list of month numbers: 1 - 12.
     /// </summary>
     public List<int> Months { get; } = Enumerable.Range(1, 12).ToList();
-    public List<string> Countries { get; } = new List<string>
-    {
-        "DE", 
-        "HU",
-        "PL", 
-        "US",
-    };
+    public SelectableCountiesList CountryList { get; }
 
     [ObservableProperty]
     private int? m_Year;
@@ -46,27 +38,47 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
 
     [ObservableProperty]
     private bool m_MonthsComboBoxVisibility = false;
-    
-    [ObservableProperty]
-    private bool m_FirstCountryHolidaysLabelVisibility = true;
-
-    [ObservableProperty]
-    private bool m_FirstCountryHolidaysComboBoxVisibility = false;
-
-    [ObservableProperty]
-    private bool m_SecondCountryHolidaysLabelVisibility = true;
-
-    [ObservableProperty]
-    private bool m_SecondCountryHolidaysComboBoxVisibility = false;
 
     [ObservableProperty]
     private string? m_FirstCountryHolidays;
 
     [ObservableProperty]
     private string? m_SecondCountryHolidays;
+
     #endregion properties
 
     #region commands
+    [RelayCommand]
+    private void CheckCountry(SelectableCountry country)
+    {
+        var checkedCountries = CountryList.Countries.Count(c => c.IsChecked);
+
+        if (checkedCountries > 2)
+        {
+            country.IsChecked = false;
+        }
+        else
+        {
+            var selectedCountries = CountryList.Countries.Where(c => c.IsChecked).ToList();
+
+            if (selectedCountries.Count == 2)
+            {
+                FirstCountryHolidays = selectedCountries[0].Code;
+                SecondCountryHolidays = selectedCountries[1].Code;
+            }
+            else if (selectedCountries.Count == 1)
+            {
+                FirstCountryHolidays = selectedCountries[0].Code;
+                SecondCountryHolidays = null;
+            }
+            else
+            {
+                FirstCountryHolidays = null;
+                SecondCountryHolidays = null;
+            }
+        }
+    }
+
     [RelayCommand]
     private async Task Generate()
     {
@@ -106,30 +118,20 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
         Year = null;
         FirstMonth = null;
         NumberOfMonths = null;
-        FirstCountryHolidays = null;
-        SecondCountryHolidays = null;
+        MonthsLabelVisibility = true;
+        MonthsComboBoxVisibility = false;
+
+        foreach (var country in CountryList.Countries)
+        {
+            country.IsChecked = false;
+        }
     }
 
     [RelayCommand]
     private void LabelClicked(string LabelName)
     {
-        switch (LabelName)
-        {
-            case "MonthsLabel":
-                MonthsLabelVisibility = false;
-                MonthsComboBoxVisibility = true;
-                break;
-            case "FirstCountryHolidaysLabel":
-                FirstCountryHolidaysLabelVisibility = false;
-                FirstCountryHolidaysComboBoxVisibility = true;
-                break;
-            case "SecondCountryHolidaysLabel":
-                SecondCountryHolidaysLabelVisibility = false;
-                SecondCountryHolidaysComboBoxVisibility = true;
-                break;
-            default:
-                break;
-        }
+        MonthsLabelVisibility = false;
+        MonthsComboBoxVisibility = true;
     }
 
     [RelayCommand]
@@ -157,6 +159,8 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
         m_HolidayCacheService = holidayCacheService;
         m_NotificationService = notificationService;
         m_CountryListService = countryListService;
+
+        CountryList = new SelectableCountiesList();
     }
     #endregion constructors
 }
