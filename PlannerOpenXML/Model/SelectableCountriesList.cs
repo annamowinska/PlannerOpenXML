@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.ObjectModel;
 
-namespace PlannerOpenXML.Model;
 public class SelectableCountiesList : ObservableObject
 {
     public ObservableCollection<SelectableCountry> Countries { get; } = new ObservableCollection<SelectableCountry>

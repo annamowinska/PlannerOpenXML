@@ -1,10 +1,15 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace PlannerOpenXML.Model;
-
 public class SelectableCountry : ObservableObject
 {
     #region properties
+    private bool m_IsEnabled = true;
+    public bool IsEnabled
+    {
+        get { return m_IsEnabled; }
+        set { SetProperty(ref m_IsEnabled, value); }
+    }
+
     private string m_Name;
     public string Name
     {

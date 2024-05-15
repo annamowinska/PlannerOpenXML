@@ -65,16 +65,29 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
             {
                 FirstCountryHolidays = selectedCountries[0].Code;
                 SecondCountryHolidays = selectedCountries[1].Code;
-            }
-            else if (selectedCountries.Count == 1)
-            {
-                FirstCountryHolidays = selectedCountries[0].Code;
-                SecondCountryHolidays = null;
+
+                foreach (var remainingCountry in CountryList.Countries.Where(c => !c.IsChecked))
+                {
+                    remainingCountry.IsEnabled = false;
+                }
             }
             else
             {
-                FirstCountryHolidays = null;
-                SecondCountryHolidays = null;
+                foreach (var remainingCountry in CountryList.Countries)
+                {
+                    remainingCountry.IsEnabled = true;
+                }
+
+                if (selectedCountries.Count == 1)
+                {
+                    FirstCountryHolidays = selectedCountries[0].Code;
+                    SecondCountryHolidays = null;
+                }
+                else
+                {
+                    FirstCountryHolidays = null;
+                    SecondCountryHolidays = null;
+                }
             }
         }
     }
