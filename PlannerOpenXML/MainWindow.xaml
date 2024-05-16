@@ -12,7 +12,7 @@
         Icon="/Resources/icon.png"
         Title="Planner Generator" Height="550" Width="350">
     <Window.Resources>
-        <conv:BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <conv:BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <Style x:Key="CustomCheckBoxStyle" TargetType="CheckBox">
             <Setter Property="Template">
                 <Setter.Value>
@@ -105,7 +105,7 @@
         <xctk:WatermarkTextBox
             x:Name="YearTextBox"
             Watermark="Enter year"
-            Text="{Binding Year, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}"
+            Text="{Binding Year, Mode=TwoWay}"
             HorizontalAlignment="Center"
             Height="25" Margin="0,160,0,0"
             TextWrapping="Wrap"
@@ -114,8 +114,8 @@
             VerticalContentAlignment="Center"
             Padding="3, 0, 0, 0">
             <i:Interaction.Triggers>
-                <i:EventTrigger EventName="TextChanged">
-                    <i:InvokeCommandAction Command="{Binding CheckNumericInputCommand}" CommandParameter="{Binding Text, ElementName=YearTextBox}" />
+                <i:EventTrigger EventName="PreviewKeyDown">
+                    <i:InvokeCommandAction Command="{Binding CheckNumericInputCommand}" CommandParameter="{Binding ElementName=YearTextBox}"/>
                 </i:EventTrigger>
             </i:Interaction.Triggers>
         </xctk:WatermarkTextBox>
@@ -149,8 +149,8 @@
             Visibility="{Binding MonthsComboBoxVisibility, Converter={StaticResource BoolToVis}}"
             IsDropDownOpen="{Binding IsMonthsComboBoxOpen}"/>
         <xctk:WatermarkTextBox
+            x:Name="NumberOfMonthsTextBox"
             Watermark="Enter number of months"
-            x:Name="NumberOfMonths"
             Text="{Binding NumberOfMonths, Mode=TwoWay}"
             HorizontalAlignment="Center"
             Height="25" Margin="0,240,0,0"
@@ -160,8 +160,8 @@
             VerticalContentAlignment="Center"
             Padding="3, 0, 0, 0">
             <i:Interaction.Triggers>
-                <i:EventTrigger EventName="TextChanged">
-                    <i:InvokeCommandAction Command="{Binding CheckNumericInputCommand}" CommandParameter="{Binding Text, ElementName=NumberOfMonths}" />
+                <i:EventTrigger EventName="PreviewKeyDown">
+                    <i:InvokeCommandAction Command="{Binding CheckNumericInputCommand}" CommandParameter="{Binding ElementName=NumberOfMonthsTextBox}"/>
                 </i:EventTrigger>
             </i:Interaction.Triggers>
         </xctk:WatermarkTextBox>

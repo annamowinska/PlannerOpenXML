@@ -4,6 +4,7 @@ using PlannerOpenXML.Model;
 using PlannerOpenXML.Services;
 using System.ComponentModel;
 using System.Windows;
+using Xceed.Wpf.Toolkit;
 
 namespace PlannerOpenXML.ViewModel;
 
@@ -101,7 +102,7 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
         //if user forgot to select informations inform him
         if (!Year.HasValue || !FirstMonth.HasValue || !NumberOfMonths.HasValue)
         {
-            MessageBox.Show("Please fill in all the fields.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            System.Windows.MessageBox.Show("Please fill in all the fields.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             return;
         }
 
@@ -114,7 +115,6 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
 
         var firstCountryCode = FirstCountryHolidays;
         var secondCountryCode = SecondCountryHolidays;
-
         var countryCodes = new List<string>();
 
         if (!string.IsNullOrEmpty(firstCountryCode))
@@ -127,7 +127,6 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
         var from = new DateOnly(Year.Value, FirstMonth.Value, 1);
         var to = from.AddMonths(NumberOfMonths.Value).AddDays(-1);
         var allHolidays = await m_HolidayCacheService.GetAllHolidaysInRangeAsync(from, to, countryCodes);
-        
 
         await m_PlannerGenerator.GeneratePlanner(from, to, allHolidays, path, firstCountryCode, secondCountryCode);
  
@@ -153,11 +152,18 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     }
 
     [RelayCommand]
-    private void CheckNumericInput(string input)
+    private void CheckNumericInput(object parameter)
     {
-        if (!string.IsNullOrEmpty(input) && !input.All(char.IsDigit))
+        if (parameter is WatermarkTextBox textBox)
         {
-            m_NotificationService.ShowNotification();
+            textBox.PreviewTextInput += (sender, e) =>
+            {
+                if (!char.IsDigit(e.Text, 0))
+                {
+                    e.Handled = true;
+                    m_NotificationService.ShowNotification();
+                }
+            };
         }
     }
     #endregion commands

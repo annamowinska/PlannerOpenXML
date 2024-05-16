@@ -1,25 +1,23 @@
 ﻿using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
-using System.IO;
 
-namespace PlannerOpenXML.Services
+namespace PlannerOpenXML.Services;
+
+public class PlannerTemplateService
 {
-    public class PlannerTemplateService
+    public Stylesheet ReadStylesheetFromExcel(string filePath)
     {
-        public Stylesheet ReadStylesheetFromExcel(string filePath)
+        Stylesheet stylesheet = null;
+
+        using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Open(filePath, false))
         {
-            Stylesheet stylesheet = null;
-
-            using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Open(filePath, false))
+            WorkbookPart workbookPart = spreadsheetDocument.WorkbookPart;
+            if (workbookPart?.WorkbookStylesPart?.Stylesheet != null)
             {
-                WorkbookPart workbookPart = spreadsheetDocument.WorkbookPart;
-                if (workbookPart?.WorkbookStylesPart?.Stylesheet != null)
-                {
-                    stylesheet = workbookPart.WorkbookStylesPart.Stylesheet;
-                }
+                stylesheet = workbookPart.WorkbookStylesPart.Stylesheet;
             }
-
-            return stylesheet;
         }
+
+        return stylesheet;
     }
 }
