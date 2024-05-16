@@ -40,6 +40,9 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     private bool m_MonthsComboBoxVisibility = false;
 
     [ObservableProperty]
+    private bool m_IsMonthsComboBoxOpen = false;
+
+    [ObservableProperty]
     private string? m_FirstCountryHolidays;
 
     [ObservableProperty]
@@ -137,6 +140,7 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
         foreach (var country in CountryList.Countries)
         {
             country.IsChecked = false;
+            country.IsEnabled = true;
         }
     }
 
@@ -145,6 +149,7 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     {
         MonthsLabelVisibility = false;
         MonthsComboBoxVisibility = true;
+        IsMonthsComboBoxOpen = true;
     }
 
     [RelayCommand]

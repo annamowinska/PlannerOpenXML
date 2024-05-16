@@ -13,6 +13,56 @@
         Title="Planner Generator" Height="550" Width="350">
     <Window.Resources>
         <conv:BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <Style x:Key="CustomCheckBoxStyle" TargetType="CheckBox">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <StackPanel Orientation="Horizontal">
+                            <Border x:Name="border"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="#007ACC"
+                                    BorderThickness="2"
+                                    CornerRadius="2"
+                                    Width="16"
+                                    Height="16"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Center">
+                                <Path x:Name="checkMark"
+                                      Data="M 0 4 L 2 6 L 6 2"
+                                      Stroke="Black"
+                                      StrokeThickness="2"
+                                      Visibility="Collapsed"
+                                      VerticalAlignment="Center"
+                                      HorizontalAlignment="Center"/>
+                            </Border>
+                            <ContentPresenter x:Name="contentPresenter"
+                                              Margin="5,0,0,0"
+                                              VerticalAlignment="Center"
+                                              HorizontalAlignment="Left">
+                                <ContentPresenter.Content>
+                                    <TextBlock Text="{TemplateBinding Content}"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Left"/>
+                                </ContentPresenter.Content>
+                            </ContentPresenter>
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#007ACC" />
+                                <Setter TargetName="checkMark" Property="Visibility" Value="Visible" />
+                                <Setter TargetName="contentPresenter" Property="TextBlock.Foreground" Value="#007ACC" />
+                                <Setter TargetName="contentPresenter" Property="TextBlock.FontWeight" Value="Bold" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#A0A0A0" />
+                                <Setter TargetName="border" Property="BorderBrush" Value="Gray" />
+                                <Setter TargetName="contentPresenter" Property="TextBlock.Foreground" Value="#FF505050" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <Style x:Key="CustomButtonStyle" TargetType="Button">
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontSize" Value="16"/>
@@ -96,7 +146,8 @@
             Margin="0,200,0,0"
             VerticalContentAlignment="Center"
             Padding="7, 0, 0, 0" 
-            Visibility="{Binding MonthsComboBoxVisibility, Converter={StaticResource BoolToVis}}"/>
+            Visibility="{Binding MonthsComboBoxVisibility, Converter={StaticResource BoolToVis}}"
+            IsDropDownOpen="{Binding IsMonthsComboBoxOpen}"/>
         <xctk:WatermarkTextBox
             Watermark="Enter number of months"
             x:Name="NumberOfMonths"
@@ -136,6 +187,7 @@
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <CheckBox 
+                        Style="{StaticResource CustomCheckBoxStyle}"
                         Content="{Binding Name}" 
                         IsChecked="{Binding IsChecked, Mode=TwoWay}" 
                         IsEnabled="{Binding IsEnabled}"
