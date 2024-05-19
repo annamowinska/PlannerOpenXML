@@ -10,7 +10,7 @@
         d:DataContext="{d:DesignInstance Type={x:Type vm:MainViewModel}}"
         mc:Ignorable="d"
         Icon="/Resources/icon.png"
-        Title="Planner Generator" Height="550" Width="350">
+        Title="Planner Generator" SizeToContent="Height" Width="650" Background="#FFB4B4B4">
     <Window.Resources>
         <conv:BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <Style x:Key="CustomCheckBoxStyle" TargetType="CheckBox">
@@ -66,9 +66,9 @@
         <Style x:Key="CustomButtonStyle" TargetType="Button">
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontSize" Value="16"/>
-            <Setter Property="Padding" Value="10"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="VerticalAlignment" Value="Bottom"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -88,12 +88,18 @@
             </Setter>
         </Style>
     </Window.Resources>
-    <Grid Background="#FFB4B4B4" Margin="0,0,-9,-5">
-        <Image Source="/Resources/logo.png" Margin="62,16,60,0" VerticalAlignment="Top" Height="66"/>
+    <Grid Margin="0,30" VerticalAlignment="Center" HorizontalAlignment="Center">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Image Grid.Row="0" Source="/Resources/logo.png" VerticalAlignment="Top" Width="200" Margin="0,0,0,20"/>
         <TextBlock
+            Grid.Row="1"
             HorizontalAlignment="Center"
-            Height="35"
-            Margin="0,100,0,0"
+            Margin="0,0,0,30"
             TextWrapping="Wrap"
             VerticalAlignment="Top"
             Width="260"
@@ -102,108 +108,191 @@
             TextAlignment="Center"
             Text="Planner Generator"
             Foreground="#FF333333"/>
-        <xctk:WatermarkTextBox
-            x:Name="YearTextBox"
-            Watermark="Enter year"
-            Text="{Binding Year, Mode=TwoWay}"
-            HorizontalAlignment="Center"
-            Height="25" Margin="0,160,0,0"
-            TextWrapping="Wrap"
-            VerticalAlignment="Top"
-            Width="180"
-            VerticalContentAlignment="Center"
-            Padding="3, 0, 0, 0">
-            <i:Interaction.Triggers>
-                <i:EventTrigger EventName="PreviewKeyDown">
-                    <i:InvokeCommandAction Command="{Binding CheckNumericInputCommand}" CommandParameter="{Binding ElementName=YearTextBox}"/>
-                </i:EventTrigger>
-            </i:Interaction.Triggers>
-        </xctk:WatermarkTextBox>
-        <Label x:Name="MonthsLabel"
-               Content="Select first month"
-               Foreground="Gray"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Top"
-               Margin="0,200,0,0"
-               Height="25"
-               Width="180"
-               Background="White"
-               Visibility="{Binding MonthsLabelVisibility, Converter={StaticResource BoolToVis}}">
-            <i:Interaction.Triggers>
-                <i:EventTrigger EventName="MouseLeftButtonDown">
-                    <i:InvokeCommandAction Command="{Binding LabelClickedCommand}" CommandParameter="MonthsLabel"/>
-                </i:EventTrigger>
-            </i:Interaction.Triggers>
-        </Label>
-        <ComboBox
-            x:Name="MonthsComboBox"
-            SelectedItem="{Binding FirstMonth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-            ItemsSource="{Binding Months}"
-            HorizontalAlignment="Center"
-            Height="25"
-            VerticalAlignment="Top"
-            Width="180"
-            Margin="0,200,0,0"
-            VerticalContentAlignment="Center"
-            Padding="7, 0, 0, 0" 
-            Visibility="{Binding MonthsComboBoxVisibility, Converter={StaticResource BoolToVis}}"
-            IsDropDownOpen="{Binding IsMonthsComboBoxOpen}"/>
-        <xctk:WatermarkTextBox
-            x:Name="NumberOfMonthsTextBox"
-            Watermark="Enter number of months"
-            Text="{Binding NumberOfMonths, Mode=TwoWay}"
-            HorizontalAlignment="Center"
-            Height="25" Margin="0,240,0,0"
-            TextWrapping="Wrap"
-            VerticalAlignment="Top"
-            Width="180"
-            VerticalContentAlignment="Center"
-            Padding="3, 0, 0, 0">
-            <i:Interaction.Triggers>
-                <i:EventTrigger EventName="PreviewKeyDown">
-                    <i:InvokeCommandAction Command="{Binding CheckNumericInputCommand}" CommandParameter="{Binding ElementName=NumberOfMonthsTextBox}"/>
-                </i:EventTrigger>
-            </i:Interaction.Triggers>
-        </xctk:WatermarkTextBox>
-        <TextBlock
-            Text="Choose a holiday country"
-            HorizontalAlignment="Center" 
-            Height="25"
-            VerticalAlignment="Top" 
-            Width="180"
-            Margin="0,280,0,0"
-            Padding="7, 0, 0, 0"
-            />
-        <ListBox 
-            ItemsSource="{Binding CountryList.Countries}"
-            SelectionMode="Extended"
-            HorizontalAlignment="Center" 
-            Height="85" 
-            Margin="0,300,0,0" 
-            VerticalAlignment="Top" 
-            Width="180" 
-            Background="{x:Null}" 
-            BorderBrush="{x:Null}">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <CheckBox 
-                        Style="{StaticResource CustomCheckBoxStyle}"
-                        Content="{Binding Name}" 
-                        IsChecked="{Binding IsChecked, Mode=TwoWay}" 
-                        IsEnabled="{Binding IsEnabled}"
-                        Command="{Binding DataContext.CheckCountryCommand, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" 
-                        CommandParameter="{Binding}"/>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
-        <Button
-            Content="Generate"
-            Command="{Binding GenerateCommand}"
-            HorizontalAlignment="Center"
-            Height="40"
-            Margin="0,420,0,0"
-            VerticalAlignment="Top"
-            Width="114"
-            Style="{StaticResource CustomButtonStyle}"/>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <xctk:WatermarkTextBox
+                Grid.Column="0"
+                x:Name="YearTextBox"
+                Watermark="Enter year"
+                Text="{Binding Year, Mode=TwoWay}"
+                HorizontalAlignment="Center"
+                TextWrapping="Wrap"
+                VerticalAlignment="Top"
+                Width="180"
+                Height="30"
+                VerticalContentAlignment="Center"
+                Margin="0,0,10,0"
+                Padding="3, 5, 0, 5">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="PreviewKeyDown">
+                        <i:InvokeCommandAction Command="{Binding CheckNumericInputCommand}" CommandParameter="{Binding ElementName=YearTextBox}"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </xctk:WatermarkTextBox>
+            <Label x:Name="MonthsLabel"
+                   Grid.Column="1"
+                   Content="Select first month"
+                   Foreground="Gray"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Top"
+                   Padding="4, 7, 0, 0"
+                   Margin="0,0,10,0"
+                   Width="180"
+                   Height="30"
+                   Background="White"
+                   Visibility="{Binding MonthsLabelVisibility, Converter={StaticResource BoolToVis}}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="MouseLeftButtonDown">
+                        <i:InvokeCommandAction Command="{Binding LabelClickedCommand}" CommandParameter="MonthsLabel"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </Label>
+            <ComboBox
+                x:Name="MonthsComboBox"
+                Grid.Column="1"
+                SelectedItem="{Binding FirstMonth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                ItemsSource="{Binding Months}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Width="180"
+                Height="30"
+                VerticalContentAlignment="Center"
+                Margin="0,0,10,0"
+                Padding="7, 5, 0, 5" 
+                Visibility="{Binding MonthsComboBoxVisibility, Converter={StaticResource BoolToVis}}"
+                IsDropDownOpen="{Binding IsMonthsComboBoxOpen}"/>
+            <xctk:WatermarkTextBox
+                x:Name="NumberOfMonthsTextBox"
+                Grid.Column="2"
+                Watermark="Enter number of months"
+                Text="{Binding NumberOfMonths, Mode=TwoWay}"
+                HorizontalAlignment="Center"
+                TextWrapping="Wrap"
+                VerticalAlignment="Top"
+                Width="180"
+                Height="30"
+                Margin="0,0,0,20"
+                VerticalContentAlignment="Center"
+                Padding="3, 5, 0, 5">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="PreviewKeyDown">
+                        <i:InvokeCommandAction Command="{Binding CheckNumericInputCommand}" CommandParameter="{Binding ElementName=NumberOfMonthsTextBox}"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </xctk:WatermarkTextBox>
+        </Grid>
+        <Grid Grid.Row="3">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Expander 
+                x:Name="Expander" 
+                Header="Extra settings" 
+                Grid.Row="0"
+                FontWeight="Bold"
+                Foreground="#007ACC"
+                HorizontalAlignment="Center" 
+                VerticalAlignment="Top" 
+                Padding="0,0,0,10" 
+                Width="560">
+                <StackPanel>
+                    <Grid Width="Auto">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid Grid.Column="0" HorizontalAlignment="Left" Margin="30,0,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock
+                                Text="Select a holiday country:"
+                                VerticalAlignment="Center" 
+                                Padding="10, 0, 0, 5"
+                                Foreground="Black"
+                                FontWeight="Medium"/>
+                            <ListBox 
+                                Grid.Row="1"
+                                ItemsSource="{Binding CountryList.Countries}"
+                                SelectionMode="Extended"
+                                FontWeight="Normal"
+                                HorizontalAlignment="Left" 
+                                VerticalAlignment="Top"
+                                Padding="10,0,0,0"
+                                Background="{x:Null}" 
+                                BorderBrush="{x:Null}">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <CheckBox 
+                                            Style="{StaticResource CustomCheckBoxStyle}"
+                                            Content="{Binding Name}" 
+                                            IsChecked="{Binding IsChecked, Mode=TwoWay}" 
+                                            IsEnabled="{Binding IsEnabled}"
+                                            Command="{Binding DataContext.CheckCountryCommand, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" 
+                                            CommandParameter="{Binding}"/>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Grid>
+                        <Grid Grid.Column="1" HorizontalAlignment="Center">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <TextBlock
+                                    Text="Add milestones:"
+                                    Grid.Row="0"
+                                    HorizontalAlignment="Left" 
+                                    Padding="0, 0, 0, 5"
+                                    Foreground="Black"
+                                    FontWeight="Medium"/>
+                                <xctk:WatermarkTextBox
+                                    Grid.Row="1"
+                                    Watermark="Enter milestone"
+                                    Margin="0,0,0,10"
+                                    FontWeight="Normal"
+                                    TextWrapping="Wrap"
+                                    HorizontalAlignment="Left"
+                                    Width="180">
+                                </xctk:WatermarkTextBox>
+                                <DatePicker
+                                    Grid.Row="2"
+                                    HorizontalAlignment="Left" 
+                                    Text="Enter date"
+                                    Margin="0,0,0,10"
+                                    FontWeight="Normal"/>
+                                <Button
+                                    Grid.Row="3"
+                                    Content="Add"
+                                    Width="45"
+                                    Height="25"
+                                    FontSize="12"
+                                    HorizontalAlignment="Right"
+                                    Style="{StaticResource CustomButtonStyle}"/>
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                </StackPanel>
+            </Expander>
+            <Button
+                Content="Generate"
+                Grid.Row="1"
+                Command="{Binding GenerateCommand}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Width="114"
+                Height="40"
+                Margin="0,20,0,0"
+                Style="{StaticResource CustomButtonStyle}"/>
+        </Grid>
     </Grid>
 </Window>

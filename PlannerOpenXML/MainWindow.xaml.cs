@@ -5,7 +5,6 @@ using PlannerOpenXML.Model;
 using PlannerOpenXML.Services;
 using PlannerOpenXML.ViewModel;
 using System.Windows;
-using System.Windows.Controls;
 
 namespace PlannerOpenXML;
 
