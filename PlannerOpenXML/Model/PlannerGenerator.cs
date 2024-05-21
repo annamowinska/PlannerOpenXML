@@ -18,7 +18,12 @@ public class PlannerGenerator
     #endregion fields
 
     #region constructors
-    public PlannerGenerator(IApiService apiService, HolidayNameService holidayNameService, PlannerStyleService plannerStyleService, string firstCountryCode, string secondCountryCode)
+    public PlannerGenerator(
+        IApiService apiService, 
+        HolidayNameService holidayNameService, 
+        PlannerStyleService plannerStyleService, 
+        string firstCountryCode, 
+        string secondCountryCode)
     {
         m_ApiService = apiService;
         m_HolidayNameService = holidayNameService;
@@ -145,7 +150,6 @@ public class PlannerGenerator
                             dateCell.StyleIndex = 7;
 
                         AppendCellToWorksheet(spreadsheetDocument, worksheetPart, dateCell, (uint)currentRow, (uint)(columnIndex + 1));
-
                         currentRow++;
                     }
 

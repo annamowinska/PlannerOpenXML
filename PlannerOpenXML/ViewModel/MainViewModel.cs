@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using PlannerOpenXML.Model;
 using PlannerOpenXML.Services;
 using System.ComponentModel;
+using System.Data;
 using System.Windows;
 using Xceed.Wpf.Toolkit;
 
@@ -16,6 +17,7 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     private readonly HolidayCacheService m_HolidayCacheService;
     private readonly NotificationService m_NotificationService;
     private readonly ICountryListService m_CountryListService;
+    private readonly MilestoneService m_MilestoneService;
     #endregion fields
 
     #region properties
@@ -24,6 +26,7 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     /// </summary>
     public List<int> Months { get; } = Enumerable.Range(1, 12).ToList();
     public SelectableCountiesList CountryList { get; }
+    private List<Milestone> m_Milestones = new List<Milestone>();
 
     [ObservableProperty]
     private int? m_Year;
@@ -48,6 +51,12 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
 
     [ObservableProperty]
     private string? m_SecondCountryHolidays;
+
+    [ObservableProperty]
+    private string? m_MilestoneText;
+
+    [ObservableProperty]
+    private DateTime? m_MilestoneDate;
 
     #endregion properties
 
@@ -166,6 +175,23 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
             };
         }
     }
+
+    [RelayCommand]
+    private void AddMilestone()
+    {
+        if (MilestoneDate.HasValue && !string.IsNullOrWhiteSpace(MilestoneText))
+        {
+            var milestone = new Milestone
+            {
+                MilestoneText = MilestoneText,
+                MilestoneDate = MilestoneDate.Value
+            };
+            m_Milestones.Add(milestone);
+            m_MilestoneService.SaveMilestonesToFile(m_Milestones);
+            MilestoneText = null;
+            MilestoneDate = null;
+        }
+    }
     #endregion commands
 
     #region constructors
@@ -185,6 +211,7 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
         m_CountryListService = countryListService;
 
         CountryList = new SelectableCountiesList();
+        m_MilestoneService = new MilestoneService();
     }
     #endregion constructors
 }

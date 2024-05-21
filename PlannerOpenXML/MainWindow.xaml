@@ -256,20 +256,26 @@
                                     Foreground="Black"
                                     FontWeight="Medium"/>
                                 <xctk:WatermarkTextBox
+                                    x:Name="MilestoneTextBox"
                                     Grid.Row="1"
                                     Watermark="Enter milestone"
                                     Margin="0,0,0,10"
                                     FontWeight="Normal"
                                     TextWrapping="Wrap"
                                     HorizontalAlignment="Left"
-                                    Width="180">
+                                    Width="180"
+                                    Text="{Binding MilestoneText, UpdateSourceTrigger=PropertyChanged}">
                                 </xctk:WatermarkTextBox>
                                 <DatePicker
+                                    x:Name="MilestoneDatePicker"
                                     Grid.Row="2"
-                                    HorizontalAlignment="Left" 
+                                    HorizontalAlignment="Center" 
                                     Text="Enter date"
                                     Margin="0,0,0,10"
-                                    FontWeight="Normal"/>
+                                    FontWeight="Normal" 
+                                    Width="180" 
+                                    Background="White"
+                                    SelectedDate="{Binding MilestoneDate, UpdateSourceTrigger=PropertyChanged}"/>
                                 <Button
                                     Grid.Row="3"
                                     Content="Add"
@@ -277,7 +283,8 @@
                                     Height="25"
                                     FontSize="12"
                                     HorizontalAlignment="Right"
-                                    Style="{StaticResource CustomButtonStyle}"/>
+                                    Style="{StaticResource CustomButtonStyle}"
+                                    Command="{Binding AddMilestoneCommand}"/>
                             </Grid>
                         </Grid>
                     </Grid>
