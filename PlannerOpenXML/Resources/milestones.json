@@ -1,10 +1,14 @@
 [
   {
-    "MilestoneText": "anka",
-    "MilestoneDate": "2024-05-03T00:00:00"
+    "MilestoneText": "First Milestone",
+    "MilestoneDate": "2024-05-01"
   },
   {
-    "MilestoneText": "odda\u0107 projekt",
-    "MilestoneDate": "2024-05-24T00:00:00"
+    "MilestoneText": "Second Milestone",
+    "MilestoneDate": "2024-05-11"
+  },
+  {
+    "MilestoneText": "Third Milestone",
+    "MilestoneDate": "2024-05-13"
   }
 ]

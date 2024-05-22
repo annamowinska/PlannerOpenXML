@@ -13,7 +13,7 @@ public class HolidayCacheService
     #endregion fields
 
     #region constructor
-    public HolidayCacheService(IApiService apiService, string filePath = "holiday.json")
+    public HolidayCacheService(IApiService apiService, string filePath = "../../../Resources/holiday.json")
     {
         m_FilePath = filePath;
         m_ApiService = apiService;

@@ -12,24 +12,30 @@ public class PlannerGenerator
     #region fields
     private readonly IApiService m_ApiService;
     private readonly HolidayNameService m_HolidayNameService;
+    private readonly MilestoneNameService m_MilestoneNameService;
     private readonly PlannerStyleService m_PlannerStyleService;
     private readonly string m_FirstCountryCode;
     private readonly string m_SecondCountryCode;
+    private List<Milestone> m_MilestoneList;
     #endregion fields
 
     #region constructors
     public PlannerGenerator(
         IApiService apiService, 
-        HolidayNameService holidayNameService, 
-        PlannerStyleService plannerStyleService, 
+        HolidayNameService holidayNameService,
+        MilestoneNameService milestoneNameService,
+        PlannerStyleService plannerStyleService,
         string firstCountryCode, 
-        string secondCountryCode)
+        string secondCountryCode, 
+        List<Milestone> milestones)
     {
         m_ApiService = apiService;
         m_HolidayNameService = holidayNameService;
+        m_MilestoneNameService = milestoneNameService;
         m_PlannerStyleService = plannerStyleService;
         m_FirstCountryCode = firstCountryCode;
         m_SecondCountryCode = secondCountryCode;
+        m_MilestoneList = milestones;
     }
     #endregion constructors
 
@@ -48,6 +54,9 @@ public class PlannerGenerator
         {
             List<Holiday> firstCountryHolidaysList = new List<Holiday>();
             List<Holiday> secondCountryHolidaysList = new List<Holiday>();
+
+            var milestoneListReader = new MilestoneListReader();
+            List<Milestone> milestones = milestoneListReader.LoadMilestones();
 
             using (var spreadsheetDocument = SpreadsheetDocument.Create(path, SpreadsheetDocumentType.Workbook))
             {
@@ -101,6 +110,7 @@ public class PlannerGenerator
 
                         string firstCountryHolidayName = m_HolidayNameService.GetHolidayName(currentDate, firstCountryHolidaysList);
                         string secondCountryHolidayName = m_HolidayNameService.GetHolidayName(currentDate, secondCountryHolidaysList);
+                        string milestoneName = m_MilestoneNameService.GetMilestoneName(currentDate, milestones);
 
                         DateOnly nextMonth = date.AddMonths(1);
                         bool isLastDayOfMonth = currentDate.AddDays(1).Month != nextMonth.Month;
@@ -110,13 +120,16 @@ public class PlannerGenerator
                             StyleIndex = 2
                         };
 
+                        if (!string.IsNullOrEmpty(milestoneName))
+                            cellValue += $" MS: {milestoneName}";
+
                         if (!string.IsNullOrEmpty(firstCountryHolidayName) && !string.IsNullOrEmpty(secondCountryHolidayName))
                             cellValue += $" {firstCountryCode}&{secondCountryCode}: {firstCountryHolidayName}";
                         else if (!string.IsNullOrEmpty(firstCountryHolidayName))
                             cellValue += $" {firstCountryCode}: {firstCountryHolidayName}";
                         else if (!string.IsNullOrEmpty(secondCountryHolidayName))
                             cellValue += $" {secondCountryCode}: {secondCountryHolidayName}";
-
+                        
                         dateCell = new Cell(new CellValue(cellValue))
                         {
                             DataType = CellValues.String,
@@ -150,6 +163,7 @@ public class PlannerGenerator
                             dateCell.StyleIndex = 7;
 
                         AppendCellToWorksheet(spreadsheetDocument, worksheetPart, dateCell, (uint)currentRow, (uint)(columnIndex + 1));
+                        SetRowHeight(worksheetPart, 30);
                         currentRow++;
                     }
 
@@ -177,7 +191,7 @@ public class PlannerGenerator
         Row row = sheetData.Elements<Row>().FirstOrDefault(r => r.RowIndex == rowIndex);
         if (row == null)
         {
-            row = new Row() { RowIndex = rowIndex };
+            row = new Row() { RowIndex = rowIndex};
             sheetData.Append(row);
         }
         else
@@ -227,6 +241,17 @@ public class PlannerGenerator
         };
 
         columns.Append(column);
+    }
+
+    private static void SetRowHeight(WorksheetPart worksheetPart, double height)
+    {
+        SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
+
+        foreach (Row row in sheetData.Elements<Row>())
+        {
+            row.Height = new DoubleValue(height);
+            row.CustomHeight = true;
+        }
     }
 
     internal async Task GeneratePlanner(DateOnly from, DateOnly to, List<Holiday> allHolidays, string path)

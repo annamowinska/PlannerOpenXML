@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using PlannerOpenXML.Model;
 using PlannerOpenXML.Services;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Windows;
@@ -18,6 +19,7 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     private readonly NotificationService m_NotificationService;
     private readonly ICountryListService m_CountryListService;
     private readonly MilestoneService m_MilestoneService;
+    private List<Milestone> m_MilestoneList = new List<Milestone>();
     #endregion fields
 
     #region properties
@@ -26,7 +28,7 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     /// </summary>
     public List<int> Months { get; } = Enumerable.Range(1, 12).ToList();
     public SelectableCountiesList CountryList { get; }
-    private List<Milestone> m_Milestones = new List<Milestone>();
+    private List<Milestone> MilestoneList = new List<Milestone>();
 
     [ObservableProperty]
     private int? m_Year;
@@ -177,17 +179,17 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     }
 
     [RelayCommand]
-    private void AddMilestone()
+    private void AddMilestone(Milestone newMilestone)
     {
         if (MilestoneDate.HasValue && !string.IsNullOrWhiteSpace(MilestoneText))
         {
             var milestone = new Milestone
             {
                 MilestoneText = MilestoneText,
-                MilestoneDate = MilestoneDate.Value
+                MilestoneDate = DateOnly.FromDateTime(MilestoneDate.Value),
             };
-            m_Milestones.Add(milestone);
-            m_MilestoneService.SaveMilestonesToFile(m_Milestones);
+            MilestoneList.Add(milestone);
+            m_MilestoneService.SaveMilestonesToFile(MilestoneList);
             MilestoneText = null;
             MilestoneDate = null;
         }
@@ -197,7 +199,8 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     #region constructors
     public MainViewModel(
         IApiService apiService, 
-        HolidayNameService holidayNameService, 
+        HolidayNameService holidayNameService,
+        MilestoneNameService milestoneNameService,
         PlannerStyleService plannerStyleService, 
         HolidayCacheService holidayCacheService, 
         NotificationService notificationService, 
@@ -205,11 +208,10 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
         ICountryListService countryListService)
     {
         m_DialogService = dialogService;
-        m_PlannerGenerator = new PlannerGenerator(apiService, holidayNameService, plannerStyleService, "", "");
+        m_PlannerGenerator = new PlannerGenerator(apiService, holidayNameService, milestoneNameService, plannerStyleService, "", "", m_MilestoneList);
         m_HolidayCacheService = holidayCacheService;
         m_NotificationService = notificationService;
         m_CountryListService = countryListService;
-
         CountryList = new SelectableCountiesList();
         m_MilestoneService = new MilestoneService();
     }

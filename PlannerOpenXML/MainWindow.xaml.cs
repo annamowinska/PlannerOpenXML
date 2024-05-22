@@ -30,6 +30,7 @@ public partial class MainWindow : Window
         services.AddTransient<IHolidayConverter, NagerHolidayConverter>();
         services.AddTransient<IApiService, ApiNagerService>();
         services.AddTransient<HolidayNameService>();
+        services.AddTransient<MilestoneNameService>();
         services.AddTransient<HolidayCacheService>();
         services.AddTransient<INotificationManager, NotificationManager>();
         services.AddSingleton<NotificationService>();

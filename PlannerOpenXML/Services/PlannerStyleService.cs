@@ -9,16 +9,21 @@ public class PlannerStyleService
     {
         var workbookstylesheet = new Stylesheet();
 
-        var font0 = new Font();
+        var font0 = new Font
+        {
+            FontSize = new FontSize() { Val = 17 }
+        };
 
-        var font1 = new Font();
-        var bold = new Bold();
-        font1.Append(bold);
-
+        var font1 = new Font
+        {
+            Bold = new Bold(),
+            FontSize = new FontSize() { Val = 20 }
+        };
+        
         var font2 = new Font
         {
             Bold = new Bold(),
-            Color = new Color() { Rgb = new HexBinaryValue() { Value = "555555" } }
+            Color = new Color() { Rgb = new HexBinaryValue() { Value = "555555" } },
         };
 
         var font3 = new Font
@@ -30,19 +35,22 @@ public class PlannerStyleService
         var font4 = new Font
         {
             Bold = new Bold(),
-            Color = new Color() { Rgb = new HexBinaryValue() { Value = "00008B" } }
+            Color = new Color() { Rgb = new HexBinaryValue() { Value = "00008B" } },
+            FontSize = new FontSize() { Val = 12 }
         };
 
         var font5 = new Font
         {
             Bold = new Bold(),
-            Color = new Color() { Rgb = new HexBinaryValue() { Value = "006400" } }
+            Color = new Color() { Rgb = new HexBinaryValue() { Value = "006400" } },
+            FontSize = new FontSize() { Val = 12 }
         };
 
         var font6 = new Font
         {
             Bold = new Bold(),
-            Color = new Color() { Rgb = new HexBinaryValue() { Value = "C71585" } }
+            Color = new Color() { Rgb = new HexBinaryValue() { Value = "C71585" } },
+            FontSize = new FontSize() { Val = 12 }
         };
 
         var fonts = new Fonts(font0, font1, font2, font3, font4, font5, font6);
@@ -116,6 +124,7 @@ public class PlannerStyleService
         CellFormat defaultStyle = new CellFormat()
         {
             FormatId = 0,
+            FontId = 0,
             FillId = 0,
             BorderId = 0
         };
