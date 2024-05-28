@@ -17,7 +17,7 @@ public class NotificationService
     #endregion constructor
 
     #region methods
-    public void ShowNotification()
+    public void ShowNotificationErrorInput()
     {
         var content = new NotificationContent()
         {
@@ -27,6 +27,21 @@ public class NotificationService
             TrimType = NotificationTextTrimType.NoTrim,
             CloseOnClick = true,
             Background = new SolidColorBrush(Colors.Red),
+            Foreground = new SolidColorBrush(Colors.White),
+        };
+        m_NotificationManager.Show(content);
+    }
+
+    public void ShowNotificationAddedMilestone(string milestoneText, string milestoneDate)
+    {
+        var content = new NotificationContent()
+        {
+            Title = "Success",
+            Message = $"Milestone '{milestoneText}' added on {milestoneDate}.",
+            Type = NotificationType.Information,
+            TrimType = NotificationTextTrimType.NoTrim,
+            CloseOnClick = true,
+            Background = new SolidColorBrush(Colors.Green),
             Foreground = new SolidColorBrush(Colors.White),
         };
         m_NotificationManager.Show(content);

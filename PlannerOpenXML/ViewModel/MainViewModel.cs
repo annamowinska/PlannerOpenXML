@@ -172,7 +172,7 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
                 if (!char.IsDigit(e.Text, 0))
                 {
                     e.Handled = true;
-                    m_NotificationService.ShowNotification();
+                    m_NotificationService.ShowNotificationErrorInput();
                 }
             };
         }
@@ -192,6 +192,7 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
             m_MilestoneService.SaveMilestonesToFile(MilestoneList);
             MilestoneText = null;
             MilestoneDate = null;
+            m_NotificationService.ShowNotificationAddedMilestone(milestone.MilestoneText, milestone.MilestoneDate.ToShortDateString());
         }
     }
     #endregion commands
