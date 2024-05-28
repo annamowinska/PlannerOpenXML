@@ -1,4 +1,4 @@
-﻿using DocumentFormat.OpenXml;
+﻿﻿using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using PlannerOpenXML.Services;
@@ -67,9 +67,9 @@ public class PlannerGenerator
                 worksheetPart.Worksheet = new Worksheet(new SheetData());
 
                 Stylesheet workbookstylesheet = m_PlannerStyleService.GenerateStylesheet();
-
                 WorkbookStylesPart stylesheet = workbookPart.AddNewPart<WorkbookStylesPart>();
                 stylesheet.Stylesheet = workbookstylesheet;
+                stylesheet.Stylesheet.Save();
 
                 var sheets = spreadsheetDocument.WorkbookPart.Workbook.AppendChild(new Sheets());
                 var sheet = new Sheet() { Id = spreadsheetDocument.WorkbookPart.GetIdOfPart(worksheetPart), SheetId = 1, Name = "Planner" };
@@ -88,8 +88,10 @@ public class PlannerGenerator
                         secondCountryHolidaysList.Add(holiday);
                     }
                 }
-                
-                var columnIndex = 0;
+
+                var columnIndex = 1;
+                var mergeCells = new MergeCells();
+
                 for (DateOnly date = from; date <= to; date = date.AddMonths(1))
                 {
                     string monthName = date.ToString("MMMM yyyy", culture);
@@ -100,13 +102,25 @@ public class PlannerGenerator
                         StyleIndex = 1
                     };
 
-                    AppendCellToWorksheet(spreadsheetDocument, worksheetPart, monthYearCell, 1, (uint)(columnIndex + 1));
+                    SpreadsheetService.AppendCellToWorksheet(worksheetPart, monthYearCell, 1, (uint)columnIndex);
+
+                    Cell emptyCell = new Cell(new CellValue(string.Empty))
+                    {
+                        DataType = CellValues.String,
+                        StyleIndex = 1
+                    };
+                    SpreadsheetService.AppendCellToWorksheet(worksheetPart, emptyCell, 1, (uint)(columnIndex + 1));
+
+                    string cellReference1 = SpreadsheetService.GetColumnName((uint)columnIndex) + "1";
+                    string cellReference2 = SpreadsheetService.GetColumnName((uint)(columnIndex + 1)) + "1";
+                    MergeCell mergeCell = new MergeCell() { Reference = new StringValue($"{cellReference1}:{cellReference2}") };
+                    mergeCells.Append(mergeCell);
 
                     var currentRow = 2;
                     for (DateOnly currentDate = date; currentDate.Month == date.Month; currentDate = currentDate.AddDays(1))
                     {
                         string dayOfWeek = currentDate.ToString("ddd", culture);
-                        string cellValue = $"{currentDate.Day} {dayOfWeek}";
+                        string day = currentDate.Day.ToString();
 
                         string firstCountryHolidayName = m_HolidayNameService.GetHolidayName(currentDate, firstCountryHolidaysList);
                         string secondCountryHolidayName = m_HolidayNameService.GetHolidayName(currentDate, secondCountryHolidaysList);
@@ -115,148 +129,60 @@ public class PlannerGenerator
                         DateOnly nextMonth = date.AddMonths(1);
                         bool isLastDayOfMonth = currentDate.AddDays(1).Month != nextMonth.Month;
 
-                        Cell dateCell = new Cell(new CellValue(cellValue))
-                        {
-                            StyleIndex = 2
-                        };
+                        string milestoneText = "";
+                        string holidayText = "";
 
                         if (!string.IsNullOrEmpty(milestoneName))
-                            cellValue += $" MS: {milestoneName}";
+                            milestoneText += $" MS: {milestoneName}";
 
                         if (!string.IsNullOrEmpty(firstCountryHolidayName) && !string.IsNullOrEmpty(secondCountryHolidayName))
-                            cellValue += $" {firstCountryCode}&{secondCountryCode}: {firstCountryHolidayName}";
+                            holidayText += $" {firstCountryCode}&{secondCountryCode}: {firstCountryHolidayName}";
                         else if (!string.IsNullOrEmpty(firstCountryHolidayName))
-                            cellValue += $" {firstCountryCode}: {firstCountryHolidayName}";
+                            holidayText += $" {firstCountryCode}: {firstCountryHolidayName}";
                         else if (!string.IsNullOrEmpty(secondCountryHolidayName))
-                            cellValue += $" {secondCountryCode}: {secondCountryHolidayName}";
-                        
-                        dateCell = new Cell(new CellValue(cellValue))
+                            holidayText += $" {secondCountryCode}: {secondCountryHolidayName}";
+
+                        Cell dayCell = new Cell(new CellValue($"{day} {dayOfWeek}"))
                         {
                             DataType = CellValues.String,
-                            StyleIndex = 2
+                            StyleIndex = dayOfWeek == "Sa" ? 3u : dayOfWeek == "So" ? 4u : 2u
                         };
 
-                        if (!isLastDayOfMonth)
-                        {
-                            if (currentDate.DayOfWeek == DayOfWeek.Saturday)
-                                dateCell.StyleIndex = 9;
-                            else if (currentDate.DayOfWeek == DayOfWeek.Sunday)
-                                dateCell.StyleIndex = 10;
-                            else if (cellValue.Contains($" {firstCountryCode}:"))
-                                dateCell.StyleIndex = 11;
-                            else if (cellValue.Contains($" {secondCountryCode}:"))
-                                dateCell.StyleIndex = 12;
-                            else if (cellValue.Contains($" {firstCountryCode}&{secondCountryCode}:"))
-                                dateCell.StyleIndex = 13;
-                            else
-                                dateCell.StyleIndex = 8;
-                        }
-                        else if (currentDate.DayOfWeek == DayOfWeek.Saturday)
-                            dateCell.StyleIndex = 3;
-                        else if (currentDate.DayOfWeek == DayOfWeek.Sunday)
-                            dateCell.StyleIndex = 4;
-                        else if (cellValue.Contains($" {firstCountryCode}:"))
-                            dateCell.StyleIndex = 5;
-                        else if (cellValue.Contains($" {secondCountryCode}:"))
-                            dateCell.StyleIndex = 6;
-                        else if (cellValue.Contains($" {firstCountryCode}&{secondCountryCode}:"))
-                            dateCell.StyleIndex = 7;
+                        Cell additionalInfoCell = new Cell();
+                        InlineString inlineString = new InlineString();
+                        Text text = new Text($"{milestoneText}\n{holidayText}");
 
-                        AppendCellToWorksheet(spreadsheetDocument, worksheetPart, dateCell, (uint)currentRow, (uint)(columnIndex + 1));
-                        SetRowHeight(worksheetPart, 30);
+                        inlineString.AppendChild(text);
+
+                        additionalInfoCell.InlineString = inlineString;
+                        additionalInfoCell.DataType = CellValues.InlineString;
+
+                        additionalInfoCell.StyleIndex = 5;
+
+                        SpreadsheetService.AppendCellToWorksheet(worksheetPart, dayCell, (uint)currentRow, (uint)columnIndex);
+                        SpreadsheetService.AppendCellToWorksheet(worksheetPart, additionalInfoCell, (uint)currentRow, (uint)(columnIndex + 1));
+
+                        SpreadsheetService.SetRowHeight(worksheetPart, 70);
                         currentRow++;
                     }
 
-                    SetColumnWidth(worksheetPart, (uint)(columnIndex + 1), 35);
-                    columnIndex++;
+                    SpreadsheetService.SetColumnWidth(worksheetPart, (uint)columnIndex, 6);
+                    SpreadsheetService.SetColumnWidth(worksheetPart, (uint)(columnIndex + 1), 18);
+
+                    columnIndex += 2;
                 }
+
+                worksheetPart.Worksheet.InsertAfter(mergeCells, worksheetPart.Worksheet.Elements<SheetData>().First());
 
                 workbookPart.Workbook.Save();
             }
 
             MessageBox.Show($"Planner has been generated and saved as: {path}", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
         }
-
         catch (Exception ex)
         {
             MessageBox.Show($"An error occurred while generating the planner: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
     #endregion methods
-
-    #region private methods
-    private static void AppendCellToWorksheet(SpreadsheetDocument spreadsheetDocument, WorksheetPart worksheetPart, Cell cell, uint rowIndex, uint columnIndex)
-    {
-        SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
-        Row row = sheetData.Elements<Row>().FirstOrDefault(r => r.RowIndex == rowIndex);
-        if (row == null)
-        {
-            row = new Row() { RowIndex = rowIndex};
-            sheetData.Append(row);
-        }
-        else
-        {
-            Cell existingCell = row.Elements<Cell>().FirstOrDefault(c => c.CellReference == $"{GetColumnName(columnIndex)}{rowIndex}");
-
-            if (existingCell != null)
-            {
-                row.RemoveChild(existingCell);
-            }
-        }
-        cell.CellReference = $"{GetColumnName(columnIndex)}{rowIndex}";
-        row.Append(cell);
-    }
-
-    private static string GetColumnName(uint columnIndex)
-    {
-        uint dividend = columnIndex;
-        string columnName = System.String.Empty;
-        uint modifier;
-
-        while (dividend > 0)
-        {
-            modifier = (dividend - 1) % 26;
-            columnName = Convert.ToChar(65 + modifier).ToString() + columnName;
-            dividend = (uint)((dividend - modifier) / 26);
-        }
-
-        return columnName;
-    }
-
-    private static void SetColumnWidth(WorksheetPart worksheetPart, uint columnIndex, double width)
-    {
-        var columns = worksheetPart.Worksheet.GetFirstChild<Columns>();
-        if (columns == null)
-        {
-            columns = new Columns();
-            worksheetPart.Worksheet.InsertAt(columns, 0);
-        }
-
-        var column = new Column()
-        {
-            Min = columnIndex,
-            Max = columnIndex,
-            Width = width,
-            CustomWidth = true
-        };
-
-        columns.Append(column);
-    }
-
-    private static void SetRowHeight(WorksheetPart worksheetPart, double height)
-    {
-        SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
-
-        foreach (Row row in sheetData.Elements<Row>())
-        {
-            row.Height = new DoubleValue(height);
-            row.CustomHeight = true;
-        }
-    }
-
-    internal async Task GeneratePlanner(DateOnly from, DateOnly to, List<Holiday> allHolidays, string path)
-    {
-        throw new NotImplementedException();
-    }
-    #endregion private methods
 }

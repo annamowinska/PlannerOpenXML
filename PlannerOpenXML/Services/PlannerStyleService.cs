@@ -9,234 +9,188 @@ public class PlannerStyleService
     {
         var workbookstylesheet = new Stylesheet();
 
-        var font0 = new Font
+        var defaultFont = new Font
         {
-            FontSize = new FontSize() { Val = 17 }
+            FontSize = new FontSize() { Val = 20 }
         };
 
-        var font1 = new Font
+        var monthFont = new Font
         {
             Bold = new Bold(),
+            FontSize = new FontSize() { Val = 30 },
+            Color = new Color() { Rgb = new HexBinaryValue() { Value = "FFFFFF" } },
+        };
+
+        var dayFont = new Font
+        {
+            Bold = new Bold(),
+            Color = new Color() { Rgb = new HexBinaryValue() { Value = "000099" } },
             FontSize = new FontSize() { Val = 20 }
         };
         
-        var font2 = new Font
+        var saturdayFont = new Font
         {
             Bold = new Bold(),
             Color = new Color() { Rgb = new HexBinaryValue() { Value = "555555" } },
+            FontSize = new FontSize() { Val = 20 }
         };
 
-        var font3 = new Font
+        var sundayFont = new Font
         {
             Bold = new Bold(),
-            Color = new Color() { Rgb = new HexBinaryValue() { Value = "FF0000" } }
+            Color = new Color() { Rgb = new HexBinaryValue() { Value = "FF0000" } },
+            FontSize = new FontSize() { Val = 20 }
         };
 
-        var font4 = new Font
+        var holidayAndMilestoneFont = new Font
         {
             Bold = new Bold(),
-            Color = new Color() { Rgb = new HexBinaryValue() { Value = "00008B" } },
-            FontSize = new FontSize() { Val = 12 }
+            Color = new Color() { Rgb = new HexBinaryValue() { Value = "009900" } },
+            FontSize = new FontSize() { Val = 10 }
         };
 
-        var font5 = new Font
-        {
-            Bold = new Bold(),
-            Color = new Color() { Rgb = new HexBinaryValue() { Value = "006400" } },
-            FontSize = new FontSize() { Val = 12 }
-        };
+        Fonts fonts = new Fonts(defaultFont, monthFont, dayFont, saturdayFont, sundayFont, holidayAndMilestoneFont);
 
-        var font6 = new Font
-        {
-            Bold = new Bold(),
-            Color = new Color() { Rgb = new HexBinaryValue() { Value = "C71585" } },
-            FontSize = new FontSize() { Val = 12 }
-        };
+        Fill defaultFill = new Fill();
+        PatternFill defaultPaternFill = new PatternFill() { PatternType = PatternValues.Solid };
+        ForegroundColor defaultForegroundColor = new ForegroundColor() { Rgb = "000000" };
+        defaultPaternFill.Append(defaultForegroundColor);
+        defaultFill.Append(defaultPaternFill);
 
-        var fonts = new Fonts(font0, font1, font2, font3, font4, font5, font6);
+        Fill sheetFill = new Fill();
+        PatternFill sheetPatternFill = new PatternFill() { PatternType = PatternValues.Solid };
+        ForegroundColor sheetForegroundColor = new ForegroundColor() { Rgb = "FFFFFF" };
+        sheetPatternFill.Append(sheetForegroundColor);
+        sheetFill.Append(sheetPatternFill);
+        
+        Fill monthFill = new Fill();
+        PatternFill monthPatternFill = new PatternFill() { PatternType = PatternValues.Solid };
+        ForegroundColor monthForegroundColor = new ForegroundColor() { Rgb = "000099" };
+        monthPatternFill.Append(monthForegroundColor);
+        monthFill.Append(monthPatternFill);
 
-        Fill fill0 = new Fill();
+        Fill dayFill = new Fill();
+        PatternFill dayPatternFill = new PatternFill() { PatternType = PatternValues.Solid };
+        ForegroundColor dayForegroundColor = new ForegroundColor() { Rgb = "99CCFF" };
+        dayPatternFill.Append(dayForegroundColor);
+        dayFill.Append(dayPatternFill);
 
-        Fill fill1 = new Fill();
-        PatternFill patternFill1 = new PatternFill() { PatternType = PatternValues.Solid };
-        ForegroundColor foregroundColor1 = new ForegroundColor() { Rgb = "FFFFFF" };
-        patternFill1.Append(foregroundColor1);
-        fill1.Append(patternFill1);
+        Fill saturdayFill = new Fill();
+        PatternFill saturdayPatternFill = new PatternFill() { PatternType = PatternValues.Solid };
+        ForegroundColor saturdayForegroundColor = new ForegroundColor() { Rgb = "C0C0C0" };
+        saturdayPatternFill.Append(saturdayForegroundColor);
+        saturdayFill.Append(saturdayPatternFill);
 
-        Fill fill2 = new Fill();
-        PatternFill patternFill2 = new PatternFill() { PatternType = PatternValues.Solid };
-        ForegroundColor foregroundColor2 = new ForegroundColor() { Rgb = "DCDCDC" };
-        patternFill2.Append(foregroundColor2);
-        fill2.Append(patternFill2);
+        Fill sundayFill = new Fill();
+        PatternFill sundayPatternFill = new PatternFill() { PatternType = PatternValues.Solid };
+        ForegroundColor sundayForegroundColor = new ForegroundColor() { Rgb = "F68072" };
+        sundayPatternFill.Append(sundayForegroundColor);
+        sundayFill.Append(sundayPatternFill);
 
-        Fill fill3 = new Fill();
-        PatternFill patternFill3 = new PatternFill() { PatternType = PatternValues.Solid };
-        ForegroundColor foregroundColor3 = new ForegroundColor() { Rgb = "F68072" };
-        patternFill3.Append(foregroundColor3);
-        fill3.Append(patternFill3);
+        Fills fills = new Fills(defaultFill, sheetFill, monthFill, dayFill, saturdayFill, sundayFill);
 
-        Fill fill4 = new Fill();
-        PatternFill patternFill4 = new PatternFill() { PatternType = PatternValues.Solid };
-        ForegroundColor foregroundColor4 = new ForegroundColor() { Rgb = "87CEFA" };
-        patternFill4.Append(foregroundColor4);
-        fill4.Append(patternFill4);
-
-        Fill fill5 = new Fill();
-        PatternFill patternFill5 = new PatternFill() { PatternType = PatternValues.Solid };
-        ForegroundColor foregroundColor5 = new ForegroundColor() { Rgb = "9bff66" };
-        patternFill5.Append(foregroundColor5);
-        fill5.Append(patternFill5);
-
-        Fill fill6 = new Fill();
-        PatternFill patternFill6 = new PatternFill() { PatternType = PatternValues.Solid };
-        ForegroundColor foregroundColor6 = new ForegroundColor() { Rgb = "FFC0CB" };
-        patternFill6.Append(foregroundColor6);
-        fill6.Append(patternFill6);
-
-        Fills fills = new Fills(fill0, fill1, fill2, fill3, fill4, fill5, fill6);
-
-        Border border0 = new(new LeftBorder(),
+        Border defaultBorder = new(new LeftBorder(),
                                     new RightBorder(),
                                     new TopBorder(),
                                     new BottomBorder());
 
-        Border border1 = new Border(new LeftBorder() { Style = BorderStyleValues.Thick },
-                                    new RightBorder() { Style = BorderStyleValues.Thick },
-                                    new TopBorder() { Style = BorderStyleValues.Thick },
-                                    new BottomBorder() { Style = BorderStyleValues.Thick });
+        Border monthAndDayBorder = new Border(new LeftBorder() { Style = BorderStyleValues.Thick, Color = new Color() { Rgb = "FFFFFF" } },
+                                    new RightBorder() { Style = BorderStyleValues.Thick, Color = new Color() { Rgb = "FFFFFF" } },
+                                    new TopBorder() { Style = BorderStyleValues.Thick, Color = new Color() { Rgb = "FFFFFF" } },
+                                    new BottomBorder() { Style = BorderStyleValues.Thick, Color = new Color() { Rgb = "FFFFFF" } });
 
-        Border border2 = new Border(new LeftBorder() { Style = BorderStyleValues.Thick },
-                                    new RightBorder() { Style = BorderStyleValues.Thick },
-                                    new TopBorder() { Style = BorderStyleValues.Thin },
-                                    new BottomBorder() { Style = BorderStyleValues.Thin });
+        Border holidayAndMilestoneBorder = new Border(new LeftBorder() { Style = BorderStyleValues.Thick, Color = new Color() { Rgb = "FFFFFF" } },
+                                    new RightBorder() { Style = BorderStyleValues.Thick, Color = new Color() { Rgb = "FFFFFF" } },
+                                    new TopBorder() { Style = BorderStyleValues.Thin, Color = new Color() { Rgb = "FFFFFF" } },
+                                    new BottomBorder() { Style = BorderStyleValues.Thin, Color = new Color() { Rgb = "000000" } });
 
-        Border border3 = new Border(new LeftBorder() { Style = BorderStyleValues.Thick },
-                                    new RightBorder() { Style = BorderStyleValues.Thick },
-                                    new TopBorder() { Style = BorderStyleValues.Thin },
-                                    new BottomBorder() { Style = BorderStyleValues.Thick });
-
-        Borders borders = new Borders();
-        borders.Append(border0);
-        borders.Append(border1);
-        borders.Append(border2);
-        borders.Append(border3);
+        Borders borders = new Borders(defaultBorder, monthAndDayBorder, holidayAndMilestoneBorder);
 
         CellFormat defaultStyle = new CellFormat()
         {
-            FormatId = 0,
             FontId = 0,
             FillId = 0,
-            BorderId = 0
+            BorderId = 0,
+            Alignment = new Alignment()
+            {
+                WrapText = true,
+                Horizontal = HorizontalAlignmentValues.Left,
+                Vertical = VerticalAlignmentValues.Center
+            }
         };
 
-        Alignment alignment = new Alignment()
-        {
-            Horizontal = HorizontalAlignmentValues.Center,
-            Vertical = VerticalAlignmentValues.Center
-        };
-
-        CellFormat nameOfMonthStyle = new CellFormat(alignment)
+        CellFormat nameOfMonthStyle = new CellFormat()
         {
             FontId = 1,
-            BorderId = 1
+            FillId = 2,
+            BorderId = 1,
+            Alignment = new Alignment()
+            {
+                WrapText = true,
+                Horizontal = HorizontalAlignmentValues.Center,
+                Vertical = VerticalAlignmentValues.Center
+            }
         };
 
-        CellFormat borderStyle = new CellFormat()
+        CellFormat dayStyle = new CellFormat()
         {
-            BorderId = 2
+            FontId = 2,
+            FillId = 3,
+            BorderId = 1,
+            Alignment = new Alignment()
+            {
+                WrapText = true,
+                Horizontal = HorizontalAlignmentValues.Left,
+                Vertical = VerticalAlignmentValues.Center
+            }
         };
 
         CellFormat saturdayStyle = new CellFormat()
         {
-            BorderId = 2,
-            FontId = 2,
-            FillId = 2,
+            FontId = 3,
+            FillId = 4,
+            BorderId = 1,
+            Alignment = new Alignment()
+            {
+                WrapText = true,
+                Horizontal = HorizontalAlignmentValues.Left,
+                Vertical = VerticalAlignmentValues.Center
+            }
         };
 
         CellFormat sundayStyle = new CellFormat()
         {
-            BorderId = 2,
-            FontId = 3,
-            FillId = 3,
-        };
-
-        CellFormat germanHolidayStyle = new CellFormat()
-        {
-            BorderId = 2,
             FontId = 4,
-            FillId = 4,
+            FillId = 5,
+            BorderId = 1,
+            Alignment = new Alignment()
+            {
+                WrapText = true,
+                Horizontal = HorizontalAlignmentValues.Left,
+                Vertical = VerticalAlignmentValues.Center
+            }
         };
 
-        CellFormat hungarianHolidayStyle = new CellFormat()
+        CellFormat holidayAndMilestoneStyle = new CellFormat()
         {
-            BorderId = 2,
             FontId = 5,
-            FillId = 5
-        };
-
-        CellFormat germanAndHungarianHolidayStyle = new CellFormat()
-        {
             BorderId = 2,
-            FontId = 6,
-            FillId = 6
-        };
-
-        CellFormat lastDayOfMonthStyle = new CellFormat()
-        {
-            BorderId = 3
-        };
-
-        CellFormat lastDayOfMonthAndSaturdayStyle = new CellFormat()
-        {
-            BorderId = 3,
-            FontId = 2,
-            FillId = 2
-        };
-
-        CellFormat lastDayOfMonthAndSundayStyle = new CellFormat()
-        {
-            BorderId = 3,
-            FontId = 3,
-            FillId = 3
-        };
-
-        CellFormat lastDayOfMonthAndGermanHolidayStyle = new CellFormat()
-        {
-            BorderId = 3,
-            FontId = 4,
-            FillId = 4
-        };
-
-        CellFormat lastDayOfMonthAndHungarianHolidayStyle = new CellFormat()
-        {
-            BorderId = 3,
-            FontId = 5,
-            FillId = 5
-        };
-
-        CellFormat lastDayOfMonthAndGermanAndHungarianHolidayStyle = new CellFormat()
-        {
-            BorderId = 3,
-            FontId = 6,
-            FillId = 6
+            Alignment = new Alignment()
+            {
+                WrapText = true,
+                Horizontal = HorizontalAlignmentValues.Left,
+                Vertical = VerticalAlignmentValues.Bottom
+            }
         };
 
         CellFormats cellformats = new CellFormats();
         cellformats.Append(defaultStyle);
         cellformats.Append(nameOfMonthStyle);
-        cellformats.Append(borderStyle);
+        cellformats.Append(dayStyle);
         cellformats.Append(saturdayStyle);
         cellformats.Append(sundayStyle);
-        cellformats.Append(germanHolidayStyle);
-        cellformats.Append(hungarianHolidayStyle);
-        cellformats.Append(germanAndHungarianHolidayStyle);
-        cellformats.Append(lastDayOfMonthStyle);
-        cellformats.Append(lastDayOfMonthAndSaturdayStyle);
-        cellformats.Append(lastDayOfMonthAndSundayStyle);
-        cellformats.Append(lastDayOfMonthAndGermanHolidayStyle);
-        cellformats.Append(lastDayOfMonthAndHungarianHolidayStyle);
-        cellformats.Append(lastDayOfMonthAndGermanAndHungarianHolidayStyle);
-
+        cellformats.Append(holidayAndMilestoneStyle);
+        
         workbookstylesheet.Append(fonts);
         workbookstylesheet.Append(fills);
         workbookstylesheet.Append(borders);
@@ -245,4 +199,3 @@ public class PlannerStyleService
         return workbookstylesheet;
     }
 }
-
