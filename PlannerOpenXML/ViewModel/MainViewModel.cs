@@ -2,7 +2,6 @@
 using CommunityToolkit.Mvvm.Input;
 using PlannerOpenXML.Model;
 using PlannerOpenXML.Services;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Windows;
@@ -18,8 +17,8 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     private readonly HolidayCacheService m_HolidayCacheService;
     private readonly NotificationService m_NotificationService;
     private readonly ICountryListService m_CountryListService;
-    private readonly MilestoneService m_MilestoneService;
-    private List<Milestone> m_MilestoneList = new List<Milestone>();
+    private readonly MilestoneListService m_MilestoneListService;
+    private readonly AddedMilestoneService m_AddedMilestoneService;
     #endregion fields
 
     #region properties
@@ -28,7 +27,7 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     /// </summary>
     public List<int> Months { get; } = Enumerable.Range(1, 12).ToList();
     public SelectableCountiesList CountryList { get; }
-    private List<Milestone> MilestoneList = new List<Milestone>();
+    public List<string> Milestones { get; } = new List<string>();
 
     [ObservableProperty]
     private int? m_Year;
@@ -55,10 +54,19 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     private string? m_SecondCountryHolidays;
 
     [ObservableProperty]
-    private string? m_MilestoneText;
+    private bool m_MilestoneLabelVisibility = true;
 
     [ObservableProperty]
-    private DateTime? m_MilestoneDate;
+    private bool m_MilestoneComboBoxVisibility = false;
+
+    [ObservableProperty]
+    private string? m_SelectedMilestone;
+
+    [ObservableProperty]
+    private DateTime? m_SelectedMilestoneDate;
+
+    [ObservableProperty]
+    private bool m_IsMilestoneComboBoxOpen = false;
 
     #endregion properties
 
@@ -139,13 +147,17 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
         var to = from.AddMonths(NumberOfMonths.Value).AddDays(-1);
         var allHolidays = await m_HolidayCacheService.GetAllHolidaysInRangeAsync(from, to, countryCodes);
 
-        await m_PlannerGenerator.GeneratePlanner(from, to, allHolidays, path, firstCountryCode, secondCountryCode);
- 
+        await m_PlannerGenerator.GeneratePlanner(from, to, allHolidays, path, firstCountryCode, secondCountryCode, m_AddedMilestoneService.GetAddedMilestones());
+        
+        m_AddedMilestoneService.ClearAddedMilestones();
+
         Year = null;
         FirstMonth = null;
         NumberOfMonths = null;
         MonthsLabelVisibility = true;
+        MilestoneLabelVisibility = true;
         MonthsComboBoxVisibility = false;
+        MilestoneComboBoxVisibility = false;
 
         foreach (var country in CountryList.Countries)
         {
@@ -155,11 +167,19 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     }
 
     [RelayCommand]
-    private void LabelClicked(string LabelName)
+    private void MonthLabelClicked(string LabelName)
     {
         MonthsLabelVisibility = false;
         MonthsComboBoxVisibility = true;
         IsMonthsComboBoxOpen = true;
+    }
+
+    [RelayCommand]
+    private void MilestoneLabelClicked(string LabelName)
+    {
+        MilestoneLabelVisibility = false;
+        MilestoneComboBoxVisibility = true;
+        IsMilestoneComboBoxOpen = true;
     }
 
     [RelayCommand]
@@ -179,20 +199,19 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     }
 
     [RelayCommand]
-    private void AddMilestone(Milestone newMilestone)
+    private void AddMilestone(AddedMilestone newAddedMilestone)
     {
-        if (MilestoneDate.HasValue && !string.IsNullOrWhiteSpace(MilestoneText))
+        if (SelectedMilestoneDate.HasValue && !string.IsNullOrWhiteSpace(SelectedMilestone))
         {
-            var milestone = new Milestone
+            var addedMilestone = new AddedMilestone
             {
-                MilestoneText = MilestoneText,
-                MilestoneDate = DateOnly.FromDateTime(MilestoneDate.Value),
+                AddedMilestoneText = SelectedMilestone,
+                AddedMilestoneDate = DateOnly.FromDateTime(SelectedMilestoneDate.Value),
             };
-            MilestoneList.Add(milestone);
-            m_MilestoneService.SaveMilestonesToFile(MilestoneList);
-            MilestoneText = null;
-            MilestoneDate = null;
-            m_NotificationService.ShowNotificationAddedMilestone(milestone.MilestoneText, milestone.MilestoneDate.ToShortDateString());
+            m_AddedMilestoneService.AddMilestone(addedMilestone);
+            SelectedMilestone = null;
+            SelectedMilestoneDate = null;
+            m_NotificationService.ShowNotificationAddedMilestone(addedMilestone.AddedMilestoneText, addedMilestone.AddedMilestoneDate.ToShortDateString());
         }
     }
     #endregion commands
@@ -201,7 +220,8 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     public MainViewModel(
         IApiService apiService, 
         HolidayNameService holidayNameService,
-        MilestoneNameService milestoneNameService,
+        AddedMilestoneNameService addedMilestoneNameService,
+        AddedMilestoneService addedMilestoneService,
         PlannerStyleService plannerStyleService, 
         HolidayCacheService holidayCacheService, 
         NotificationService notificationService, 
@@ -209,12 +229,14 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
         ICountryListService countryListService)
     {
         m_DialogService = dialogService;
-        m_PlannerGenerator = new PlannerGenerator(apiService, holidayNameService, milestoneNameService, plannerStyleService, "", "", m_MilestoneList);
+        m_PlannerGenerator = new PlannerGenerator(apiService, holidayNameService, addedMilestoneNameService, plannerStyleService, "", "");
         m_HolidayCacheService = holidayCacheService;
         m_NotificationService = notificationService;
         m_CountryListService = countryListService;
+        m_MilestoneListService = new MilestoneListService();
+        m_AddedMilestoneService = addedMilestoneService;
         CountryList = new SelectableCountiesList();
-        m_MilestoneService = new MilestoneService();
+        Milestones = m_MilestoneListService.LoadMilestonesFromJson();
     }
     #endregion constructors
 }

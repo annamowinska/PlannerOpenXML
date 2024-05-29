@@ -7,7 +7,7 @@ namespace PlannerOpenXML.Converters;
 /// <summary>
 /// Converts a boolean value to visibility state
 /// </summary>
-public class BooleanToVisibilityConverter : IValueConverter
+public class MilestoneLabelVisibilityConverter : IValueConverter
 {
     #region properties
     public Visibility LabelCollapsed { get; set; } = Visibility.Collapsed;

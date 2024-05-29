@@ -19,4 +19,3 @@ public class InternetAvailabilityService
     }
     #endregion methods
 }
-

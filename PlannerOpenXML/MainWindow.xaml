@@ -12,7 +12,8 @@
         Icon="/Resources/icon.png"
         Title="Planner Generator" SizeToContent="Height" Width="650" Background="#FFB4B4B4">
     <Window.Resources>
-        <conv:BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <conv:MonthLabelVisibilityConverter x:Key="monthLabelVisConv"/>
+        <conv:MilestoneLabelVisibilityConverter x:Key="milestoneLabelVisConv"/>
         <Style x:Key="CustomCheckBoxStyle" TargetType="CheckBox">
             <Setter Property="Template">
                 <Setter.Value>
@@ -144,10 +145,10 @@
                    Width="180"
                    Height="30"
                    Background="White"
-                   Visibility="{Binding MonthsLabelVisibility, Converter={StaticResource BoolToVis}}">
+                   Visibility="{Binding MonthsLabelVisibility, Converter={StaticResource monthLabelVisConv}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="MouseLeftButtonDown">
-                        <i:InvokeCommandAction Command="{Binding LabelClickedCommand}" CommandParameter="MonthsLabel"/>
+                        <i:InvokeCommandAction Command="{Binding MonthLabelClickedCommand}" CommandParameter="MonthsLabel"/>
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </Label>
@@ -163,7 +164,7 @@
                 VerticalContentAlignment="Center"
                 Margin="0,0,10,0"
                 Padding="7, 5, 0, 5" 
-                Visibility="{Binding MonthsComboBoxVisibility, Converter={StaticResource BoolToVis}}"
+                Visibility="{Binding MonthsComboBoxVisibility, Converter={StaticResource monthLabelVisConv}}"
                 IsDropDownOpen="{Binding IsMonthsComboBoxOpen}"/>
             <xctk:WatermarkTextBox
                 x:Name="NumberOfMonthsTextBox"
@@ -255,19 +256,38 @@
                                     Padding="0, 0, 0, 5"
                                     Foreground="Black"
                                     FontWeight="Medium"/>
-                                <xctk:WatermarkTextBox
-                                    x:Name="MilestoneTextBox"
+                                <Label x:Name="MilestoneLabel"
+                                       Grid.Row="1"
+                                       Content="Select milestone"
+                                       Foreground="Gray"
+                                       FontWeight="Normal"
+                                       HorizontalAlignment="Left"
+                                       VerticalAlignment="Top"
+                                       Height="25"
+                                       Width="180"
+                                       Margin="0,0,0,10"
+                                       Padding="5,4,0,0"
+                                       Background="White"
+                                       Visibility="{Binding MilestoneLabelVisibility, Converter={StaticResource milestoneLabelVisConv}}">
+                                    <i:Interaction.Triggers>
+                                        <i:EventTrigger EventName="MouseLeftButtonDown">
+                                            <i:InvokeCommandAction Command="{Binding MilestoneLabelClickedCommand}" CommandParameter="MilestoneLabel"/>
+                                        </i:EventTrigger>
+                                    </i:Interaction.Triggers>
+                                </Label>
+                                <ComboBox
+                                    x:Name="AddedMilestoneTextBox"
                                     Grid.Row="1"
-                                    Watermark="Enter milestone"
+                                    ItemsSource="{Binding Milestones}"
+                                    SelectedItem="{Binding SelectedMilestone, Mode=TwoWay}"
                                     Margin="0,0,0,10"
                                     FontWeight="Normal"
-                                    TextWrapping="Wrap"
                                     HorizontalAlignment="Left"
                                     Width="180"
-                                    Text="{Binding MilestoneText, UpdateSourceTrigger=PropertyChanged}">
-                                </xctk:WatermarkTextBox>
+                                    Visibility="{Binding MilestoneComboBoxVisibility, Converter={StaticResource milestoneLabelVisConv}}"
+                                    IsDropDownOpen="{Binding IsMilestoneComboBoxOpen}"/>
                                 <DatePicker
-                                    x:Name="MilestoneDatePicker"
+                                    x:Name="AddedMilestoneDatePicker"
                                     Grid.Row="2"
                                     HorizontalAlignment="Center" 
                                     Text="Enter date"
@@ -275,7 +295,7 @@
                                     FontWeight="Normal" 
                                     Width="180" 
                                     Background="White"
-                                    SelectedDate="{Binding MilestoneDate, UpdateSourceTrigger=PropertyChanged}"/>
+                                    SelectedDate="{Binding SelectedMilestoneDate, UpdateSourceTrigger=PropertyChanged}"/>
                                 <Button
                                     Grid.Row="3"
                                     Content="Add"

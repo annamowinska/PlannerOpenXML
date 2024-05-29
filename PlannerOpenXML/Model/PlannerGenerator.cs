@@ -12,30 +12,27 @@ public class PlannerGenerator
     #region fields
     private readonly IApiService m_ApiService;
     private readonly HolidayNameService m_HolidayNameService;
-    private readonly MilestoneNameService m_MilestoneNameService;
+    private readonly AddedMilestoneNameService m_AddedMilestoneNameService;
     private readonly PlannerStyleService m_PlannerStyleService;
     private readonly string m_FirstCountryCode;
     private readonly string m_SecondCountryCode;
-    private List<Milestone> m_MilestoneList;
     #endregion fields
 
     #region constructors
     public PlannerGenerator(
         IApiService apiService, 
         HolidayNameService holidayNameService,
-        MilestoneNameService milestoneNameService,
+        AddedMilestoneNameService addedMilestoneNameService,
         PlannerStyleService plannerStyleService,
         string firstCountryCode, 
-        string secondCountryCode, 
-        List<Milestone> milestones)
+        string secondCountryCode)
     {
         m_ApiService = apiService;
         m_HolidayNameService = holidayNameService;
-        m_MilestoneNameService = milestoneNameService;
+        m_AddedMilestoneNameService = addedMilestoneNameService;
         m_PlannerStyleService = plannerStyleService;
         m_FirstCountryCode = firstCountryCode;
         m_SecondCountryCode = secondCountryCode;
-        m_MilestoneList = milestones;
     }
     #endregion constructors
 
@@ -48,15 +45,19 @@ public class PlannerGenerator
     /// <param name="numberOfMonths">Amount of months to generate</param>
     /// <param name="path">Path for destination file</param>
     /// <returns>Nothing. Async task.</returns>
-    public async Task GeneratePlanner(DateOnly from, DateOnly to, IEnumerable<Holiday> allHolidays, string path, string firstCountryCode, string secondCountryCode)
+    public async Task GeneratePlanner(
+            DateOnly from, 
+            DateOnly to, 
+            IEnumerable<Holiday> allHolidays, 
+            string path, 
+            string firstCountryCode, 
+            string secondCountryCode, 
+            List<AddedMilestone> addedMilestones)
     {
         try
         {
             List<Holiday> firstCountryHolidaysList = new List<Holiday>();
             List<Holiday> secondCountryHolidaysList = new List<Holiday>();
-
-            var milestoneListReader = new MilestoneListReader();
-            List<Milestone> milestones = milestoneListReader.LoadMilestones();
 
             using (var spreadsheetDocument = SpreadsheetDocument.Create(path, SpreadsheetDocumentType.Workbook))
             {
@@ -124,7 +125,7 @@ public class PlannerGenerator
 
                         string firstCountryHolidayName = m_HolidayNameService.GetHolidayName(currentDate, firstCountryHolidaysList);
                         string secondCountryHolidayName = m_HolidayNameService.GetHolidayName(currentDate, secondCountryHolidaysList);
-                        string milestoneName = m_MilestoneNameService.GetMilestoneName(currentDate, milestones);
+                        string milestoneName = m_AddedMilestoneNameService.GetAddedMilestoneName(currentDate, addedMilestones);
 
                         DateOnly nextMonth = date.AddMonths(1);
                         bool isLastDayOfMonth = currentDate.AddDays(1).Month != nextMonth.Month;
