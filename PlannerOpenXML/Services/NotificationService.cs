@@ -17,7 +17,7 @@ public class NotificationService
     #endregion constructor
 
     #region methods
-    public void ShowNotificationErrorInput()
+    public void ShowNotificationErrorYearAndFirstMonthInput()
     {
         var content = new NotificationContent()
         {
@@ -42,6 +42,36 @@ public class NotificationService
             TrimType = NotificationTextTrimType.NoTrim,
             CloseOnClick = true,
             Background = new SolidColorBrush(Colors.Green),
+            Foreground = new SolidColorBrush(Colors.White),
+        };
+        m_NotificationManager.Show(content);
+    }
+
+    public void ShowNotificationErrorMilestoneDateInput()
+    {
+        var content = new NotificationContent()
+        {
+            Title = "Error",
+            Message = "Please enter date in format 'DD-MM-YYYY'.",
+            Type = NotificationType.Warning,
+            TrimType = NotificationTextTrimType.NoTrim,
+            CloseOnClick = true,
+            Background = new SolidColorBrush(Colors.Red),
+            Foreground = new SolidColorBrush(Colors.White),
+        };
+        m_NotificationManager.Show(content);
+    }
+
+    public void ShowNotificationErrorMilestoneAndMilestoneDateInput()
+    {
+        var content = new NotificationContent()
+        {
+            Title = "Error",
+            Message = "Please select milestone and enter date in format 'DD-MM-YYYY'.",
+            Type = NotificationType.Warning,
+            TrimType = NotificationTextTrimType.NoTrim,
+            CloseOnClick = true,
+            Background = new SolidColorBrush(Colors.Red),
             Foreground = new SolidColorBrush(Colors.White),
         };
         m_NotificationManager.Show(content);

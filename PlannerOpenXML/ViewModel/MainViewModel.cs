@@ -4,7 +4,9 @@ using PlannerOpenXML.Model;
 using PlannerOpenXML.Services;
 using System.ComponentModel;
 using System.Data;
+using System.Globalization;
 using System.Windows;
+using System.Windows.Controls;
 using Xceed.Wpf.Toolkit;
 
 namespace PlannerOpenXML.ViewModel;
@@ -192,7 +194,7 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
                 if (!char.IsDigit(e.Text, 0))
                 {
                     e.Handled = true;
-                    m_NotificationService.ShowNotificationErrorInput();
+                    m_NotificationService.ShowNotificationErrorYearAndFirstMonthInput();
                 }
             };
         }
@@ -203,15 +205,27 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     {
         if (SelectedMilestoneDate.HasValue && !string.IsNullOrWhiteSpace(SelectedMilestone))
         {
+            var dateText = SelectedMilestoneDate.Value.ToString("dd-MM-yyyy");
+            if (!DateTime.TryParseExact(dateText, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
+            {
+                m_NotificationService.ShowNotificationErrorMilestoneDateInput();
+                return;
+            }
+
             var addedMilestone = new AddedMilestone
             {
                 AddedMilestoneText = SelectedMilestone,
                 AddedMilestoneDate = DateOnly.FromDateTime(SelectedMilestoneDate.Value),
             };
+
             m_AddedMilestoneService.AddMilestone(addedMilestone);
             SelectedMilestone = null;
             SelectedMilestoneDate = null;
             m_NotificationService.ShowNotificationAddedMilestone(addedMilestone.AddedMilestoneText, addedMilestone.AddedMilestoneDate.ToShortDateString());
+        }
+        else
+        {
+            m_NotificationService.ShowNotificationErrorMilestoneAndMilestoneDateInput();
         }
     }
     #endregion commands
