@@ -42,14 +42,21 @@ public class PlannerStyleService
             FontSize = new FontSize() { Val = 20 }
         };
 
-        var holidayAndMilestoneFont = new Font
+        var holidayFont = new Font
         {
             Bold = new Bold(),
             Color = new Color() { Rgb = new HexBinaryValue() { Value = "009900" } },
             FontSize = new FontSize() { Val = 10 }
         };
 
-        Fonts fonts = new Fonts(defaultFont, monthFont, dayFont, saturdayFont, sundayFont, holidayAndMilestoneFont);
+        var milestoneFont = new Font
+        {
+            Bold = new Bold(),
+            Color = new Color() { Rgb = new HexBinaryValue() { Value = "FF0000" } },
+            FontSize = new FontSize() { Val = 10 }
+        };
+
+        Fonts fonts = new Fonts(defaultFont, monthFont, dayFont, saturdayFont, sundayFont, holidayFont, milestoneFont);
 
         Fill defaultFill = new Fill();
         PatternFill defaultPaternFill = new PatternFill() { PatternType = PatternValues.Solid };
@@ -87,7 +94,13 @@ public class PlannerStyleService
         sundayPatternFill.Append(sundayForegroundColor);
         sundayFill.Append(sundayPatternFill);
 
-        Fills fills = new Fills(defaultFill, sheetFill, monthFill, dayFill, saturdayFill, sundayFill);
+        Fill milestoneFill = new Fill();
+        PatternFill milestonePatternFill = new PatternFill() { PatternType = PatternValues.Solid };
+        ForegroundColor milestoneForegroundColor = new ForegroundColor() { Rgb = "FFC0CB" };
+        milestonePatternFill.Append(milestoneForegroundColor);
+        milestoneFill.Append(milestonePatternFill);
+
+        Fills fills = new Fills(defaultFill, sheetFill, monthFill, dayFill, saturdayFill, sundayFill, milestoneFill);
 
         Border defaultBorder = new(new LeftBorder(),
                                     new RightBorder(),
@@ -171,10 +184,23 @@ public class PlannerStyleService
             }
         };
 
-        CellFormat holidayAndMilestoneStyle = new CellFormat()
+        CellFormat holidayStyle = new CellFormat()
         {
             FontId = 5,
             BorderId = 2,
+            Alignment = new Alignment()
+            {
+                WrapText = true,
+                Horizontal = HorizontalAlignmentValues.Left,
+                Vertical = VerticalAlignmentValues.Bottom
+            }
+        };
+
+        CellFormat milestoneStyle = new CellFormat()
+        {
+            FontId = 6,
+            BorderId = 2,
+            FillId = 6,
             Alignment = new Alignment()
             {
                 WrapText = true,
@@ -189,7 +215,8 @@ public class PlannerStyleService
         cellformats.Append(dayStyle);
         cellformats.Append(saturdayStyle);
         cellformats.Append(sundayStyle);
-        cellformats.Append(holidayAndMilestoneStyle);
+        cellformats.Append(holidayStyle);
+        cellformats.Append(milestoneStyle);
         
         workbookstylesheet.Append(fonts);
         workbookstylesheet.Append(fills);

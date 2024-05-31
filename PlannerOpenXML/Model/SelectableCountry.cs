@@ -1,12 +1,20 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-public class SelectableCountry : ObservableObject
+public partial class SelectableCountry : ObservableObject
 {
     #region properties
-    public bool IsEnabled { get; set; } = true;
-    public string Name { get; set; }
-    public string Code { get; set; }
-    public bool IsChecked { get; set; }
+    
+    [ObservableProperty]
+    public bool m_IsEnabled = true;
+    
+    [ObservableProperty]
+    public string m_Name;
+
+    [ObservableProperty]
+    public string m_Code;
+    
+    [ObservableProperty]
+    public bool m_IsChecked;
     #endregion properties
 
     #region constructors

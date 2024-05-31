@@ -1,9 +1,16 @@
 ﻿﻿using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Wordprocessing;
 using PlannerOpenXML.Services;
 using System.Globalization;
 using System.Windows;
+using SpreadsheetText = DocumentFormat.OpenXml.Spreadsheet.Text;
+using SpreadsheetRun = DocumentFormat.OpenXml.Spreadsheet.Run;
+using SpreadsheetBold = DocumentFormat.OpenXml.Spreadsheet.Bold;
+using SpreadsheetColor = DocumentFormat.OpenXml.Spreadsheet.Color;
+using SpreadsheetFontSize = DocumentFormat.OpenXml.Spreadsheet.FontSize;
+using SpreadsheetRunProperties = DocumentFormat.OpenXml.Spreadsheet.RunProperties;
 
 namespace PlannerOpenXML.Model;
 
@@ -151,14 +158,40 @@ public class PlannerGenerator
 
                         Cell additionalInfoCell = new Cell();
                         InlineString inlineString = new InlineString();
-                        Text text = new Text($"{milestoneText}\n{holidayText}");
 
-                        inlineString.AppendChild(text);
+                        string[] milestoneParts = milestoneText.Split(new[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
+                        string[] holidayParts = holidayText.Split(new[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
+
+                        foreach (var part in milestoneParts)
+                        {
+                            SpreadsheetText milestonePart = new SpreadsheetText(part);
+                            SpreadsheetRun milestoneRun = new SpreadsheetRun(new SpreadsheetRunProperties(new SpreadsheetBold(), new SpreadsheetColor() { Rgb = new HexBinaryValue() { Value = "FF0000" } }, new SpreadsheetFontSize() { Val = 15 }), milestonePart);
+                            inlineString.AppendChild(milestoneRun);
+
+                            Paragraph milestoneParagraph = new Paragraph();
+                            milestoneParagraph.AppendChild(new DocumentFormat.OpenXml.Wordprocessing.Run(new DocumentFormat.OpenXml.Wordprocessing.Text("\n"))); // Nowa linia
+                            inlineString.AppendChild(milestoneParagraph);
+                            
+                        }
+
+                        foreach (var part in holidayParts)
+                        {
+                            SpreadsheetText holidayPart = new SpreadsheetText(part);
+                            SpreadsheetRun holidayRun = new SpreadsheetRun(new SpreadsheetRunProperties(new SpreadsheetBold(), new SpreadsheetColor() { Rgb = new HexBinaryValue() { Value = "009900" } }, new SpreadsheetFontSize() { Val = 10 }), holidayPart);
+                            inlineString.AppendChild(holidayRun);
+                        }
 
                         additionalInfoCell.InlineString = inlineString;
                         additionalInfoCell.DataType = CellValues.InlineString;
 
-                        additionalInfoCell.StyleIndex = 5;
+                        if (milestoneText.Contains("MS"))
+                        {
+                            additionalInfoCell.StyleIndex = 6;
+                        }
+                        else
+                        {
+                            additionalInfoCell.StyleIndex = 5;
+                        }
 
                         SpreadsheetService.AppendCellToWorksheet(worksheetPart, dayCell, (uint)currentRow, (uint)columnIndex);
                         SpreadsheetService.AppendCellToWorksheet(worksheetPart, additionalInfoCell, (uint)currentRow, (uint)(columnIndex + 1));

@@ -12,13 +12,11 @@ public class CountryListService : ICountryListService
         return m_CountryCodes;
     }
 
-    // Implementacja metody z interfejsu ICountryListService
     public void UpdateCountryCodes(List<string> newCountryCodes)
     {
         m_CountryCodes = newCountryCodes;
     }
 
-    // Metoda do dodawania kodu kraju do listy
     public void AddCountryCode(string countryCode)
     {
         m_CountryCodes.Add(countryCode);
