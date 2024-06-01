@@ -19,7 +19,6 @@ public class PlannerGenerator
     #region fields
     private readonly IApiService m_ApiService;
     private readonly HolidayNameService m_HolidayNameService;
-    private readonly AddedMilestoneNameService m_AddedMilestoneNameService;
     private readonly PlannerStyleService m_PlannerStyleService;
     private readonly string m_FirstCountryCode;
     private readonly string m_SecondCountryCode;
@@ -29,14 +28,12 @@ public class PlannerGenerator
     public PlannerGenerator(
         IApiService apiService, 
         HolidayNameService holidayNameService,
-        AddedMilestoneNameService addedMilestoneNameService,
         PlannerStyleService plannerStyleService,
         string firstCountryCode, 
         string secondCountryCode)
     {
         m_ApiService = apiService;
         m_HolidayNameService = holidayNameService;
-        m_AddedMilestoneNameService = addedMilestoneNameService;
         m_PlannerStyleService = plannerStyleService;
         m_FirstCountryCode = firstCountryCode;
         m_SecondCountryCode = secondCountryCode;
@@ -59,12 +56,12 @@ public class PlannerGenerator
             string path, 
             string firstCountryCode, 
             string secondCountryCode, 
-            List<AddedMilestone> addedMilestones)
+            IEnumerable<Milestone> milestones)
     {
         try
         {
-            List<Holiday> firstCountryHolidaysList = new List<Holiday>();
-            List<Holiday> secondCountryHolidaysList = new List<Holiday>();
+            var firstCountryHolidaysList = new List<Holiday>();
+            var secondCountryHolidaysList = new List<Holiday>();
 
             using (var spreadsheetDocument = SpreadsheetDocument.Create(path, SpreadsheetDocumentType.Workbook))
             {
@@ -83,7 +80,7 @@ public class PlannerGenerator
                 var sheet = new Sheet() { Id = spreadsheetDocument.WorkbookPart.GetIdOfPart(worksheetPart), SheetId = 1, Name = "Planner" };
                 sheets.Append(sheet);
 
-                CultureInfo culture = new CultureInfo("de-DE");
+                var culture = new CultureInfo("de-DE");
 
                 foreach (var holiday in allHolidays)
                 {
@@ -100,11 +97,11 @@ public class PlannerGenerator
                 var columnIndex = 1;
                 var mergeCells = new MergeCells();
 
-                for (DateOnly date = from; date <= to; date = date.AddMonths(1))
+                for (var date = from; date <= to; date = date.AddMonths(1))
                 {
                     string monthName = date.ToString("MMMM yyyy", culture);
 
-                    Cell monthYearCell = new Cell(new CellValue(monthName))
+                    Cell monthYearCell = new(new CellValue(monthName))
                     {
                         DataType = CellValues.String,
                         StyleIndex = 1
@@ -112,7 +109,7 @@ public class PlannerGenerator
 
                     SpreadsheetService.AppendCellToWorksheet(worksheetPart, monthYearCell, 1, (uint)columnIndex);
 
-                    Cell emptyCell = new Cell(new CellValue(string.Empty))
+                    Cell emptyCell = new(new CellValue(string.Empty))
                     {
                         DataType = CellValues.String,
                         StyleIndex = 1
@@ -132,7 +129,7 @@ public class PlannerGenerator
 
                         string firstCountryHolidayName = m_HolidayNameService.GetHolidayName(currentDate, firstCountryHolidaysList);
                         string secondCountryHolidayName = m_HolidayNameService.GetHolidayName(currentDate, secondCountryHolidaysList);
-                        string milestoneName = m_AddedMilestoneNameService.GetAddedMilestoneName(currentDate, addedMilestones);
+                        string milestoneDecsriptions = GetMilestoneDescriptionsForDate(milestones, currentDate);
 
                         DateOnly nextMonth = date.AddMonths(1);
                         bool isLastDayOfMonth = currentDate.AddDays(1).Month != nextMonth.Month;
@@ -140,8 +137,8 @@ public class PlannerGenerator
                         string milestoneText = "";
                         string holidayText = "";
 
-                        if (!string.IsNullOrEmpty(milestoneName))
-                            milestoneText += $" MS: {milestoneName}";
+                        if (!string.IsNullOrEmpty(milestoneDecsriptions))
+                            milestoneText += $" MS: {milestoneDecsriptions}";
 
                         if (!string.IsNullOrEmpty(firstCountryHolidayName) && !string.IsNullOrEmpty(secondCountryHolidayName))
                             holidayText += $" {firstCountryCode}&{secondCountryCode}: {firstCountryHolidayName}";
@@ -219,4 +216,12 @@ public class PlannerGenerator
         }
     }
     #endregion methods
+
+    #region private methods
+    private static string GetMilestoneDescriptionsForDate(IEnumerable<Milestone> milestones, DateOnly date)
+    {
+        var milestoneDescriptions = milestones.Where(x => date.Equals(x.Date)).Select(x => x.Description);
+        return string.Join(", ", milestoneDescriptions);
+    }
+    #endregion private methods
 }

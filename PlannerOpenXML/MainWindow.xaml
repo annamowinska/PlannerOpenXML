@@ -7,6 +7,7 @@
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:vm="clr-namespace:PlannerOpenXML.ViewModel"
         xmlns:conv="clr-namespace:PlannerOpenXML.Converters"
+        xmlns:uc="clr-namespace:PlannerOpenXML.UserControls"
         d:DataContext="{d:DesignInstance Type={x:Type vm:MainViewModel}}"
         mc:Ignorable="d"
         Icon="/Resources/icon.png"
@@ -14,6 +15,8 @@
     <Window.Resources>
         <conv:MonthLabelVisibilityConverter x:Key="monthLabelVisConv"/>
         <conv:MilestoneLabelVisibilityConverter x:Key="milestoneLabelVisConv"/>
+        <conv:DateOnlyToDateTimeConverter x:Key="DateOnlyToDateTime" />
+        <conv:NullToVisibilityConverter x:Key="NotNullToVisibility" WhenTrue="Collapsed" WhenFalse="Visible" />
         <Style x:Key="CustomCheckBoxStyle" TargetType="CheckBox">
             <Setter Property="Template">
                 <Setter.Value>
@@ -69,6 +72,7 @@
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Height" Value="25" />
             <Setter Property="VerticalAlignment" Value="Bottom"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -248,46 +252,31 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
                                 <TextBlock
-                                    Text="Add milestones:"
+                                    Text="Milestones:"
                                     Grid.Row="0"
                                     HorizontalAlignment="Left" 
                                     Padding="0, 0, 0, 5"
                                     Foreground="Black"
                                     FontWeight="Medium"/>
-                                <Label x:Name="MilestoneLabel"
-                                       Grid.Row="1"
-                                       Content="Select milestone"
-                                       Foreground="Gray"
-                                       FontWeight="Normal"
-                                       HorizontalAlignment="Left"
-                                       VerticalAlignment="Top"
-                                       Height="25"
-                                       Width="180"
-                                       Margin="0,0,0,10"
-                                       Padding="5,4,0,0"
-                                       Background="White"
-                                       Visibility="{Binding MilestoneLabelVisibility, Converter={StaticResource milestoneLabelVisConv}}">
-                                    <i:Interaction.Triggers>
-                                        <i:EventTrigger EventName="MouseLeftButtonDown">
-                                            <i:InvokeCommandAction Command="{Binding MilestoneLabelClickedCommand}" CommandParameter="MilestoneLabel"/>
-                                        </i:EventTrigger>
-                                    </i:Interaction.Triggers>
-                                </Label>
-                                <ComboBox
-                                    x:Name="AddedMilestoneTextBox"
+                                <uc:EditableListBox
                                     Grid.Row="1"
-                                    ItemsSource="{Binding Milestones}"
-                                    SelectedItem="{Binding SelectedMilestone, Mode=TwoWay}"
-                                    Margin="0,0,0,10"
-                                    FontWeight="Normal"
-                                    HorizontalAlignment="Left"
+                                    Items="{Binding Milestones.View}"
+                                    Selected="{Binding Milestones.Selected}"
+                                    ItemsDisplayMemberPath="Description"
+                                    Add="{Binding Milestones.AddCommand}"
+                                    Clone="{Binding Milestones.CloneCommand}"
+                                    Remove="{Binding Milestones.RemoveCommand}"
+                                    Foreground="Gray"
+                                    Height="90"
                                     Width="180"
-                                    Visibility="{Binding MilestoneComboBoxVisibility, Converter={StaticResource milestoneLabelVisConv}}"
-                                    IsDropDownOpen="{Binding IsMilestoneComboBoxOpen}"/>
+                                    Margin="0,0,0,10"
+                                    Background="White"
+                                    />
+
                                 <DatePicker
-                                    x:Name="AddedMilestoneDatePicker"
                                     Grid.Row="2"
                                     HorizontalAlignment="Center" 
                                     Text="Enter date"
@@ -295,16 +284,46 @@
                                     FontWeight="Normal" 
                                     Width="180" 
                                     Background="White"
-                                    SelectedDate="{Binding SelectedMilestoneDate, UpdateSourceTrigger=PropertyChanged}"/>
-                                <Button
+                                    Visibility="{Binding Milestones.Selected, Converter={StaticResource NotNullToVisibility}}"
+                                    SelectedDate="{Binding Milestones.Selected.Date, Converter={StaticResource DateOnlyToDateTime}, UpdateSourceTrigger=PropertyChanged}"/>
+                                <TextBox 
                                     Grid.Row="3"
-                                    Content="Add"
-                                    Width="45"
-                                    Height="25"
-                                    FontSize="12"
-                                    HorizontalAlignment="Right"
-                                    Style="{StaticResource CustomButtonStyle}"
-                                    Command="{Binding AddMilestoneCommand}"/>
+                                    Text="{Binding Milestones.Selected.Description}"
+                                    Margin="0,0,0,10"
+                                    Visibility="{Binding Milestones.Selected, Converter={StaticResource NotNullToVisibility}}" />
+                                <Grid Grid.Row="4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Button
+                                        Grid.Column="0"
+                                        Content="Load"
+                                        Width="55"
+                                        FontSize="12"
+                                        HorizontalAlignment="Left"
+                                        Style="{StaticResource CustomButtonStyle}"
+                                        Command="{Binding MilestonesLoadCommand}"/>
+                                    <Button
+                                        Grid.Column="1"
+                                        Content="Save"
+                                        Width="55"
+                                        FontSize="12"
+                                        HorizontalAlignment="Center"
+                                        Style="{StaticResource CustomButtonStyle}"
+                                        IsEnabled="{Binding Milestones.CanSave}"
+                                        Command="{Binding MilestonesSaveCommand}"/>
+                                    <Button
+                                        Grid.Column="2"
+                                        Content="Save as..."
+                                        Width="55"
+                                        FontSize="12"
+                                        HorizontalAlignment="Right"
+                                        Style="{StaticResource CustomButtonStyle}"
+                                        IsEnabled="{Binding Milestones.Changed}"
+                                        Command="{Binding MilestonesSaveAsCommand}"/>
+                                </Grid>
                             </Grid>
                         </Grid>
                     </Grid>
@@ -314,8 +333,6 @@
                 Content="Generate"
                 Grid.Row="1"
                 Command="{Binding GenerateCommand}"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Top"
                 Width="114"
                 Height="40"
                 Margin="0,20,0,0"

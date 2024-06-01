@@ -1,7 +1,13 @@
-﻿namespace PlannerOpenXML.Model;
-public class Milestone
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+
+namespace PlannerOpenXML.Model;
+public partial class Milestone : ObservableObject
 {
     #region properties
-    public string MilestoneText { get; set; }
+    [ObservableProperty]
+    private string m_Description = string.Empty;
+
+    [ObservableProperty]
+    private DateOnly m_Date;
     #endregion properties
 }

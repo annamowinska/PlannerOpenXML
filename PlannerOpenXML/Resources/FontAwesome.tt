@@ -1,0 +1,59 @@
+﻿<#@ template debug="true" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Xml" #>
+<#@ assembly name="Microsoft.CSharp" #>
+<#@ assembly name="Newtonsoft.Json" #>
+<#@ import namespace="System.Diagnostics" #>
+<#@ import namespace="System.Net" #>
+<#@ import namespace="Newtonsoft.Json.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ output extension=".xaml" #>
+<# 
+string GetJson()
+{
+    //Debugger.Launch();
+    var result = new StringBuilder();
+    result.AppendLine("<ResourceDictionary xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"");
+    result.AppendLine("                xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\">");
+    var json = new WebClient().DownloadString("https://raw.githubusercontent.com/FortAwesome/Font-Awesome/6.x/metadata/icons.json");
+
+    dynamic d = JObject.Parse(json);
+
+    foreach (var item in d)
+    {
+        var name = item.Name;
+        foreach (var subItem in item.First)
+        {
+            if (subItem.Name != "svg")
+                continue;
+            ParseSvgData(subItem.Value, item.Name, result);
+        }
+    }
+
+    result.AppendLine("</ResourceDictionary>");
+    return result.ToString();
+}
+
+void ParseSvgData(JObject svgData, string name, StringBuilder sb)
+{
+    const string foreground = "{Binding RelativeSource={RelativeSource AncestorType={x:Type ContentControl}},Path=Foreground}";
+    var svg = string.Empty;
+    if (string.IsNullOrWhiteSpace(name))
+        return;
+    foreach (var pair in svgData)
+    {
+        if (!(pair.Value is JObject jobject))
+            continue;
+        var width = jobject["width"];
+        var height = jobject["height"];
+        sb.AppendLine($"    <Viewbox x:Key=\"fa-{name}-{pair.Key}\" x:Shared=\"False\">");
+        sb.AppendLine($"        <Path Fill=\"{foreground}\" Width=\"{width}\" Height=\"{height}\">");
+        sb.AppendLine("            <Path.Data>");
+        sb.AppendLine($"                <PathGeometry Figures={jobject["path"]} />");
+        sb.AppendLine("            </Path.Data>");
+        sb.AppendLine("        </Path>");
+        sb.AppendLine($"    </Viewbox>");
+    }
+}
+#>
+<#=GetJson()#>

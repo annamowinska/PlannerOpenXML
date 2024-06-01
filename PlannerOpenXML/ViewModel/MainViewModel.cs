@@ -2,16 +2,13 @@
 using CommunityToolkit.Mvvm.Input;
 using PlannerOpenXML.Model;
 using PlannerOpenXML.Services;
-using System.ComponentModel;
 using System.Data;
-using System.Globalization;
 using System.Windows;
-using System.Windows.Controls;
 using Xceed.Wpf.Toolkit;
 
 namespace PlannerOpenXML.ViewModel;
 
-public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
+public partial class MainViewModel : ObservableObject
 {
     #region fields
     private readonly DialogService m_DialogService;
@@ -19,8 +16,6 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     private readonly HolidayCacheService m_HolidayCacheService;
     private readonly NotificationService m_NotificationService;
     private readonly ICountryListService m_CountryListService;
-    private readonly MilestoneListService m_MilestoneListService;
-    private readonly AddedMilestoneService m_AddedMilestoneService;
     #endregion fields
 
     #region properties
@@ -29,7 +24,9 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     /// </summary>
     public List<int> Months { get; } = Enumerable.Range(1, 12).ToList();
     public SelectableCountiesList CountryList { get; }
-    public List<string> Milestones { get; } = new List<string>();
+
+    [ObservableProperty]
+    private EditableObservableCollection<Milestone> m_Milestones;
 
     [ObservableProperty]
     private int? m_Year;
@@ -60,12 +57,6 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
 
     [ObservableProperty]
     private bool m_MilestoneComboBoxVisibility = false;
-
-    [ObservableProperty]
-    private string? m_SelectedMilestone;
-
-    [ObservableProperty]
-    private DateTime? m_SelectedMilestoneDate;
 
     [ObservableProperty]
     private bool m_IsMilestoneComboBoxOpen = false;
@@ -127,10 +118,9 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
             return;
         }
 
-        var path = m_DialogService.SaveFileDialog(
+        var path = m_DialogService.SaveFileWithExtensionList(
             "Select file path to save the planner",
-            "Excel files (*.xlsx)|*.xlsx",
-            "Planner");
+            DialogService.XLSX_FILES);
         if (path == null)
             return;
 
@@ -149,10 +139,8 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
         var to = from.AddMonths(NumberOfMonths.Value).AddDays(-1);
         var allHolidays = await m_HolidayCacheService.GetAllHolidaysInRangeAsync(from, to, countryCodes);
 
-        await m_PlannerGenerator.GeneratePlanner(from, to, allHolidays, path, firstCountryCode, secondCountryCode, m_AddedMilestoneService.GetAddedMilestones());
+        await m_PlannerGenerator.GeneratePlanner(from, to, allHolidays, path, firstCountryCode, secondCountryCode, Milestones);
         
-        m_AddedMilestoneService.ClearAddedMilestones();
-
         Year = null;
         FirstMonth = null;
         NumberOfMonths = null;
@@ -177,14 +165,6 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     }
 
     [RelayCommand]
-    private void MilestoneLabelClicked(string LabelName)
-    {
-        MilestoneLabelVisibility = false;
-        MilestoneComboBoxVisibility = true;
-        IsMilestoneComboBoxOpen = true;
-    }
-
-    [RelayCommand]
     private void CheckNumericInput(object parameter)
     {
         if (parameter is WatermarkTextBox textBox)
@@ -201,32 +181,35 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     }
 
     [RelayCommand]
-    private void AddMilestone(AddedMilestone newAddedMilestone)
+    private void MilestonesLoad()
     {
-        if (SelectedMilestoneDate.HasValue && !string.IsNullOrWhiteSpace(SelectedMilestone))
-        {
-            var dateText = SelectedMilestoneDate.Value.ToString("dd-MM-yyyy");
-            if (!DateTime.TryParseExact(dateText, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
-            {
-                m_NotificationService.ShowNotificationErrorMilestoneDateInput();
-                return;
-            }
+        var path = m_DialogService.OpenSingleFileWithExtensionList(
+            "Select file path to save the milestones",
+            DialogService.JSON_FILES);
+        if (path is null)
+            return;
 
-            var addedMilestone = new AddedMilestone
-            {
-                AddedMilestoneText = SelectedMilestone,
-                AddedMilestoneDate = DateOnly.FromDateTime(SelectedMilestoneDate.Value),
-            };
+        Milestones = EditableObservableCollection<Milestone>.Load(path);
+    }
 
-            m_AddedMilestoneService.AddMilestone(addedMilestone);
-            SelectedMilestone = null;
-            SelectedMilestoneDate = null;
-            m_NotificationService.ShowNotificationAddedMilestone(addedMilestone.AddedMilestoneText, addedMilestone.AddedMilestoneDate.ToShortDateString());
-        }
-        else
-        {
-            m_NotificationService.ShowNotificationErrorMilestoneAndMilestoneDateInput();
-        }
+    [RelayCommand]
+    private void MilestonesSave()
+    {
+        Milestones.Save();
+    }
+
+    [RelayCommand]
+    private void MilestonesSaveAs()
+    {
+        var path = m_DialogService.SaveFileWithExtensionList(
+            "Select file path to save the milestones",
+            DialogService.JSON_FILES,
+            true,
+            Milestones.LastPath);
+        if (path is null)
+            return;
+
+        Milestones.SaveAs(path);
     }
     #endregion commands
 
@@ -234,8 +217,6 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
     public MainViewModel(
         IApiService apiService, 
         HolidayNameService holidayNameService,
-        AddedMilestoneNameService addedMilestoneNameService,
-        AddedMilestoneService addedMilestoneService,
         PlannerStyleService plannerStyleService, 
         HolidayCacheService holidayCacheService, 
         NotificationService notificationService, 
@@ -243,14 +224,12 @@ public partial class MainViewModel : ObservableObject, INotifyPropertyChanged
         ICountryListService countryListService)
     {
         m_DialogService = dialogService;
-        m_PlannerGenerator = new PlannerGenerator(apiService, holidayNameService, addedMilestoneNameService, plannerStyleService, "", "");
+        m_PlannerGenerator = new PlannerGenerator(apiService, holidayNameService, plannerStyleService, "", "");
         m_HolidayCacheService = holidayCacheService;
         m_NotificationService = notificationService;
         m_CountryListService = countryListService;
-        m_MilestoneListService = new MilestoneListService();
-        m_AddedMilestoneService = addedMilestoneService;
+        Milestones = [];
         CountryList = new SelectableCountiesList();
-        Milestones = m_MilestoneListService.LoadMilestonesFromJson();
     }
     #endregion constructors
 }
