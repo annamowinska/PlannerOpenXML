@@ -275,7 +275,6 @@
                                     Margin="0,0,0,10"
                                     Background="White"
                                     />
-
                                 <DatePicker
                                     Grid.Row="2"
                                     HorizontalAlignment="Center" 

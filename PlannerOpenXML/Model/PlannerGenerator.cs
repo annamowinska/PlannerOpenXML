@@ -1,16 +1,9 @@
-﻿﻿using DocumentFormat.OpenXml;
+﻿using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
-using DocumentFormat.OpenXml.Wordprocessing;
 using PlannerOpenXML.Services;
 using System.Globalization;
 using System.Windows;
-using SpreadsheetText = DocumentFormat.OpenXml.Spreadsheet.Text;
-using SpreadsheetRun = DocumentFormat.OpenXml.Spreadsheet.Run;
-using SpreadsheetBold = DocumentFormat.OpenXml.Spreadsheet.Bold;
-using SpreadsheetColor = DocumentFormat.OpenXml.Spreadsheet.Color;
-using SpreadsheetFontSize = DocumentFormat.OpenXml.Spreadsheet.FontSize;
-using SpreadsheetRunProperties = DocumentFormat.OpenXml.Spreadsheet.RunProperties;
 
 namespace PlannerOpenXML.Model;
 
@@ -113,6 +106,8 @@ public class PlannerGenerator
                     MergeCell mergeCell = new MergeCell() { Reference = new StringValue($"{cellReference1}:{cellReference2}") };
                     mergeCells.Append(mergeCell);
 
+                    SpreadsheetService.SetRowHeight(worksheetPart, 70, 1);
+
                     var currentRow = 2;
                     for (DateOnly currentDate = date; currentDate.Month == date.Month; currentDate = currentDate.AddDays(1))
                     {
@@ -121,23 +116,20 @@ public class PlannerGenerator
 
                         string firstCountryHolidayName = m_HolidayNameService.GetHolidayName(currentDate, firstCountryHolidaysList);
                         string secondCountryHolidayName = m_HolidayNameService.GetHolidayName(currentDate, secondCountryHolidaysList);
-                        string milestoneDecsriptions = GetMilestoneDescriptionsForDate(milestones, currentDate);
-
-                        DateOnly nextMonth = date.AddMonths(1);
-                        bool isLastDayOfMonth = currentDate.AddDays(1).Month != nextMonth.Month;
+                        string milestoneDescriptions = GetMilestoneDescriptionsForDate(milestones, currentDate);
 
                         string milestoneText = "";
                         string holidayText = "";
 
-                        if (!string.IsNullOrEmpty(milestoneDecsriptions))
-                            milestoneText += $" MS: {milestoneDecsriptions}";
+                        if (!string.IsNullOrEmpty(milestoneDescriptions))
+                            milestoneText += $"MS: {milestoneDescriptions}";
 
                         if (!string.IsNullOrEmpty(firstCountryHolidayName) && !string.IsNullOrEmpty(secondCountryHolidayName))
-                            holidayText += $" {firstCountryCode}&{secondCountryCode}: {firstCountryHolidayName}";
+                            holidayText += $"{firstCountryCode}&{secondCountryCode}: {firstCountryHolidayName}";
                         else if (!string.IsNullOrEmpty(firstCountryHolidayName))
-                            holidayText += $" {firstCountryCode}: {firstCountryHolidayName}";
+                            holidayText += $"{firstCountryCode}: {firstCountryHolidayName}";
                         else if (!string.IsNullOrEmpty(secondCountryHolidayName))
-                            holidayText += $" {secondCountryCode}: {secondCountryHolidayName}";
+                            holidayText += $"{secondCountryCode}: {secondCountryHolidayName}";
 
                         Cell dayCell = new Cell(new CellValue($"{day} {dayOfWeek}"))
                         {
@@ -145,47 +137,29 @@ public class PlannerGenerator
                             StyleIndex = dayOfWeek == "Sa" ? 3u : dayOfWeek == "So" ? 4u : 2u
                         };
 
-                        Cell additionalInfoCell = new Cell();
-                        InlineString inlineString = new InlineString();
-
-                        string[] milestoneParts = milestoneText.Split(new[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
-                        string[] holidayParts = holidayText.Split(new[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
-
-                        foreach (var part in milestoneParts)
+                        Cell milestoneCell = new Cell(new CellValue(milestoneText))
                         {
-                            SpreadsheetText milestonePart = new SpreadsheetText(part);
-                            SpreadsheetRun milestoneRun = new SpreadsheetRun(new SpreadsheetRunProperties(new SpreadsheetBold(), new SpreadsheetColor() { Rgb = new HexBinaryValue() { Value = "FF0000" } }, new SpreadsheetFontSize() { Val = 15 }), milestonePart);
-                            inlineString.AppendChild(milestoneRun);
+                            DataType = CellValues.String,
+                            StyleIndex = string.IsNullOrEmpty(milestoneText) && !string.IsNullOrEmpty(holidayText) ? 8u : string.IsNullOrEmpty(milestoneText) ? 7u : 6u
+                        };
 
-                            Paragraph milestoneParagraph = new Paragraph();
-                            milestoneParagraph.AppendChild(new DocumentFormat.OpenXml.Wordprocessing.Run(new DocumentFormat.OpenXml.Wordprocessing.Text("\n"))); // Nowa linia
-                            inlineString.AppendChild(milestoneParagraph);
-                            
-                        }
-
-                        foreach (var part in holidayParts)
+                        Cell holidayCell = new Cell(new CellValue(holidayText))
                         {
-                            SpreadsheetText holidayPart = new SpreadsheetText(part);
-                            SpreadsheetRun holidayRun = new SpreadsheetRun(new SpreadsheetRunProperties(new SpreadsheetBold(), new SpreadsheetColor() { Rgb = new HexBinaryValue() { Value = "009900" } }, new SpreadsheetFontSize() { Val = 10 }), holidayPart);
-                            inlineString.AppendChild(holidayRun);
-                        }
-
-                        additionalInfoCell.InlineString = inlineString;
-                        additionalInfoCell.DataType = CellValues.InlineString;
-
-                        if (milestoneText.Contains("MS"))
-                        {
-                            additionalInfoCell.StyleIndex = 6;
-                        }
-                        else
-                        {
-                            additionalInfoCell.StyleIndex = 5;
-                        }
+                            DataType = CellValues.String,
+                            StyleIndex = string.IsNullOrEmpty(holidayText) && !string.IsNullOrEmpty(milestoneText) ? 10u : string.IsNullOrEmpty(holidayText) ? 9u : 5u
+                        };
 
                         SpreadsheetService.AppendCellToWorksheet(worksheetPart, dayCell, (uint)currentRow, (uint)columnIndex);
-                        SpreadsheetService.AppendCellToWorksheet(worksheetPart, additionalInfoCell, (uint)currentRow, (uint)(columnIndex + 1));
+                        SpreadsheetService.AppendCellToWorksheet(worksheetPart, milestoneCell, (uint)currentRow, (uint)(columnIndex + 1));
+                        currentRow++;
+                        SpreadsheetService.AppendCellToWorksheet(worksheetPart, holidayCell, (uint)currentRow, (uint)(columnIndex + 1));
 
-                        SpreadsheetService.SetRowHeight(worksheetPart, 70);
+                        string dayCellReference1 = SpreadsheetService.GetColumnName((uint)columnIndex) + (currentRow - 1).ToString();
+                        string dayCellReference2 = SpreadsheetService.GetColumnName((uint)columnIndex) + currentRow.ToString();
+                        MergeCell dayMergeCell = new MergeCell() { Reference = new StringValue($"{dayCellReference1}:{dayCellReference2}") };
+                        mergeCells.Append(dayMergeCell);
+
+                        SpreadsheetService.SetRowHeight(worksheetPart, 35, (uint)currentRow);
                         currentRow++;
                     }
 

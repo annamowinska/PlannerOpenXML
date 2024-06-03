@@ -53,7 +53,7 @@ public class PlannerStyleService
         {
             Bold = new Bold(),
             Color = new Color() { Rgb = new HexBinaryValue() { Value = "FF0000" } },
-            FontSize = new FontSize() { Val = 10 }
+            FontSize = new FontSize() { Val = 15 }
         };
 
         Fonts fonts = new Fonts(defaultFont, monthFont, dayFont, saturdayFont, sundayFont, holidayFont, milestoneFont);
@@ -94,13 +94,19 @@ public class PlannerStyleService
         sundayPatternFill.Append(sundayForegroundColor);
         sundayFill.Append(sundayPatternFill);
 
+        Fill holidayFill = new Fill();
+        PatternFill holidayPatternFill = new PatternFill() { PatternType = PatternValues.Solid };
+        ForegroundColor holidayForegroundColor = new ForegroundColor() { Rgb = "B2FF66" };
+        holidayPatternFill.Append(holidayForegroundColor);
+        holidayFill.Append(holidayPatternFill);
+
         Fill milestoneFill = new Fill();
         PatternFill milestonePatternFill = new PatternFill() { PatternType = PatternValues.Solid };
         ForegroundColor milestoneForegroundColor = new ForegroundColor() { Rgb = "FFC0CB" };
         milestonePatternFill.Append(milestoneForegroundColor);
         milestoneFill.Append(milestonePatternFill);
 
-        Fills fills = new Fills(defaultFill, sheetFill, monthFill, dayFill, saturdayFill, sundayFill, milestoneFill);
+        Fills fills = new Fills(defaultFill, sheetFill, monthFill, dayFill, saturdayFill, sundayFill, holidayFill, milestoneFill);
 
         Border defaultBorder = new(new LeftBorder(),
                                     new RightBorder(),
@@ -112,12 +118,15 @@ public class PlannerStyleService
                                     new TopBorder() { Style = BorderStyleValues.Thick, Color = new Color() { Rgb = "FFFFFF" } },
                                     new BottomBorder() { Style = BorderStyleValues.Thick, Color = new Color() { Rgb = "FFFFFF" } });
 
-        Border holidayAndMilestoneBorder = new Border(new LeftBorder() { Style = BorderStyleValues.Thick, Color = new Color() { Rgb = "FFFFFF" } },
+        Border holidayBorder = new Border(new LeftBorder() { Style = BorderStyleValues.Thick, Color = new Color() { Rgb = "FFFFFF" } },
                                     new RightBorder() { Style = BorderStyleValues.Thick, Color = new Color() { Rgb = "FFFFFF" } },
-                                    new TopBorder() { Style = BorderStyleValues.Thin, Color = new Color() { Rgb = "FFFFFF" } },
                                     new BottomBorder() { Style = BorderStyleValues.Thin, Color = new Color() { Rgb = "000000" } });
 
-        Borders borders = new Borders(defaultBorder, monthAndDayBorder, holidayAndMilestoneBorder);
+        Border milestoneBorder = new Border(new LeftBorder() { Style = BorderStyleValues.Thick, Color = new Color() { Rgb = "FFFFFF" } },
+                                    new RightBorder() { Style = BorderStyleValues.Thick, Color = new Color() { Rgb = "FFFFFF" } },
+                                    new TopBorder() { Style = BorderStyleValues.Thin, Color = new Color() { Rgb = "FFFFFF" } });
+
+        Borders borders = new Borders(defaultBorder, monthAndDayBorder, holidayBorder, milestoneBorder);
 
         CellFormat defaultStyle = new CellFormat()
         {
@@ -188,6 +197,7 @@ public class PlannerStyleService
         {
             FontId = 5,
             BorderId = 2,
+            FillId = 6,
             Alignment = new Alignment()
             {
                 WrapText = true,
@@ -199,14 +209,36 @@ public class PlannerStyleService
         CellFormat milestoneStyle = new CellFormat()
         {
             FontId = 6,
-            BorderId = 2,
-            FillId = 6,
+            BorderId = 3,
+            FillId = 7,
             Alignment = new Alignment()
             {
                 WrapText = true,
                 Horizontal = HorizontalAlignmentValues.Left,
                 Vertical = VerticalAlignmentValues.Bottom
             }
+        };
+
+        CellFormat emptyFirstCellStyle = new CellFormat()
+        {
+            BorderId = 3
+        };
+
+        CellFormat emptyFirstCellAndHolidayStyle = new CellFormat()
+        {
+            BorderId = 3,
+            FillId = 6
+        };
+
+        CellFormat emptySecondCellStyle = new CellFormat()
+        {
+            BorderId = 2
+        };
+
+        CellFormat emptySecondCellAndMilestoneStyle = new CellFormat()
+        {
+            BorderId = 2,
+            FillId = 7
         };
 
         CellFormats cellformats = new CellFormats();
@@ -217,6 +249,10 @@ public class PlannerStyleService
         cellformats.Append(sundayStyle);
         cellformats.Append(holidayStyle);
         cellformats.Append(milestoneStyle);
+        cellformats.Append(emptyFirstCellStyle);
+        cellformats.Append(emptyFirstCellAndHolidayStyle);
+        cellformats.Append(emptySecondCellStyle);
+        cellformats.Append(emptySecondCellAndMilestoneStyle);
         
         workbookstylesheet.Append(fonts);
         workbookstylesheet.Append(fills);

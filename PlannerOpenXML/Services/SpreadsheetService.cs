@@ -63,15 +63,19 @@ public class SpreadsheetService
         columns.Append(column);
     }
 
-    public static void SetRowHeight(WorksheetPart worksheetPart, double height)
+    public static void SetRowHeight(WorksheetPart worksheetPart, double height, uint rowIndex)
     {
         SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
+        Row row = sheetData.Elements<Row>().FirstOrDefault(r => r.RowIndex == rowIndex);
 
-        foreach (Row row in sheetData.Elements<Row>())
+        if (row == null)
         {
-            row.Height = new DoubleValue(height);
-            row.CustomHeight = true;
+            row = new Row() { RowIndex = rowIndex };
+            sheetData.Append(row);
         }
+
+        row.Height = height;
+        row.CustomHeight = true;
     }
     #endregion methods
 }
