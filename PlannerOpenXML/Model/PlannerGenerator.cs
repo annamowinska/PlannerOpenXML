@@ -17,26 +17,18 @@ namespace PlannerOpenXML.Model;
 public class PlannerGenerator
 {
     #region fields
-    private readonly IApiService m_ApiService;
     private readonly HolidayNameService m_HolidayNameService;
     private readonly PlannerStyleService m_PlannerStyleService;
-    private readonly string m_FirstCountryCode;
-    private readonly string m_SecondCountryCode;
     #endregion fields
 
     #region constructors
     public PlannerGenerator(
         IApiService apiService, 
         HolidayNameService holidayNameService,
-        PlannerStyleService plannerStyleService,
-        string firstCountryCode, 
-        string secondCountryCode)
+        PlannerStyleService plannerStyleService)
     {
-        m_ApiService = apiService;
         m_HolidayNameService = holidayNameService;
         m_PlannerStyleService = plannerStyleService;
-        m_FirstCountryCode = firstCountryCode;
-        m_SecondCountryCode = secondCountryCode;
     }
     #endregion constructors
 

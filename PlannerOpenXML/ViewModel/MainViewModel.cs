@@ -224,7 +224,7 @@ public partial class MainViewModel : ObservableObject
         ICountryListService countryListService)
     {
         m_DialogService = dialogService;
-        m_PlannerGenerator = new PlannerGenerator(apiService, holidayNameService, plannerStyleService, "", "");
+        m_PlannerGenerator = new PlannerGenerator(apiService, holidayNameService, plannerStyleService);
         m_HolidayCacheService = holidayCacheService;
         m_NotificationService = notificationService;
         m_CountryListService = countryListService;
