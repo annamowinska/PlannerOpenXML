@@ -42,10 +42,17 @@ public class PlannerStyleService
             FontSize = new FontSize() { Val = 20 }
         };
 
-        var holidayFont = new Font
+        var firstCountryHolidayFont = new Font
         {
             Bold = new Bold(),
             Color = new Color() { Rgb = new HexBinaryValue() { Value = "009900" } },
+            FontSize = new FontSize() { Val = 10 }
+        };
+
+        var secondCountryHolidayFont = new Font
+        {
+            Bold = new Bold(),
+            Color = new Color() { Rgb = new HexBinaryValue() { Value = "660066" } },
             FontSize = new FontSize() { Val = 10 }
         };
 
@@ -56,7 +63,7 @@ public class PlannerStyleService
             FontSize = new FontSize() { Val = 15 }
         };
 
-        Fonts fonts = new Fonts(defaultFont, monthFont, dayFont, saturdayFont, sundayFont, holidayFont, milestoneFont);
+        Fonts fonts = new Fonts(defaultFont, monthFont, dayFont, saturdayFont, sundayFont, firstCountryHolidayFont, secondCountryHolidayFont, milestoneFont);
 
         Fill defaultFill = new Fill();
         PatternFill defaultPaternFill = new PatternFill() { PatternType = PatternValues.Solid };
@@ -94,11 +101,17 @@ public class PlannerStyleService
         sundayPatternFill.Append(sundayForegroundColor);
         sundayFill.Append(sundayPatternFill);
 
-        Fill holidayFill = new Fill();
-        PatternFill holidayPatternFill = new PatternFill() { PatternType = PatternValues.Solid };
-        ForegroundColor holidayForegroundColor = new ForegroundColor() { Rgb = "B2FF66" };
-        holidayPatternFill.Append(holidayForegroundColor);
-        holidayFill.Append(holidayPatternFill);
+        Fill firstCountryHolidayFill = new Fill();
+        PatternFill firstCountryHolidayPatternFill = new PatternFill() { PatternType = PatternValues.Solid };
+        ForegroundColor firstCountryHolidayForegroundColor = new ForegroundColor() { Rgb = "B2FF66" };
+        firstCountryHolidayPatternFill.Append(firstCountryHolidayForegroundColor);
+        firstCountryHolidayFill.Append(firstCountryHolidayPatternFill);
+
+        Fill secondCountryHolidayFill = new Fill();
+        PatternFill secondCountryHolidayPatternFill = new PatternFill() { PatternType = PatternValues.Solid };
+        ForegroundColor secondCountryHolidayForegroundColor = new ForegroundColor() { Rgb = "B583B5" };
+        secondCountryHolidayPatternFill.Append(secondCountryHolidayForegroundColor);
+        secondCountryHolidayFill.Append(secondCountryHolidayPatternFill);
 
         Fill milestoneFill = new Fill();
         PatternFill milestonePatternFill = new PatternFill() { PatternType = PatternValues.Solid };
@@ -106,7 +119,7 @@ public class PlannerStyleService
         milestonePatternFill.Append(milestoneForegroundColor);
         milestoneFill.Append(milestonePatternFill);
 
-        Fills fills = new Fills(defaultFill, sheetFill, monthFill, dayFill, saturdayFill, sundayFill, holidayFill, milestoneFill);
+        Fills fills = new Fills(defaultFill, sheetFill, monthFill, dayFill, saturdayFill, sundayFill, firstCountryHolidayFill, secondCountryHolidayFill, milestoneFill);
 
         Border defaultBorder = new(new LeftBorder(),
                                     new RightBorder(),
@@ -128,7 +141,7 @@ public class PlannerStyleService
 
         Borders borders = new Borders(defaultBorder, monthAndDayBorder, holidayBorder, milestoneBorder);
 
-        CellFormat defaultStyle = new CellFormat()
+        CellFormat defaultStyle = new CellFormat() // IndexStyle = 0
         {
             FontId = 0,
             FillId = 0,
@@ -141,7 +154,7 @@ public class PlannerStyleService
             }
         };
 
-        CellFormat nameOfMonthStyle = new CellFormat()
+        CellFormat nameOfMonthStyle = new CellFormat() // IndexStyle = 1
         {
             FontId = 1,
             FillId = 2,
@@ -154,7 +167,7 @@ public class PlannerStyleService
             }
         };
 
-        CellFormat dayStyle = new CellFormat()
+        CellFormat dayStyle = new CellFormat() // IndexStyle = 2
         {
             FontId = 2,
             FillId = 3,
@@ -167,7 +180,7 @@ public class PlannerStyleService
             }
         };
 
-        CellFormat saturdayStyle = new CellFormat()
+        CellFormat saturdayStyle = new CellFormat() // IndexStyle = 3
         {
             FontId = 3,
             FillId = 4,
@@ -180,7 +193,7 @@ public class PlannerStyleService
             }
         };
 
-        CellFormat sundayStyle = new CellFormat()
+        CellFormat sundayStyle = new CellFormat() // IndexStyle = 4
         {
             FontId = 4,
             FillId = 5,
@@ -193,7 +206,7 @@ public class PlannerStyleService
             }
         };
 
-        CellFormat holidayStyle = new CellFormat()
+        CellFormat firstCountryHolidayStyle = new CellFormat() // IndexStyle = 5
         {
             FontId = 5,
             BorderId = 2,
@@ -206,10 +219,10 @@ public class PlannerStyleService
             }
         };
 
-        CellFormat milestoneStyle = new CellFormat()
+        CellFormat secondCountryHolidayStyle = new CellFormat() // IndexStyle = 6
         {
             FontId = 6,
-            BorderId = 3,
+            BorderId = 2,
             FillId = 7,
             Alignment = new Alignment()
             {
@@ -219,26 +232,45 @@ public class PlannerStyleService
             }
         };
 
-        CellFormat emptyFirstCellStyle = new CellFormat()
+        CellFormat milestoneStyle = new CellFormat() // IndexStyle = 7
+        {
+            FontId = 7,
+            BorderId = 3,
+            FillId = 8,
+            Alignment = new Alignment()
+            {
+                WrapText = true,
+                Horizontal = HorizontalAlignmentValues.Left,
+                Vertical = VerticalAlignmentValues.Bottom
+            }
+        };
+
+        CellFormat emptyFirstCellStyle = new CellFormat() // IndexStyle = 8
         {
             BorderId = 3
         };
 
-        CellFormat emptyFirstCellAndHolidayStyle = new CellFormat()
+        CellFormat emptyFirstCellAndFirstCountryHolidayStyle = new CellFormat() // IndexStyle = 9
         {
             BorderId = 3,
             FillId = 6
         };
 
-        CellFormat emptySecondCellStyle = new CellFormat()
+        CellFormat emptyFirstCellAndSecondCountryHolidayStyle = new CellFormat() // IndexStyle = 10
+        {
+            BorderId = 3,
+            FillId = 7
+        };
+
+        CellFormat emptySecondCellStyle = new CellFormat() // IndexStyle = 11
         {
             BorderId = 2
         };
 
-        CellFormat emptySecondCellAndMilestoneStyle = new CellFormat()
+        CellFormat emptySecondCellAndMilestoneStyle = new CellFormat() // IndexStyle = 12
         {
             BorderId = 2,
-            FillId = 7
+            FillId = 8
         };
 
         CellFormats cellformats = new CellFormats();
@@ -247,10 +279,12 @@ public class PlannerStyleService
         cellformats.Append(dayStyle);
         cellformats.Append(saturdayStyle);
         cellformats.Append(sundayStyle);
-        cellformats.Append(holidayStyle);
+        cellformats.Append(firstCountryHolidayStyle);
+        cellformats.Append(secondCountryHolidayStyle);
         cellformats.Append(milestoneStyle);
         cellformats.Append(emptyFirstCellStyle);
-        cellformats.Append(emptyFirstCellAndHolidayStyle);
+        cellformats.Append(emptyFirstCellAndFirstCountryHolidayStyle);
+        cellformats.Append(emptyFirstCellAndSecondCountryHolidayStyle);
         cellformats.Append(emptySecondCellStyle);
         cellformats.Append(emptySecondCellAndMilestoneStyle);
         

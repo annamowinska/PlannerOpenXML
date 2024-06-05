@@ -140,13 +140,16 @@ public class PlannerGenerator
                         Cell milestoneCell = new Cell(new CellValue(milestoneText))
                         {
                             DataType = CellValues.String,
-                            StyleIndex = string.IsNullOrEmpty(milestoneText) && !string.IsNullOrEmpty(holidayText) ? 8u : string.IsNullOrEmpty(milestoneText) ? 7u : 6u
+                            StyleIndex = string.IsNullOrEmpty(milestoneText) && !string.IsNullOrEmpty(firstCountryHolidayName) ? 9u : 
+                            string.IsNullOrEmpty(milestoneText) && !string.IsNullOrEmpty(secondCountryHolidayName) ? 10u : string.IsNullOrEmpty(milestoneText) ? 8u : 7u
                         };
 
                         Cell holidayCell = new Cell(new CellValue(holidayText))
                         {
                             DataType = CellValues.String,
-                            StyleIndex = string.IsNullOrEmpty(holidayText) && !string.IsNullOrEmpty(milestoneText) ? 10u : string.IsNullOrEmpty(holidayText) ? 9u : 5u
+                            StyleIndex = !string.IsNullOrEmpty(firstCountryHolidayName) ? 5u : !string.IsNullOrEmpty(secondCountryHolidayName) ? 6u : 
+                            (string.IsNullOrEmpty(firstCountryHolidayName) && !string.IsNullOrEmpty(milestoneText) ? 12u : 
+                            (string.IsNullOrEmpty(firstCountryHolidayName) && !string.IsNullOrEmpty(milestoneText) ? 10u : string.IsNullOrEmpty(holidayText) ? 11u : 7u))
                         };
 
                         SpreadsheetService.AppendCellToWorksheet(worksheetPart, dayCell, (uint)currentRow, (uint)columnIndex);
