@@ -63,7 +63,14 @@ public class PlannerStyleService
             FontSize = new FontSize() { Val = 15 }
         };
 
-        Fonts fonts = new Fonts(defaultFont, monthFont, dayFont, saturdayFont, sundayFont, firstCountryHolidayFont, secondCountryHolidayFont, milestoneFont);
+        var weekNumberFont = new Font
+        {
+            Bold = new Bold(),
+            Color = new Color() { Rgb = new HexBinaryValue() { Value = "BCBC0D" } },
+            FontSize = new FontSize() { Val = 25 }
+        };
+
+        Fonts fonts = new Fonts(defaultFont, monthFont, dayFont, saturdayFont, sundayFont, firstCountryHolidayFont, secondCountryHolidayFont, milestoneFont, weekNumberFont);
 
         Fill defaultFill = new Fill();
         PatternFill defaultPaternFill = new PatternFill() { PatternType = PatternValues.Solid };
@@ -119,7 +126,13 @@ public class PlannerStyleService
         milestonePatternFill.Append(milestoneForegroundColor);
         milestoneFill.Append(milestonePatternFill);
 
-        Fills fills = new Fills(defaultFill, sheetFill, monthFill, dayFill, saturdayFill, sundayFill, firstCountryHolidayFill, secondCountryHolidayFill, milestoneFill);
+        Fill weekNumberFill = new Fill();
+        PatternFill weekNumberPatternFill = new PatternFill() { PatternType = PatternValues.Solid };
+        ForegroundColor weekNumberForegroundColor = new ForegroundColor() { Rgb = "FFFF99" };
+        weekNumberPatternFill.Append(weekNumberForegroundColor);
+        weekNumberFill.Append(weekNumberPatternFill);
+
+        Fills fills = new Fills(defaultFill, sheetFill, monthFill, dayFill, saturdayFill, sundayFill, firstCountryHolidayFill, secondCountryHolidayFill, milestoneFill, weekNumberFill);
 
         Border defaultBorder = new(new LeftBorder(),
                                     new RightBorder(),
@@ -132,14 +145,18 @@ public class PlannerStyleService
                                     new BottomBorder() { Style = BorderStyleValues.Thick, Color = new Color() { Rgb = "FFFFFF" } });
 
         Border holidayBorder = new Border(new LeftBorder() { Style = BorderStyleValues.Thick, Color = new Color() { Rgb = "FFFFFF" } },
-                                    new RightBorder() { Style = BorderStyleValues.Thick, Color = new Color() { Rgb = "FFFFFF" } },
                                     new BottomBorder() { Style = BorderStyleValues.Thin, Color = new Color() { Rgb = "000000" } });
 
         Border milestoneBorder = new Border(new LeftBorder() { Style = BorderStyleValues.Thick, Color = new Color() { Rgb = "FFFFFF" } },
-                                    new RightBorder() { Style = BorderStyleValues.Thick, Color = new Color() { Rgb = "FFFFFF" } },
                                     new TopBorder() { Style = BorderStyleValues.Thin, Color = new Color() { Rgb = "FFFFFF" } });
 
-        Borders borders = new Borders(defaultBorder, monthAndDayBorder, holidayBorder, milestoneBorder);
+        Border emptyWeekNumberCellBorder = new Border(new RightBorder() { Style = BorderStyleValues.Thick, Color = new Color() { Rgb = "FFFFFF" } },
+                                    new BottomBorder() { Style = BorderStyleValues.Thin, Color = new Color() { Rgb = "000000" } });
+
+        Border dayCellBorder = new Border(new TopBorder() { Style = BorderStyleValues.Thick, Color = new Color() { Rgb = "FFFFFF" } },
+                                    new BottomBorder() { Style = BorderStyleValues.Thick, Color = new Color() { Rgb = "FFFFFF" } });
+
+        Borders borders = new Borders(defaultBorder, monthAndDayBorder, holidayBorder, milestoneBorder, emptyWeekNumberCellBorder, dayCellBorder);
 
         CellFormat defaultStyle = new CellFormat() // IndexStyle = 0
         {
@@ -235,7 +252,6 @@ public class PlannerStyleService
         CellFormat milestoneStyle = new CellFormat() // IndexStyle = 7
         {
             FontId = 7,
-            BorderId = 3,
             FillId = 8,
             Alignment = new Alignment()
             {
@@ -252,13 +268,11 @@ public class PlannerStyleService
 
         CellFormat emptyFirstCellAndFirstCountryHolidayStyle = new CellFormat() // IndexStyle = 9
         {
-            BorderId = 3,
             FillId = 6
         };
 
         CellFormat emptyFirstCellAndSecondCountryHolidayStyle = new CellFormat() // IndexStyle = 10
         {
-            BorderId = 3,
             FillId = 7
         };
 
@@ -271,6 +285,42 @@ public class PlannerStyleService
         {
             BorderId = 2,
             FillId = 8
+        };
+
+        CellFormat weekNumberCellStyle = new CellFormat() // IndexStyle = 13
+        {
+            FontId = 8,
+            BorderId = 1,
+            FillId = 9,
+            Alignment = new Alignment()
+            {
+                WrapText = true,
+                Horizontal = HorizontalAlignmentValues.Center,
+                Vertical = VerticalAlignmentValues.Center
+            }
+        };
+
+        CellFormat emptyWeekNumberCellStyle = new CellFormat() // IndexStyle = 14
+        {
+            BorderId = 4
+        };
+
+        CellFormat emptyWeekNumberCellAndMiletoneStyle = new CellFormat() // IndexStyle = 15
+        {
+            BorderId = 4,
+            FillId = 8
+        };
+
+        CellFormat emptyWeekNumberCellAndFirstContryHolidayStyle = new CellFormat() // IndexStyle = 16
+        {
+            BorderId = 4,
+            FillId = 6
+        };
+
+        CellFormat emptyWeekNumberCellAndSecondContryHolidayStyle = new CellFormat() // IndexStyle = 17
+        {
+            BorderId = 4,
+            FillId = 7
         };
 
         CellFormats cellformats = new CellFormats();
@@ -287,6 +337,11 @@ public class PlannerStyleService
         cellformats.Append(emptyFirstCellAndSecondCountryHolidayStyle);
         cellformats.Append(emptySecondCellStyle);
         cellformats.Append(emptySecondCellAndMilestoneStyle);
+        cellformats.Append(weekNumberCellStyle);
+        cellformats.Append(emptyWeekNumberCellStyle);
+        cellformats.Append(emptyWeekNumberCellAndMiletoneStyle);
+        cellformats.Append(emptyWeekNumberCellAndFirstContryHolidayStyle);
+        cellformats.Append(emptyWeekNumberCellAndSecondContryHolidayStyle);
         
         workbookstylesheet.Append(fonts);
         workbookstylesheet.Append(fills);

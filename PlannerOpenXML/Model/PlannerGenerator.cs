@@ -82,6 +82,10 @@ public class PlannerGenerator
                 var columnIndex = 1;
                 var mergeCells = new MergeCells();
 
+                var calendar = CultureInfo.InvariantCulture.Calendar;
+                var calendarWeekRule = CalendarWeekRule.FirstFourDayWeek;
+                var firstDayOfWeek = DayOfWeek.Monday;
+
                 for (var date = from; date <= to; date = date.AddMonths(1))
                 {
                     string monthName = date.ToString("MMMM yyyy", culture);
@@ -92,23 +96,32 @@ public class PlannerGenerator
                         StyleIndex = 1
                     };
 
-                    SpreadsheetService.AppendCellToWorksheet(worksheetPart, monthYearCell, 1, (uint)columnIndex);
-
-                    Cell emptyCell = new(new CellValue(string.Empty))
+                    Cell emptyFirstCell = new(new CellValue(string.Empty))
                     {
                         DataType = CellValues.String,
                         StyleIndex = 1
                     };
-                    SpreadsheetService.AppendCellToWorksheet(worksheetPart, emptyCell, 1, (uint)(columnIndex + 1));
+                    
+                    Cell emptySecondCell = new(new CellValue(string.Empty))
+                    {
+                        DataType = CellValues.String,
+                        StyleIndex = 1
+                    };
 
                     string cellReference1 = SpreadsheetService.GetColumnName((uint)columnIndex) + "1";
                     string cellReference2 = SpreadsheetService.GetColumnName((uint)(columnIndex + 1)) + "1";
-                    MergeCell mergeCell = new MergeCell() { Reference = new StringValue($"{cellReference1}:{cellReference2}") };
+                    string cellReference3 = SpreadsheetService.GetColumnName((uint)(columnIndex + 2)) + "1";
+                    MergeCell mergeCell = new MergeCell() { Reference = new StringValue($"{cellReference1}:{cellReference3}") };
                     mergeCells.Append(mergeCell);
+
+                    SpreadsheetService.AppendCellToWorksheet(worksheetPart, monthYearCell, 1, (uint)columnIndex);
+                    SpreadsheetService.AppendCellToWorksheet(worksheetPart, emptyFirstCell, 1, (uint)(columnIndex + 1));
+                    SpreadsheetService.AppendCellToWorksheet(worksheetPart, emptySecondCell, 1, (uint)(columnIndex + 2));
 
                     SpreadsheetService.SetRowHeight(worksheetPart, 70, 1);
 
                     var currentRow = 2;
+
                     for (DateOnly currentDate = date; currentDate.Month == date.Month; currentDate = currentDate.AddDays(1))
                     {
                         string dayOfWeek = currentDate.ToString("ddd", culture);
@@ -131,6 +144,8 @@ public class PlannerGenerator
                         else if (!string.IsNullOrEmpty(secondCountryHolidayName))
                             holidayText += $"{secondCountryCode}: {secondCountryHolidayName}";
 
+                        int weekOfYear = calendar.GetWeekOfYear(currentDate.ToDateTime(TimeOnly.MinValue), calendarWeekRule, firstDayOfWeek);
+
                         Cell dayCell = new Cell(new CellValue($"{day} {dayOfWeek}"))
                         {
                             DataType = CellValues.String,
@@ -141,26 +156,54 @@ public class PlannerGenerator
                         {
                             DataType = CellValues.String,
                             StyleIndex = string.IsNullOrEmpty(milestoneText) && !string.IsNullOrEmpty(firstCountryHolidayName) ? 9u : 
-                            string.IsNullOrEmpty(milestoneText) && !string.IsNullOrEmpty(secondCountryHolidayName) ? 10u : string.IsNullOrEmpty(milestoneText) ? 8u : 7u
+                                            string.IsNullOrEmpty(milestoneText) && !string.IsNullOrEmpty(secondCountryHolidayName) ? 10u : string.IsNullOrEmpty(milestoneText) ? 8u : 7u
                         };
 
                         Cell holidayCell = new Cell(new CellValue(holidayText))
                         {
                             DataType = CellValues.String,
                             StyleIndex = !string.IsNullOrEmpty(firstCountryHolidayName) ? 5u : !string.IsNullOrEmpty(secondCountryHolidayName) ? 6u : 
-                            (string.IsNullOrEmpty(firstCountryHolidayName) && !string.IsNullOrEmpty(milestoneText) ? 12u : 
-                            (string.IsNullOrEmpty(firstCountryHolidayName) && !string.IsNullOrEmpty(milestoneText) ? 10u : string.IsNullOrEmpty(holidayText) ? 11u : 7u))
+                                            (string.IsNullOrEmpty(firstCountryHolidayName) && !string.IsNullOrEmpty(milestoneText) ? 12u : 
+                                            (string.IsNullOrEmpty(firstCountryHolidayName) && !string.IsNullOrEmpty(milestoneText) ? 10u : 
+                                             string.IsNullOrEmpty(holidayText) ? 11u : 7u))
+                        };
+
+                        Cell weekNumberCell = new Cell(new CellValue(dayOfWeek == "Mo" ? weekOfYear.ToString() : ""))
+                        {
+                            DataType = CellValues.Number,
+                            StyleIndex = dayOfWeek == "Mo" ? 13u : !string.IsNullOrEmpty(milestoneText) ? 7u : 
+                                                                    !string.IsNullOrEmpty(firstCountryHolidayName) ? 9u : 
+                                                                    !string.IsNullOrEmpty(secondCountryHolidayName) ? 10u : 0u
+                        };
+
+                        Cell emptyCellBelowWeekNumber = new Cell(new CellValue(string.Empty))
+                        {
+                            DataType = CellValues.String,
+                            StyleIndex = dayOfWeek == "Mo" ? 13u : !string.IsNullOrEmpty(firstCountryHolidayName) ? 16u : 
+                                                                    !string.IsNullOrEmpty(secondCountryHolidayName) ? 17u : 
+                                                                    (!string.IsNullOrEmpty(milestoneText) && (string.IsNullOrEmpty(firstCountryHolidayName) || 
+                                                                    (string.IsNullOrEmpty(secondCountryHolidayName)))) ? 15u : 14u
                         };
 
                         SpreadsheetService.AppendCellToWorksheet(worksheetPart, dayCell, (uint)currentRow, (uint)columnIndex);
                         SpreadsheetService.AppendCellToWorksheet(worksheetPart, milestoneCell, (uint)currentRow, (uint)(columnIndex + 1));
+                        SpreadsheetService.AppendCellToWorksheet(worksheetPart, weekNumberCell, (uint)currentRow, (uint)(columnIndex + 2));
                         currentRow++;
                         SpreadsheetService.AppendCellToWorksheet(worksheetPart, holidayCell, (uint)currentRow, (uint)(columnIndex + 1));
+                        SpreadsheetService.AppendCellToWorksheet(worksheetPart, emptyCellBelowWeekNumber, (uint)currentRow, (uint)(columnIndex + 2));
 
                         string dayCellReference1 = SpreadsheetService.GetColumnName((uint)columnIndex) + (currentRow - 1).ToString();
                         string dayCellReference2 = SpreadsheetService.GetColumnName((uint)columnIndex) + currentRow.ToString();
                         MergeCell dayMergeCell = new MergeCell() { Reference = new StringValue($"{dayCellReference1}:{dayCellReference2}") };
                         mergeCells.Append(dayMergeCell);
+
+                        if (dayOfWeek == "Mo")
+                        {
+                            string weekNumberCellReference1 = SpreadsheetService.GetColumnName((uint)(columnIndex + 2)) + (currentRow - 1).ToString();
+                            string weekNumberCellReference2 = SpreadsheetService.GetColumnName((uint)(columnIndex + 2)) + currentRow.ToString();
+                            MergeCell weekNumberMergeCell = new MergeCell() { Reference = new StringValue($"{weekNumberCellReference1}:{weekNumberCellReference2}") };
+                            mergeCells.Append(weekNumberMergeCell);
+                        }
 
                         SpreadsheetService.SetRowHeight(worksheetPart, 35, (uint)currentRow);
                         currentRow++;
@@ -168,8 +211,9 @@ public class PlannerGenerator
 
                     SpreadsheetService.SetColumnWidth(worksheetPart, (uint)columnIndex, 6);
                     SpreadsheetService.SetColumnWidth(worksheetPart, (uint)(columnIndex + 1), 18);
+                    SpreadsheetService.SetColumnWidth(worksheetPart, (uint)(columnIndex + 2), 6);
 
-                    columnIndex += 2;
+                    columnIndex += 3;
                 }
 
                 worksheetPart.Worksheet.InsertAfter(mergeCells, worksheetPart.Worksheet.Elements<SheetData>().First());
