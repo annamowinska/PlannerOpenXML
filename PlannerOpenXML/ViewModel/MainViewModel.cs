@@ -148,6 +148,7 @@ public partial class MainViewModel : ObservableObject
         MilestoneLabelVisibility = true;
         MonthsComboBoxVisibility = false;
         MilestoneComboBoxVisibility = false;
+        MilestonesClear();
 
         foreach (var country in CountryList.Countries)
         {
@@ -210,6 +211,12 @@ public partial class MainViewModel : ObservableObject
             return;
 
         Milestones.SaveAs(path);
+    }
+
+    [RelayCommand]
+    private void MilestonesClear()
+    {
+        Milestones.Clear();
     }
     #endregion commands
 

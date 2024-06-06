@@ -87,6 +87,10 @@
                                 <Setter Property="Foreground" Value="#007ACC"/>
                                 <Setter Property="FontWeight" Value="Bold"/>
                             </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#E0E0E0"/>
+                                <Setter Property="Foreground" Value="#BDBDBD"/>
+                            </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
