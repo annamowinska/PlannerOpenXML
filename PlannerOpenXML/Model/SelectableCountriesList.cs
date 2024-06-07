@@ -1,13 +1,33 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using PlannerOpenXML.Services;
 using System.Collections.ObjectModel;
 
 public class SelectableCountiesList : ObservableObject
 {
-    public ObservableCollection<SelectableCountry> Countries { get; } = new ObservableCollection<SelectableCountry>
+    #region fields
+    private readonly IApiService m_ApiService;
+    #endregion fields
+
+    #region properties
+    public ObservableCollection<SelectableCountry> Countries { get; } = new ObservableCollection<SelectableCountry>();
+    #endregion properties
+
+    #region constructors
+    public SelectableCountiesList(IApiService apiService)
     {
-        new SelectableCountry("Germany", "DE"),
-        new SelectableCountry("Hungary", "HU"),
-        new SelectableCountry("Poland", "PL"),
-        new SelectableCountry("USA", "US")
-    };
+        m_ApiService = apiService;
+        LoadCountriesAsync();
+    }
+    #endregion constructors
+
+    #region methods
+    private async void LoadCountriesAsync()
+    {
+        var countries = await m_ApiService.GetAvailableCountriesAsync();
+        foreach (var country in countries)
+        {
+            Countries.Add(new SelectableCountry(country.Name, country.Code));
+        }
+    }
+    #endregion methods
 }

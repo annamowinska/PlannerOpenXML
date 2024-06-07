@@ -2,7 +2,6 @@
 using CommunityToolkit.Mvvm.Input;
 using PlannerOpenXML.Model;
 using PlannerOpenXML.Services;
-using System.Data;
 using System.Windows;
 using Xceed.Wpf.Toolkit;
 
@@ -16,6 +15,7 @@ public partial class MainViewModel : ObservableObject
     private readonly HolidayCacheService m_HolidayCacheService;
     private readonly NotificationService m_NotificationService;
     private readonly ICountryListService m_CountryListService;
+    private readonly IApiService m_ApiService;
     #endregion fields
 
     #region properties
@@ -47,67 +47,31 @@ public partial class MainViewModel : ObservableObject
     private bool m_IsMonthsComboBoxOpen = false;
 
     [ObservableProperty]
-    private string? m_FirstCountryHolidays;
+    private string? m_FirstCountryCode;
 
     [ObservableProperty]
-    private string? m_SecondCountryHolidays;
+    private string? m_SecondCountryCode;
 
     [ObservableProperty]
-    private bool m_MilestoneLabelVisibility = true;
+    private bool m_FirstCountryLabelVisibility = true;
 
     [ObservableProperty]
-    private bool m_MilestoneComboBoxVisibility = false;
+    private bool m_FirstCountryComboBoxVisibility = false;
 
     [ObservableProperty]
-    private bool m_IsMilestoneComboBoxOpen = false;
+    private bool m_IsFirstCountryComboBoxOpen = false;
 
+    [ObservableProperty]
+    private bool m_SecondCountryLabelVisibility = true;
+
+    [ObservableProperty]
+    private bool m_SecondCountryComboBoxVisibility = false;
+
+    [ObservableProperty]
+    private bool m_IsSecondCountryComboBoxOpen = false;
     #endregion properties
 
     #region commands
-    [RelayCommand]
-    private void CheckCountry(SelectableCountry country)
-    {
-        var checkedCountries = CountryList.Countries.Count(c => c.IsChecked);
-
-        if (checkedCountries > 2)
-        {
-            country.IsChecked = false;
-        }
-        else
-        {
-            var selectedCountries = CountryList.Countries.Where(c => c.IsChecked).ToList();
-
-            if (selectedCountries.Count == 2)
-            {
-                FirstCountryHolidays = selectedCountries[0].Code;
-                SecondCountryHolidays = selectedCountries[1].Code;
-
-                foreach (var remainingCountry in CountryList.Countries.Where(c => !c.IsChecked))
-                {
-                    remainingCountry.IsEnabled = false;
-                }
-            }
-            else
-            {
-                foreach (var remainingCountry in CountryList.Countries)
-                {
-                    remainingCountry.IsEnabled = true;
-                }
-
-                if (selectedCountries.Count == 1)
-                {
-                    FirstCountryHolidays = selectedCountries[0].Code;
-                    SecondCountryHolidays = null;
-                }
-                else
-                {
-                    FirstCountryHolidays = null;
-                    SecondCountryHolidays = null;
-                }
-            }
-        }
-    }
-
     [RelayCommand]
     private async Task Generate()
     {
@@ -124,8 +88,8 @@ public partial class MainViewModel : ObservableObject
         if (path == null)
             return;
 
-        var firstCountryCode = FirstCountryHolidays;
-        var secondCountryCode = SecondCountryHolidays;
+        var firstCountryCode = FirstCountryCode;
+        var secondCountryCode = SecondCountryCode;
         var countryCodes = new List<string>();
 
         if (!string.IsNullOrEmpty(firstCountryCode))
@@ -145,16 +109,10 @@ public partial class MainViewModel : ObservableObject
         FirstMonth = null;
         NumberOfMonths = null;
         MonthsLabelVisibility = true;
-        MilestoneLabelVisibility = true;
+        FirstCountryLabelVisibility = true;
+        SecondCountryLabelVisibility = true;
         MonthsComboBoxVisibility = false;
-        MilestoneComboBoxVisibility = false;
         MilestonesClear();
-
-        foreach (var country in CountryList.Countries)
-        {
-            country.IsChecked = false;
-            country.IsEnabled = true;
-        }
     }
 
     [RelayCommand]
@@ -163,6 +121,22 @@ public partial class MainViewModel : ObservableObject
         MonthsLabelVisibility = false;
         MonthsComboBoxVisibility = true;
         IsMonthsComboBoxOpen = true;
+    }
+
+    [RelayCommand]
+    private void FirstCountryLabelClicked(string LabelName)
+    {
+        FirstCountryLabelVisibility = false;
+        FirstCountryComboBoxVisibility = true;
+        IsFirstCountryComboBoxOpen = true;
+    }
+
+    [RelayCommand]
+    private void SecondCountryLabelClicked(string LabelName)
+    {
+        SecondCountryLabelVisibility = false;
+        SecondCountryComboBoxVisibility = true;
+        IsSecondCountryComboBoxOpen = true;
     }
 
     [RelayCommand]
@@ -222,21 +196,22 @@ public partial class MainViewModel : ObservableObject
 
     #region constructors
     public MainViewModel(
-        IApiService apiService, 
-        HolidayNameService holidayNameService,
-        PlannerStyleService plannerStyleService, 
-        HolidayCacheService holidayCacheService, 
-        NotificationService notificationService, 
-        DialogService dialogService,
-        ICountryListService countryListService)
+    IApiService apiService, 
+    HolidayNameService holidayNameService,
+    PlannerStyleService plannerStyleService, 
+    HolidayCacheService holidayCacheService, 
+    NotificationService notificationService, 
+    DialogService dialogService,
+    ICountryListService countryListService)
     {
         m_DialogService = dialogService;
         m_PlannerGenerator = new PlannerGenerator(apiService, holidayNameService, plannerStyleService);
         m_HolidayCacheService = holidayCacheService;
         m_NotificationService = notificationService;
         m_CountryListService = countryListService;
-        Milestones = [];
-        CountryList = new SelectableCountiesList();
+        m_ApiService = apiService;
+        Milestones = new EditableObservableCollection<Milestone>();
+        CountryList = new SelectableCountiesList(apiService);
     }
     #endregion constructors
 }

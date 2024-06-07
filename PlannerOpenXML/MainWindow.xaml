@@ -13,67 +13,19 @@
         Icon="/Resources/icon.png"
         Title="Planner Generator" SizeToContent="Height" Width="650" Background="#FFB4B4B4">
     <Window.Resources>
-        <conv:MonthLabelVisibilityConverter x:Key="monthLabelVisConv"/>
-        <conv:MilestoneLabelVisibilityConverter x:Key="milestoneLabelVisConv"/>
+        <conv:MonthLabelVisibilityConverter x:Key="monthLabelVisConv" />
+        <conv:FirstCountryLabelVisibilityConverter x:Key="firstCountryLabelVisConv" />
+        <conv:SecondCountryLabelVisibilityConverter x:Key="secondContryLabelVisConv" />
+        <conv:MilestoneLabelVisibilityConverter x:Key="milestoneLabelVisConv" />
         <conv:DateOnlyToDateTimeConverter x:Key="DateOnlyToDateTime" />
         <conv:NullToVisibilityConverter x:Key="NotNullToVisibility" WhenTrue="Collapsed" WhenFalse="Visible" />
-        <Style x:Key="CustomCheckBoxStyle" TargetType="CheckBox">
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="CheckBox">
-                        <StackPanel Orientation="Horizontal">
-                            <Border x:Name="border"
-                                    Background="{TemplateBinding Background}"
-                                    BorderBrush="#007ACC"
-                                    BorderThickness="2"
-                                    CornerRadius="2"
-                                    Width="16"
-                                    Height="16"
-                                    VerticalAlignment="Center"
-                                    HorizontalAlignment="Center">
-                                <Path x:Name="checkMark"
-                                      Data="M 0 4 L 2 6 L 6 2"
-                                      Stroke="Black"
-                                      StrokeThickness="2"
-                                      Visibility="Collapsed"
-                                      VerticalAlignment="Center"
-                                      HorizontalAlignment="Center"/>
-                            </Border>
-                            <ContentPresenter x:Name="contentPresenter"
-                                              Margin="5,0,0,0"
-                                              VerticalAlignment="Center"
-                                              HorizontalAlignment="Left">
-                                <ContentPresenter.Content>
-                                    <TextBlock Text="{TemplateBinding Content}"
-                                               VerticalAlignment="Center"
-                                               HorizontalAlignment="Left"/>
-                                </ContentPresenter.Content>
-                            </ContentPresenter>
-                        </StackPanel>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="border" Property="BorderBrush" Value="#007ACC" />
-                                <Setter TargetName="checkMark" Property="Visibility" Value="Visible" />
-                                <Setter TargetName="contentPresenter" Property="TextBlock.Foreground" Value="#007ACC" />
-                                <Setter TargetName="contentPresenter" Property="TextBlock.FontWeight" Value="Bold" />
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="border" Property="Background" Value="#A0A0A0" />
-                                <Setter TargetName="border" Property="BorderBrush" Value="Gray" />
-                                <Setter TargetName="contentPresenter" Property="TextBlock.Foreground" Value="#FF505050" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
         <Style x:Key="CustomButtonStyle" TargetType="Button">
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontSize" Value="16"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Height" Value="25" />
-            <Setter Property="VerticalAlignment" Value="Bottom"/>
+            <Setter Property="VerticalAlignment" Value="Bottom" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -206,7 +158,7 @@
                 FontWeight="Bold"
                 Foreground="#007ACC"
                 HorizontalAlignment="Center" 
-                VerticalAlignment="Top" 
+                VerticalAlignment="Center" 
                 Padding="0,0,0,10" 
                 Width="560">
                 <StackPanel>
@@ -219,35 +171,85 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             <TextBlock
-                                Text="Select a holiday country:"
+                                Grid.Row="0"
+                                Text="Holiday countries:"
                                 VerticalAlignment="Center" 
-                                Padding="10, 0, 0, 5"
+                                Padding="0, 0, 0, 5"
                                 Foreground="Black"
                                 FontWeight="Medium"/>
-                            <ListBox 
+                            <Label x:Name="FirstCountryLabel"
+                                   Grid.Row="1"
+                                   Content="Select first country holiday"
+                                   Foreground="Gray"
+                                   FontWeight="Normal"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   VerticalContentAlignment="Center"
+                                   Padding="5, 0, 0, 0"
+                                   Width="180"
+                                   Height="25"
+                                   Background="White"
+                                   Visibility="{Binding FirstCountryLabelVisibility, Converter={StaticResource firstCountryLabelVisConv}}">
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="MouseLeftButtonDown">
+                                        <i:InvokeCommandAction Command="{Binding FirstCountryLabelClickedCommand}" CommandParameter="FirstCountryLabel"/>
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>
+                            </Label>
+                            <ComboBox 
                                 Grid.Row="1"
                                 ItemsSource="{Binding CountryList.Countries}"
-                                SelectionMode="Extended"
-                                FontWeight="Normal"
+                                DisplayMemberPath="Name"
+                                SelectedValuePath="Code"
+                                SelectedValue="{Binding FirstCountryCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                 HorizontalAlignment="Left" 
-                                VerticalAlignment="Top"
-                                Padding="10,0,0,0"
-                                Background="{x:Null}" 
-                                BorderBrush="{x:Null}">
-                                <ListBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <CheckBox 
-                                            Style="{StaticResource CustomCheckBoxStyle}"
-                                            Content="{Binding Name}" 
-                                            IsChecked="{Binding IsChecked, Mode=TwoWay}" 
-                                            IsEnabled="{Binding IsEnabled}"
-                                            Command="{Binding DataContext.CheckCountryCommand, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" 
-                                            CommandParameter="{Binding}"/>
-                                    </DataTemplate>
-                                </ListBox.ItemTemplate>
-                            </ListBox>
+                                VerticalAlignment="Center"
+                                FontWeight="Normal"
+                                VerticalContentAlignment="Center"
+                                Padding="5 0 0 0"
+                                Height="25"
+                                Width="180" 
+                                Visibility="{Binding FirstCountryComboBoxVisibility, Converter={StaticResource firstCountryLabelVisConv}}"
+                                IsDropDownOpen="{Binding IsFirstCountryComboBoxOpen}"/>
+                            <Label x:Name="SecondCountryLabel"
+                                   Grid.Row="2"
+                                   Content="Select second country holiday"
+                                   Foreground="Gray"
+                                   FontWeight="Normal"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   VerticalContentAlignment="Center"
+                                   Padding="5, 0, 0, 0"
+                                   Margin="0 10 0 0"
+                                   Width="180"
+                                   Height="25"
+                                   Background="White"
+                                   Visibility="{Binding SecondCountryLabelVisibility, Converter={StaticResource secondContryLabelVisConv}}">
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="MouseLeftButtonDown">
+                                        <i:InvokeCommandAction Command="{Binding SecondCountryLabelClickedCommand}" CommandParameter="SecondCountryLabel"/>
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>
+                            </Label>
+                            <ComboBox 
+                                Grid.Row="2"
+                                ItemsSource="{Binding CountryList.Countries}"
+                                DisplayMemberPath="Name"
+                                SelectedValuePath="Code"
+                                SelectedValue="{Binding SecondCountryCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                HorizontalAlignment="Left" 
+                                VerticalAlignment="Center"
+                                FontWeight="Normal"
+                                VerticalContentAlignment="Center"
+                                Padding="5 0 0 0"
+                                Margin="0 10 0 0"
+                                Height="25"
+                                Width="180"
+                                Visibility="{Binding SecondCountryComboBoxVisibility, Converter={StaticResource secondContryLabelVisConv}}"
+                                IsDropDownOpen="{Binding IsSecondCountryComboBoxOpen}"/>
                         </Grid>
                         <Grid Grid.Column="1" HorizontalAlignment="Center">
                             <Grid>

@@ -62,22 +62,42 @@ public class ApiNagerService : IApiService
         return Array.Empty<Holiday>();
     }
 
-    /// <summary>
-    /// Collects holidays for multiple countries for a given year.
-    /// </summary>
-    /// <param name="year">The year</param>
-    /// <param name="countryCodes">A list of countries</param>
-    /// <returns>a single list of holidays from all selected countries at once.</returns>
-    public async Task<IEnumerable<Holiday>> GetHolidaysForCountriesAsync(int year, IEnumerable<string> countryCodes)
+    public async Task<IEnumerable<SelectableCountry>> GetAvailableCountriesAsync()
     {
-        var result = new List<Holiday>();
-
-        foreach (string countryCode in countryCodes)
+        try
         {
-            result.AddRange(await GetHolidaysAsync(year, countryCode));
+            var response = await m_HttpClient.GetAsync("https://date.nager.at/api/v3/AvailableCountries");
+            response.EnsureSuccessStatusCode();
+            var json = await response.Content.ReadAsStringAsync();
+            var nagerCountries = JsonConvert.DeserializeObject<IEnumerable<NagerCountry>>(json);
+            if (nagerCountries == null)
+            {
+                Console.WriteLine($"Could not deserialize content: \"{json}\"");
+                return Array.Empty<SelectableCountry>();
+            }
+
+            var countries = new List<SelectableCountry>();
+            foreach (var nagerCountry in nagerCountries)
+            {
+                countries.Add(new SelectableCountry(nagerCountry.Name, nagerCountry.CountryCode));
+            }
+
+            return countries;
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"An error occurred while fetching available countries: {ex.Message}");
+        }
+        catch (JsonException ex)
+        {
+            Console.WriteLine($"An error occurred while deserializing available countries: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error occurred: {ex.Message}");
         }
 
-        return result;
+        return Array.Empty<SelectableCountry>();
     }
     #endregion methods
 }
