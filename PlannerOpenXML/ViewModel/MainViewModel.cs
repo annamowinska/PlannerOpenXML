@@ -154,6 +154,15 @@ public partial class MainViewModel : ObservableObject
             };
         }
     }
+    
+    [RelayCommand]
+    private void CheckIfCountriesAreSame()
+    {
+        if (FirstCountryCode != null && SecondCountryCode != null && FirstCountryCode.Equals(SecondCountryCode))
+        {
+            m_NotificationService.ShowNotificationIsSameCountriesSelected();
+        }
+    }
 
     [RelayCommand]
     private void MilestonesLoad()

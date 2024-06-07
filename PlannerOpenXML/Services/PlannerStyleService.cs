@@ -46,14 +46,14 @@ public class PlannerStyleService
         {
             Bold = new Bold(),
             Color = new Color() { Rgb = new HexBinaryValue() { Value = "009900" } },
-            FontSize = new FontSize() { Val = 10 }
+            FontSize = new FontSize() { Val = 8 }
         };
 
         var secondCountryHolidayFont = new Font
         {
             Bold = new Bold(),
             Color = new Color() { Rgb = new HexBinaryValue() { Value = "660066" } },
-            FontSize = new FontSize() { Val = 10 }
+            FontSize = new FontSize() { Val = 8 }
         };
 
         var milestoneFont = new Font

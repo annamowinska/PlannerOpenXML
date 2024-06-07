@@ -32,42 +32,12 @@ public class NotificationService
         m_NotificationManager.Show(content);
     }
 
-    public void ShowNotificationAddedMilestone(string milestoneText, string milestoneDate)
-    {
-        var content = new NotificationContent()
-        {
-            Title = "Success",
-            Message = $"Milestone '{milestoneText}' added on {milestoneDate}.",
-            Type = NotificationType.Information,
-            TrimType = NotificationTextTrimType.NoTrim,
-            CloseOnClick = true,
-            Background = new SolidColorBrush(Colors.Green),
-            Foreground = new SolidColorBrush(Colors.White),
-        };
-        m_NotificationManager.Show(content);
-    }
-
-    public void ShowNotificationErrorMilestoneDateInput()
+    public void ShowNotificationIsSameCountriesSelected()
     {
         var content = new NotificationContent()
         {
             Title = "Error",
-            Message = "Please enter date in format 'DD-MM-YYYY'.",
-            Type = NotificationType.Warning,
-            TrimType = NotificationTextTrimType.NoTrim,
-            CloseOnClick = true,
-            Background = new SolidColorBrush(Colors.Red),
-            Foreground = new SolidColorBrush(Colors.White),
-        };
-        m_NotificationManager.Show(content);
-    }
-
-    public void ShowNotificationErrorMilestoneAndMilestoneDateInput()
-    {
-        var content = new NotificationContent()
-        {
-            Title = "Error",
-            Message = "Please select milestone and enter date in format 'DD-MM-YYYY'.",
+            Message = "The same country was chosen.",
             Type = NotificationType.Warning,
             TrimType = NotificationTextTrimType.NoTrim,
             CloseOnClick = true,

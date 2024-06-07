@@ -200,6 +200,7 @@
                                 </i:Interaction.Triggers>
                             </Label>
                             <ComboBox 
+                                x:Name="FirstCountryHoliday"
                                 Grid.Row="1"
                                 ItemsSource="{Binding CountryList.Countries}"
                                 DisplayMemberPath="Name"
@@ -213,7 +214,13 @@
                                 Height="25"
                                 Width="180" 
                                 Visibility="{Binding FirstCountryComboBoxVisibility, Converter={StaticResource firstCountryLabelVisConv}}"
-                                IsDropDownOpen="{Binding IsFirstCountryComboBoxOpen}"/>
+                                IsDropDownOpen="{Binding IsFirstCountryComboBoxOpen}">
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="SelectionChanged">
+                                        <i:InvokeCommandAction Command="{Binding CheckIfCountriesAreSameCommand}" CommandParameter="{Binding ElementName=FirstCountryHoliday}"/>
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>
+                            </ComboBox>
                             <Label x:Name="SecondCountryLabel"
                                    Grid.Row="2"
                                    Content="Select second country holiday"
@@ -235,6 +242,7 @@
                                 </i:Interaction.Triggers>
                             </Label>
                             <ComboBox 
+                                x:Name="SecondCountryHoliday"
                                 Grid.Row="2"
                                 ItemsSource="{Binding CountryList.Countries}"
                                 DisplayMemberPath="Name"
@@ -249,7 +257,13 @@
                                 Height="25"
                                 Width="180"
                                 Visibility="{Binding SecondCountryComboBoxVisibility, Converter={StaticResource secondContryLabelVisConv}}"
-                                IsDropDownOpen="{Binding IsSecondCountryComboBoxOpen}"/>
+                                IsDropDownOpen="{Binding IsSecondCountryComboBoxOpen}">
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="SelectionChanged">
+                                        <i:InvokeCommandAction Command="{Binding CheckIfCountriesAreSameCommand}" CommandParameter="{Binding ElementName=SecondCountryHoliday}"/>
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>
+                            </ComboBox>
                         </Grid>
                         <Grid Grid.Column="1" HorizontalAlignment="Center">
                             <Grid>
