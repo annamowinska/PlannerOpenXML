@@ -8,11 +8,11 @@
         xmlns:vm="clr-namespace:PlannerOpenXML.ViewModel"
         xmlns:conv="clr-namespace:PlannerOpenXML.Converters"
         xmlns:uc="clr-namespace:PlannerOpenXML.UserControls"
-        xmlns:local="clr-namespace:PlannerOpenXML.AttachedProperties"
         d:DataContext="{d:DesignInstance Type={x:Type vm:MainViewModel}}"
         mc:Ignorable="d"
         Icon="/Resources/icon.png"
         Focusable="True"
+        WindowStartupLocation="CenterScreen"
         Title="Planner Generator" SizeToContent="Height" Width="650" Background="#FFB4B4B4" Height="619">
     <Window.Resources>
         <conv:MonthLabelVisibilityConverter x:Key="monthLabelVisConv" />
