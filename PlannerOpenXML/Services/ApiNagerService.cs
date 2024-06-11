@@ -62,7 +62,7 @@ public class ApiNagerService : IApiService
         return Array.Empty<Holiday>();
     }
 
-    public async Task<IEnumerable<SelectableCountry>> GetAvailableCountriesAsync()
+    public async Task<IEnumerable<CountryList>> GetAvailableCountriesAsync()
     {
         try
         {
@@ -73,13 +73,13 @@ public class ApiNagerService : IApiService
             if (nagerCountries == null)
             {
                 Console.WriteLine($"Could not deserialize content: \"{json}\"");
-                return Array.Empty<SelectableCountry>();
+                return Array.Empty<CountryList>();
             }
 
-            var countries = new List<SelectableCountry>();
+            var countries = new List<CountryList>();
             foreach (var nagerCountry in nagerCountries)
             {
-                countries.Add(new SelectableCountry(nagerCountry.Name, nagerCountry.CountryCode));
+                countries.Add(new CountryList(nagerCountry.Name, nagerCountry.CountryCode));
             }
 
             return countries;
@@ -97,7 +97,7 @@ public class ApiNagerService : IApiService
             Console.WriteLine($"An error occurred: {ex.Message}");
         }
 
-        return Array.Empty<SelectableCountry>();
+        return Array.Empty<CountryList>();
     }
     #endregion methods
 }

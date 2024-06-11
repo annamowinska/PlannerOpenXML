@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-public partial class SelectableCountry : ObservableObject
+public partial class CountryList : ObservableObject
 {
     #region properties
     [ObservableProperty]
@@ -11,7 +11,7 @@ public partial class SelectableCountry : ObservableObject
     #endregion properties
 
     #region constructors
-    public SelectableCountry(string name, string code)
+    public CountryList(string name, string code)
     {
         Name = name;
         Code = code;

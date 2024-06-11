@@ -18,7 +18,6 @@
         <conv:MonthLabelVisibilityConverter x:Key="monthLabelVisConv" />
         <conv:FirstCountryLabelVisibilityConverter x:Key="firstCountryLabelVisConv" />
         <conv:SecondCountryLabelVisibilityConverter x:Key="secondContryLabelVisConv" />
-        <conv:MilestoneLabelVisibilityConverter x:Key="milestoneLabelVisConv" />
         <conv:DateOnlyToDateTimeConverter x:Key="DateOnlyToDateTime" />
         <conv:NullToVisibilityConverter x:Key="NotNullToVisibility" WhenTrue="Collapsed" WhenFalse="Visible" />
         <Style x:Key="CustomButtonStyle" TargetType="Button">
@@ -204,6 +203,7 @@
                     Padding="5 0 0 0"
                     Height="25"
                     Width="180" 
+                    IsEditable="True"
                     Visibility="{Binding FirstCountryComboBoxVisibility, Converter={StaticResource firstCountryLabelVisConv}}"
                     IsDropDownOpen="{Binding IsFirstCountryComboBoxOpen}">
                         <i:Interaction.Triggers>
@@ -247,6 +247,7 @@
                     Margin="0 10 0 0"
                     Height="25"
                     Width="180"
+                    IsEditable="True"
                     Visibility="{Binding SecondCountryComboBoxVisibility, Converter={StaticResource secondContryLabelVisConv}}"
                     IsDropDownOpen="{Binding IsSecondCountryComboBoxOpen}">
                         <i:Interaction.Triggers>

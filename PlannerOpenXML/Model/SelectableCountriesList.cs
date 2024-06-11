@@ -9,7 +9,7 @@ public class SelectableCountiesList : ObservableObject
     #endregion fields
 
     #region properties
-    public ObservableCollection<SelectableCountry> Countries { get; } = new ObservableCollection<SelectableCountry>();
+    public ObservableCollection<CountryList> Countries { get; } = new ObservableCollection<CountryList>();
     #endregion properties
 
     #region constructors
@@ -24,9 +24,10 @@ public class SelectableCountiesList : ObservableObject
     private async void LoadCountriesAsync()
     {
         var countries = await m_ApiService.GetAvailableCountriesAsync();
+        countries = countries.OrderBy(country => country.Name).ToList();
         foreach (var country in countries)
         {
-            Countries.Add(new SelectableCountry(country.Name, country.Code));
+            Countries.Add(new CountryList(country.Name, country.Code));
         }
     }
     #endregion methods
