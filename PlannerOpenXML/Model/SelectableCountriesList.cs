@@ -16,13 +16,13 @@ public class SelectableCountiesList : ObservableObject
     public SelectableCountiesList(IApiService apiService)
     {
         m_ApiService = apiService;
-        LoadCountriesAsync();
     }
     #endregion constructors
 
     #region methods
-    private async void LoadCountriesAsync()
+    public async Task LoadCountriesAsync()
     {
+        Countries.Clear();
         var countries = await m_ApiService.GetAvailableCountriesAsync();
         countries = countries.OrderBy(country => country.Name).ToList();
         foreach (var country in countries)

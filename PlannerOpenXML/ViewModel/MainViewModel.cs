@@ -47,10 +47,10 @@ public partial class MainViewModel : ObservableObject
     private bool m_IsMonthsComboBoxOpen = false;
 
     [ObservableProperty]
-    private string? m_FirstCountryCode;
+    private string? m_FirstCountry;
 
     [ObservableProperty]
-    private string? m_SecondCountryCode;
+    private string? m_SecondCountry;
 
     [ObservableProperty]
     private bool m_FirstCountryLabelVisibility = true;
@@ -73,6 +73,13 @@ public partial class MainViewModel : ObservableObject
 
     #region commands
     [RelayCommand]
+    private async Task LoadCountriesAsync()
+    {
+        await Task.Delay(5000);
+        await CountryList.LoadCountriesAsync();
+    }
+
+    [RelayCommand]
     private async Task Generate()
     {
         //if user forgot to select informations inform him
@@ -88,8 +95,8 @@ public partial class MainViewModel : ObservableObject
         if (path == null)
             return;
 
-        var firstCountryCode = FirstCountryCode;
-        var secondCountryCode = SecondCountryCode;
+        var firstCountryCode = FirstCountry;
+        var secondCountryCode = SecondCountry;
         var countryCodes = new List<string>();
 
         if (!string.IsNullOrEmpty(firstCountryCode))
@@ -108,10 +115,14 @@ public partial class MainViewModel : ObservableObject
         Year = null;
         FirstMonth = null;
         NumberOfMonths = null;
+        FirstCountry = null;
+        SecondCountry = null;
         MonthsLabelVisibility = true;
-        FirstCountryLabelVisibility = true;
-        SecondCountryLabelVisibility = true;
         MonthsComboBoxVisibility = false;
+        FirstCountryLabelVisibility = true;
+        FirstCountryComboBoxVisibility = false;
+        SecondCountryLabelVisibility = true;
+        SecondCountryComboBoxVisibility = false;
         MilestonesClear();
     }
 
@@ -158,7 +169,7 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void CheckIfCountriesAreSame()
     {
-        if (FirstCountryCode != null && SecondCountryCode != null && FirstCountryCode.Equals(SecondCountryCode))
+        if (FirstCountry != null && SecondCountry != null && FirstCountry.Equals(SecondCountry))
         {
             m_NotificationService.ShowNotificationIsSameCountriesSelected();
         }
@@ -221,6 +232,7 @@ public partial class MainViewModel : ObservableObject
         m_ApiService = apiService;
         Milestones = new EditableObservableCollection<Milestone>();
         CountryList = new SelectableCountiesList(apiService);
+        LoadCountriesAsync().ConfigureAwait(false);
     }
     #endregion constructors
 }
