@@ -46,5 +46,20 @@ public class NotificationService
         };
         m_NotificationManager.Show(content);
     }
+
+    public void ShowNotificationCountryInput()
+    {
+        var content = new NotificationContent()
+        {
+            Title = "Error",
+            Message = "The entered country is not on the list. Try selecting a country from the drop-down list.",
+            Type = NotificationType.Warning,
+            TrimType = NotificationTextTrimType.NoTrim,
+            CloseOnClick = true,
+            Background = new SolidColorBrush(Colors.Red),
+            Foreground = new SolidColorBrush(Colors.White),
+        };
+        m_NotificationManager.Show(content);
+    }
     #endregion methods
 }

@@ -116,6 +116,9 @@
                     <i:EventTrigger EventName="MouseLeftButtonDown">
                         <i:InvokeCommandAction Command="{Binding MonthLabelClickedCommand}" CommandParameter="MonthsLabel"/>
                     </i:EventTrigger>
+                    <i:EventTrigger EventName="PreviewGotKeyboardFocus">
+                         <i:InvokeCommandAction Command="{Binding MonthLabelClickedCommand}" CommandParameter="MonthsLabel"/>
+                    </i:EventTrigger>
                 </i:Interaction.Triggers>
             </Label>
             <ComboBox
@@ -192,6 +195,9 @@
                             <i:EventTrigger EventName="MouseLeftButtonDown">
                                 <i:InvokeCommandAction Command="{Binding FirstCountryLabelClickedCommand}" CommandParameter="FirstCountryLabel"/>
                             </i:EventTrigger>
+                           <i:EventTrigger EventName="PreviewGotKeyboardFocus">
+                                <i:InvokeCommandAction Command="{Binding FirstCountryLabelClickedCommand}" CommandParameter="FirstCountryLabel"/>
+                           </i:EventTrigger>
                         </i:Interaction.Triggers>
                     </Label>
                     <ComboBox 
@@ -215,6 +221,9 @@
                             <i:EventTrigger EventName="SelectionChanged">
                                 <i:InvokeCommandAction Command="{Binding CheckIfCountriesAreSameCommand}" CommandParameter="{Binding ElementName=FirstCountryHoliday}"/>
                             </i:EventTrigger>
+                            <i:EventTrigger EventName="LostFocus">
+                                <i:InvokeCommandAction Command="{Binding ValidateCountryCommand}" CommandParameter="{Binding ElementName=FirstCountryHoliday}"/>
+                            </i:EventTrigger>
                         </i:Interaction.Triggers>
                     </ComboBox>
                     <Label x:Name="SecondCountryLabel"
@@ -234,6 +243,9 @@
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="MouseLeftButtonDown">
                                 <i:InvokeCommandAction Command="{Binding SecondCountryLabelClickedCommand}" CommandParameter="SecondCountryLabel"/>
+                            </i:EventTrigger>
+                            <i:EventTrigger EventName="PreviewGotKeyboardFocus">
+                                 <i:InvokeCommandAction Command="{Binding SecondCountryLabelClickedCommand}" CommandParameter="SecondCountryLabel"/>
                             </i:EventTrigger>
                         </i:Interaction.Triggers>
                     </Label>
@@ -258,6 +270,9 @@
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="SelectionChanged">
                                 <i:InvokeCommandAction Command="{Binding CheckIfCountriesAreSameCommand}" CommandParameter="{Binding ElementName=SecondCountryHoliday}"/>
+                            </i:EventTrigger>
+                            <i:EventTrigger EventName="LostFocus">
+                                <i:InvokeCommandAction Command="{Binding ValidateCountryCommand}" CommandParameter="{Binding ElementName=SecondCountryHoliday}"/>
                             </i:EventTrigger>
                         </i:Interaction.Triggers>
                     </ComboBox>

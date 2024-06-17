@@ -2,7 +2,7 @@
 using PlannerOpenXML.Services;
 using System.Collections.ObjectModel;
 
-public class SelectableCountiesList : ObservableObject
+public class SelectableCountriesList : ObservableObject
 {
     #region fields
     private readonly IApiService m_ApiService;
@@ -13,7 +13,7 @@ public class SelectableCountiesList : ObservableObject
     #endregion properties
 
     #region constructors
-    public SelectableCountiesList(IApiService apiService)
+    public SelectableCountriesList(IApiService apiService)
     {
         m_ApiService = apiService;
     }

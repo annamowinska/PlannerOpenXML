@@ -23,7 +23,7 @@ public partial class MainViewModel : ObservableObject
     /// Pregenerated list of month numbers: 1 - 12.
     /// </summary>
     public List<int> Months { get; } = Enumerable.Range(1, 12).ToList();
-    public SelectableCountiesList CountryList { get; }
+    public SelectableCountriesList CountryList { get; }
 
     [ObservableProperty]
     private EditableObservableCollection<Milestone> m_Milestones;
@@ -47,10 +47,10 @@ public partial class MainViewModel : ObservableObject
     private bool m_IsMonthsComboBoxOpen = false;
 
     [ObservableProperty]
-    private string? m_FirstCountry;
+    private string? m_FirstCountryCode;
 
     [ObservableProperty]
-    private string? m_SecondCountry;
+    private string? m_SecondCountryCode;
 
     [ObservableProperty]
     private bool m_FirstCountryLabelVisibility = true;
@@ -73,13 +73,6 @@ public partial class MainViewModel : ObservableObject
 
     #region commands
     [RelayCommand]
-    private async Task LoadCountriesAsync()
-    {
-        await Task.Delay(5000);
-        await CountryList.LoadCountriesAsync();
-    }
-
-    [RelayCommand]
     private async Task Generate()
     {
         //if user forgot to select informations inform him
@@ -95,8 +88,8 @@ public partial class MainViewModel : ObservableObject
         if (path == null)
             return;
 
-        var firstCountryCode = FirstCountry;
-        var secondCountryCode = SecondCountry;
+        var firstCountryCode = FirstCountryCode;
+        var secondCountryCode = SecondCountryCode;
         var countryCodes = new List<string>();
 
         if (!string.IsNullOrEmpty(firstCountryCode))
@@ -115,8 +108,8 @@ public partial class MainViewModel : ObservableObject
         Year = null;
         FirstMonth = null;
         NumberOfMonths = null;
-        FirstCountry = null;
-        SecondCountry = null;
+        FirstCountryCode = null;
+        SecondCountryCode = null;
         MonthsLabelVisibility = true;
         MonthsComboBoxVisibility = false;
         FirstCountryLabelVisibility = true;
@@ -169,9 +162,25 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void CheckIfCountriesAreSame()
     {
-        if (FirstCountry != null && SecondCountry != null && FirstCountry.Equals(SecondCountry))
+        if (FirstCountryCode != null && SecondCountryCode != null && FirstCountryCode.Equals(SecondCountryCode))
         {
             m_NotificationService.ShowNotificationIsSameCountriesSelected();
+        }
+    }
+
+    [RelayCommand]
+    private void ValidateCountry()
+    {
+        if (!string.IsNullOrEmpty(FirstCountryCode) && !CountryList.Countries.Any(c => c.Name == FirstCountryCode))
+        {
+            m_NotificationService.ShowNotificationCountryInput();
+            FirstCountryCode = null;
+        }
+
+        if (!string.IsNullOrEmpty(SecondCountryCode) && !CountryList.Countries.Any(c => c.Name == SecondCountryCode))
+        {
+            m_NotificationService.ShowNotificationCountryInput();
+            SecondCountryCode = null;
         }
     }
 
@@ -212,6 +221,12 @@ public partial class MainViewModel : ObservableObject
     {
         Milestones.Clear();
     }
+
+    [RelayCommand]
+    private async Task LoadCountriesAsync()
+    {
+        await CountryList.LoadCountriesAsync();
+    }
     #endregion commands
 
     #region constructors
@@ -231,7 +246,7 @@ public partial class MainViewModel : ObservableObject
         m_CountryListService = countryListService;
         m_ApiService = apiService;
         Milestones = new EditableObservableCollection<Milestone>();
-        CountryList = new SelectableCountiesList(apiService);
+        CountryList = new SelectableCountriesList(apiService);
         LoadCountriesAsync().ConfigureAwait(false);
     }
     #endregion constructors
