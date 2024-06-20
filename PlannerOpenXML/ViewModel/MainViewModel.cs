@@ -4,6 +4,7 @@ using PlannerOpenXML.Model;
 using PlannerOpenXML.Services;
 using System.Windows;
 using Xceed.Wpf.Toolkit;
+using System.Windows.Controls;
 
 namespace PlannerOpenXML.ViewModel;
 
@@ -169,19 +170,32 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void ValidateCountry()
+    private void ValidateCountry(object parameter)
     {
-        if (!string.IsNullOrEmpty(FirstCountryCode) && !CountryList.Countries.Any(c => c.Name == FirstCountryCode))
+      if (parameter is ComboBox comboBox)
+      {
+        var binding = comboBox.GetBindingExpression(ComboBox.SelectedValueProperty);
+        if (binding != null)
         {
-            m_NotificationService.ShowNotificationCountryInput();
-            FirstCountryCode = null;
+          binding.UpdateSource();
         }
 
-        if (!string.IsNullOrEmpty(SecondCountryCode) && !CountryList.Countries.Any(c => c.Name == SecondCountryCode))
+        var countryCode = comboBox.SelectedValue?.ToString();
+        var countryName = comboBox.Text;
+
+        if (!string.IsNullOrEmpty(countryCode) && !CountryList.Countries.Any(c => c.Code == countryCode))
         {
-            m_NotificationService.ShowNotificationCountryInput();
-            SecondCountryCode = null;
+          m_NotificationService.ShowNotificationCountryInput();
+          comboBox.Text = "";
+          return;
         }
+
+        if (!string.IsNullOrEmpty(countryName) && !CountryList.Countries.Any(c => c.Name == countryName))
+        {
+          m_NotificationService.ShowNotificationCountryInput();
+          comboBox.Text = "";
+        }
+      }
     }
 
     [RelayCommand]
