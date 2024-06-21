@@ -111,6 +111,8 @@
                    Width="180"
                    Height="30"
                    Background="White"
+                   Focusable="True"
+                   IsTabStop="True"
                    Visibility="{Binding MonthsLabelVisibility, Converter={StaticResource monthLabelVisConv}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="MouseLeftButtonDown">
@@ -190,14 +192,16 @@
                         Width="180"
                         Height="25"
                         Background="White"
+                        Focusable="True"
+                        IsTabStop="True"
                         Visibility="{Binding FirstCountryLabelVisibility, Converter={StaticResource firstCountryLabelVisConv}}">
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="MouseLeftButtonDown">
+                                <i:InvokeCommandAction Command="{Binding FirstCountryLabelClickedCommand}" CommandParameter="FirstCountryLabel" />
+                            </i:EventTrigger>
+                            <i:EventTrigger EventName="PreviewGotKeyboardFocus">
                                 <i:InvokeCommandAction Command="{Binding FirstCountryLabelClickedCommand}" CommandParameter="FirstCountryLabel"/>
                             </i:EventTrigger>
-                           <i:EventTrigger EventName="PreviewGotKeyboardFocus">
-                                <i:InvokeCommandAction Command="{Binding FirstCountryLabelClickedCommand}" CommandParameter="FirstCountryLabel"/>
-                           </i:EventTrigger>
                         </i:Interaction.Triggers>
                     </Label>
                     <ComboBox 
@@ -239,6 +243,8 @@
                         Width="180"
                         Height="25"
                         Background="White"
+                        Focusable="True"
+                        IsTabStop="True"
                         Visibility="{Binding SecondCountryLabelVisibility, Converter={StaticResource secondContryLabelVisConv}}">
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="MouseLeftButtonDown">
