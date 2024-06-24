@@ -4,6 +4,7 @@ using DocumentFormat.OpenXml.Spreadsheet;
 using PlannerOpenXML.Services;
 using System.Globalization;
 using System.Windows;
+using System.IO;
 
 namespace PlannerOpenXML.Model;
 
@@ -53,13 +54,13 @@ public class PlannerGenerator
                 var workbookPart = spreadsheetDocument.AddWorkbookPart();
                 workbookPart.Workbook = new Workbook();
 
+                var stylesheet = GetStylesheetFromTemplate("../../../Resources/template.xlsx");
+                var stylesheetPart = workbookPart.AddNewPart<WorkbookStylesPart>();
+                stylesheetPart.Stylesheet = stylesheet;
+                stylesheetPart.Stylesheet.Save();
+
                 var worksheetPart = workbookPart.AddNewPart<WorksheetPart>();
                 worksheetPart.Worksheet = new Worksheet(new SheetData());
-
-                Stylesheet workbookstylesheet = m_PlannerStyleService.GenerateStylesheet();
-                WorkbookStylesPart stylesheet = workbookPart.AddNewPart<WorkbookStylesPart>();
-                stylesheet.Stylesheet = workbookstylesheet;
-                stylesheet.Stylesheet.Save();
 
                 var sheets = spreadsheetDocument.WorkbookPart.Workbook.AppendChild(new Sheets());
                 var sheet = new Sheet() { Id = spreadsheetDocument.WorkbookPart.GetIdOfPart(worksheetPart), SheetId = 1, Name = "Planner" };
@@ -235,6 +236,31 @@ public class PlannerGenerator
     {
         var milestoneDescriptions = milestones.Where(x => date.Equals(x.Date)).Select(x => x.Description);
         return string.Join(", ", milestoneDescriptions);
+    }
+
+    private Stylesheet GetStylesheetFromTemplate(string relativePath)
+    {
+        Stylesheet stylesheet = null;
+
+        try
+        {
+            string basePath = AppDomain.CurrentDomain.BaseDirectory;
+            string fullPath = Path.Combine(basePath, relativePath);
+            using (SpreadsheetDocument templateDoc = SpreadsheetDocument.Open(fullPath, false))
+            {
+                WorkbookStylesPart stylesPart = templateDoc.WorkbookPart.GetPartsOfType<WorkbookStylesPart>().FirstOrDefault();
+                if (stylesPart != null)
+                {
+                    stylesheet = (Stylesheet)stylesPart.Stylesheet.Clone();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"An error occurred while loading the template stylesheet: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        return stylesheet;
     }
     #endregion private methods
 }
