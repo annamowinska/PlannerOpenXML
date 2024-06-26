@@ -1,266 +1,250 @@
-﻿using DocumentFormat.OpenXml;
-using DocumentFormat.OpenXml.Packaging;
-using DocumentFormat.OpenXml.Spreadsheet;
+﻿using PlannerOpenXML.Model.Xlsx;
 using PlannerOpenXML.Services;
 using System.Globalization;
-using System.Windows;
 using System.IO;
 
 namespace PlannerOpenXML.Model;
 
-public class PlannerGenerator
+public class PlannerGenerator(HolidayNameService holidayNameService, IEnumerable<Holiday> allHolidays, string? countryCode1, string? countryCode2, IEnumerable<Milestone> milestones)
 {
     #region fields
-    private readonly HolidayNameService m_HolidayNameService;
-    private readonly PlannerStyleService m_PlannerStyleService;
+    private readonly HolidayNameService m_HolidayNameService = holidayNameService;
+    private readonly string? m_CountryCode1 = countryCode1;
+    private readonly string? m_CountryCode2 = countryCode2;
+    private readonly IEnumerable<Holiday> m_AllHolidays = allHolidays;
+    private readonly IEnumerable<Milestone> m_Milestones = milestones;
+    private readonly CultureInfo m_Ci = new("de-DE");
     #endregion fields
 
-    #region constructors
-    public PlannerGenerator(
-        IApiService apiService, 
-        HolidayNameService holidayNameService,
-        PlannerStyleService plannerStyleService)
-    {
-        m_HolidayNameService = holidayNameService;
-        m_PlannerStyleService = plannerStyleService;
-    }
-    #endregion constructors
-
     #region methods
-    /// <summary>
-    /// Generates an excel with a calendar for a given time period for german and hungarian holidays.
-    /// </summary>
-    /// <param name="year">Starting year</param>
-    /// <param name="firstMonth">Staring month</param>
-    /// <param name="numberOfMonths">Amount of months to generate</param>
-    /// <param name="path">Path for destination file</param>
-    /// <returns>Nothing. Async task.</returns>
-    public async Task GeneratePlanner(
-            DateOnly from, 
-            DateOnly to, 
-            IEnumerable<Holiday> allHolidays, 
-            string path, 
-            string firstCountryCode, 
-            string secondCountryCode, 
-            IEnumerable<Milestone> milestones)
+    public void Generate(
+        DateOnly from,
+        DateOnly to,
+        string path)
     {
-        try
+        var source = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "planner.xlsx");
+        //TODO: implement try catch - copying may fail:
+        //      - no permission
+        //      - destination file already open/blocked by another application
+        File.Copy(source, path, true);
+
+        using var excel = XlsxFile.Open(path);
+
+        if (excel is null)
         {
-            var firstCountryHolidaysList = new List<Holiday>();
-            var secondCountryHolidaysList = new List<Holiday>();
-
-            using (var spreadsheetDocument = SpreadsheetDocument.Create(path, SpreadsheetDocumentType.Workbook))
-            {
-                var workbookPart = spreadsheetDocument.AddWorkbookPart();
-                workbookPart.Workbook = new Workbook();
-
-                var stylesheet = GetStylesheetFromTemplate("../../../Resources/template.xlsx");
-                var stylesheetPart = workbookPart.AddNewPart<WorkbookStylesPart>();
-                stylesheetPart.Stylesheet = stylesheet;
-                stylesheetPart.Stylesheet.Save();
-
-                var worksheetPart = workbookPart.AddNewPart<WorksheetPart>();
-                worksheetPart.Worksheet = new Worksheet(new SheetData());
-
-                var sheets = spreadsheetDocument.WorkbookPart.Workbook.AppendChild(new Sheets());
-                var sheet = new Sheet() { Id = spreadsheetDocument.WorkbookPart.GetIdOfPart(worksheetPart), SheetId = 1, Name = "Planner" };
-                sheets.Append(sheet);
-
-                var culture = new CultureInfo("de-DE");
-
-                foreach (var holiday in allHolidays)
-                {
-                    if (holiday.CountryCode == firstCountryCode)
-                    {
-                        firstCountryHolidaysList.Add(holiday);
-                    }
-                    else if (holiday.CountryCode == secondCountryCode)
-                    {
-                        secondCountryHolidaysList.Add(holiday);
-                    }
-                }
-
-                var columnIndex = 1;
-                var mergeCells = new MergeCells();
-
-                var calendar = CultureInfo.InvariantCulture.Calendar;
-                var calendarWeekRule = CalendarWeekRule.FirstFourDayWeek;
-                var firstDayOfWeek = DayOfWeek.Monday;
-
-                for (var date = from; date <= to; date = date.AddMonths(1))
-                {
-                    string monthName = date.ToString("MMMM yyyy", culture);
-
-                    Cell monthYearCell = new(new CellValue(monthName))
-                    {
-                        DataType = CellValues.String,
-                        StyleIndex = 1
-                    };
-
-                    Cell emptyFirstCell = new(new CellValue(string.Empty))
-                    {
-                        DataType = CellValues.String,
-                        StyleIndex = 1
-                    };
-                    
-                    Cell emptySecondCell = new(new CellValue(string.Empty))
-                    {
-                        DataType = CellValues.String,
-                        StyleIndex = 1
-                    };
-
-                    string cellReference1 = SpreadsheetService.GetColumnName((uint)columnIndex) + "1";
-                    string cellReference2 = SpreadsheetService.GetColumnName((uint)(columnIndex + 1)) + "1";
-                    string cellReference3 = SpreadsheetService.GetColumnName((uint)(columnIndex + 2)) + "1";
-                    MergeCell mergeCell = new MergeCell() { Reference = new StringValue($"{cellReference1}:{cellReference3}") };
-                    mergeCells.Append(mergeCell);
-
-                    SpreadsheetService.AppendCellToWorksheet(worksheetPart, monthYearCell, 1, (uint)columnIndex);
-                    SpreadsheetService.AppendCellToWorksheet(worksheetPart, emptyFirstCell, 1, (uint)(columnIndex + 1));
-                    SpreadsheetService.AppendCellToWorksheet(worksheetPart, emptySecondCell, 1, (uint)(columnIndex + 2));
-
-                    SpreadsheetService.SetRowHeight(worksheetPart, 70, 1);
-
-                    var currentRow = 2;
-
-                    for (DateOnly currentDate = date; currentDate.Month == date.Month; currentDate = currentDate.AddDays(1))
-                    {
-                        string dayOfWeek = currentDate.ToString("ddd", culture);
-                        string day = currentDate.Day.ToString();
-
-                        string firstCountryHolidayName = m_HolidayNameService.GetHolidayName(currentDate, firstCountryHolidaysList);
-                        string secondCountryHolidayName = m_HolidayNameService.GetHolidayName(currentDate, secondCountryHolidaysList);
-                        string milestoneDescriptions = GetMilestoneDescriptionsForDate(milestones, currentDate);
-
-                        string milestoneText = "";
-                        string holidayText = "";
-
-                        if (!string.IsNullOrEmpty(milestoneDescriptions))
-                            milestoneText += $"MS: {milestoneDescriptions}";
-
-                        if (!string.IsNullOrEmpty(firstCountryHolidayName) && !string.IsNullOrEmpty(secondCountryHolidayName))
-                            holidayText += $"{firstCountryCode}&{secondCountryCode}: {firstCountryHolidayName}";
-                        else if (!string.IsNullOrEmpty(firstCountryHolidayName))
-                            holidayText += $"{firstCountryCode}: {firstCountryHolidayName}";
-                        else if (!string.IsNullOrEmpty(secondCountryHolidayName))
-                            holidayText += $"{secondCountryCode}: {secondCountryHolidayName}";
-
-                        int weekOfYear = calendar.GetWeekOfYear(currentDate.ToDateTime(TimeOnly.MinValue), calendarWeekRule, firstDayOfWeek);
-
-                        Cell dayCell = new Cell(new CellValue($"{day} {dayOfWeek}"))
-                        {
-                            DataType = CellValues.String,
-                            StyleIndex = dayOfWeek == "Sa" ? 3u : dayOfWeek == "So" ? 4u : 2u
-                        };
-
-                        Cell milestoneCell = new Cell(new CellValue(milestoneText))
-                        {
-                            DataType = CellValues.String,
-                            StyleIndex = string.IsNullOrEmpty(milestoneText) && !string.IsNullOrEmpty(firstCountryHolidayName) ? 9u : 
-                                            string.IsNullOrEmpty(milestoneText) && !string.IsNullOrEmpty(secondCountryHolidayName) ? 10u : string.IsNullOrEmpty(milestoneText) ? 8u : 7u
-                        };
-
-                        Cell holidayCell = new Cell(new CellValue(holidayText))
-                        {
-                            DataType = CellValues.String,
-                            StyleIndex = !string.IsNullOrEmpty(firstCountryHolidayName) ? 5u : !string.IsNullOrEmpty(secondCountryHolidayName) ? 6u : 
-                                            (string.IsNullOrEmpty(firstCountryHolidayName) && !string.IsNullOrEmpty(milestoneText) ? 12u : 
-                                            (string.IsNullOrEmpty(firstCountryHolidayName) && !string.IsNullOrEmpty(milestoneText) ? 10u : 
-                                             string.IsNullOrEmpty(holidayText) ? 11u : 7u))
-                        };
-
-                        Cell weekNumberCell = new Cell(new CellValue(dayOfWeek == "Mo" ? weekOfYear.ToString() : ""))
-                        {
-                            DataType = CellValues.Number,
-                            StyleIndex = dayOfWeek == "Mo" ? 13u : !string.IsNullOrEmpty(milestoneText) ? 7u : 
-                                                                    !string.IsNullOrEmpty(firstCountryHolidayName) ? 9u : 
-                                                                    !string.IsNullOrEmpty(secondCountryHolidayName) ? 10u : 0u
-                        };
-
-                        Cell emptyCellBelowWeekNumber = new Cell(new CellValue(string.Empty))
-                        {
-                            DataType = CellValues.String,
-                            StyleIndex = dayOfWeek == "Mo" ? 13u : !string.IsNullOrEmpty(firstCountryHolidayName) ? 16u : 
-                                                                    !string.IsNullOrEmpty(secondCountryHolidayName) ? 17u : 
-                                                                    (!string.IsNullOrEmpty(milestoneText) && (string.IsNullOrEmpty(firstCountryHolidayName) || 
-                                                                    (string.IsNullOrEmpty(secondCountryHolidayName)))) ? 15u : 14u
-                        };
-
-                        SpreadsheetService.AppendCellToWorksheet(worksheetPart, dayCell, (uint)currentRow, (uint)columnIndex);
-                        SpreadsheetService.AppendCellToWorksheet(worksheetPart, milestoneCell, (uint)currentRow, (uint)(columnIndex + 1));
-                        SpreadsheetService.AppendCellToWorksheet(worksheetPart, weekNumberCell, (uint)currentRow, (uint)(columnIndex + 2));
-                        currentRow++;
-                        SpreadsheetService.AppendCellToWorksheet(worksheetPart, holidayCell, (uint)currentRow, (uint)(columnIndex + 1));
-                        SpreadsheetService.AppendCellToWorksheet(worksheetPart, emptyCellBelowWeekNumber, (uint)currentRow, (uint)(columnIndex + 2));
-
-                        string dayCellReference1 = SpreadsheetService.GetColumnName((uint)columnIndex) + (currentRow - 1).ToString();
-                        string dayCellReference2 = SpreadsheetService.GetColumnName((uint)columnIndex) + currentRow.ToString();
-                        MergeCell dayMergeCell = new MergeCell() { Reference = new StringValue($"{dayCellReference1}:{dayCellReference2}") };
-                        mergeCells.Append(dayMergeCell);
-
-                        if (dayOfWeek == "Mo")
-                        {
-                            string weekNumberCellReference1 = SpreadsheetService.GetColumnName((uint)(columnIndex + 2)) + (currentRow - 1).ToString();
-                            string weekNumberCellReference2 = SpreadsheetService.GetColumnName((uint)(columnIndex + 2)) + currentRow.ToString();
-                            MergeCell weekNumberMergeCell = new MergeCell() { Reference = new StringValue($"{weekNumberCellReference1}:{weekNumberCellReference2}") };
-                            mergeCells.Append(weekNumberMergeCell);
-                        }
-
-                        SpreadsheetService.SetRowHeight(worksheetPart, 35, (uint)currentRow);
-                        currentRow++;
-                    }
-
-                    SpreadsheetService.SetColumnWidth(worksheetPart, (uint)columnIndex, 6);
-                    SpreadsheetService.SetColumnWidth(worksheetPart, (uint)(columnIndex + 1), 18);
-                    SpreadsheetService.SetColumnWidth(worksheetPart, (uint)(columnIndex + 2), 6);
-
-                    columnIndex += 3;
-                }
-
-                worksheetPart.Worksheet.InsertAfter(mergeCells, worksheetPart.Worksheet.Elements<SheetData>().First());
-
-                workbookPart.Workbook.Save();
-            }
-
-            MessageBox.Show($"Planner has been generated and saved as: {path}", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            //TODO: if null then inform user that something broke
+            return;
         }
-        catch (Exception ex)
+
+        var styles = new PlannerGeneratorStyles(excel);
+        if (styles.Failed)
         {
-            MessageBox.Show($"An error occurred while generating the planner: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            //TODO: if failed then inform user that the sheet "Template" is broken
+            return;
         }
+
+        if (!excel.Sheets.TryGetByName("Planner", out var sheet))
+        {
+            //TODO: if null then inform user that no sheet with name "Planner" found
+            return;
+        }
+
+        FillSheet(sheet, from, to, styles);
+
+        sheet.Save();
     }
     #endregion methods
 
     #region private methods
+    private void FillSheet(Sheet sheet, DateOnly from, DateOnly to, PlannerGeneratorStyles styles)
+    {
+        var firstCountryHolidaysList = GetHolidays(m_AllHolidays, m_CountryCode1);
+        var secondCountryHolidaysList = GetHolidays(m_AllHolidays, m_CountryCode2);
+        var month = from;
+        uint currentColumn = 1;
+        sheet.SetRowHeight(1, styles.Row1Height);
+        do
+        {
+            FillMonth(month, currentColumn, sheet, styles, firstCountryHolidaysList, secondCountryHolidaysList);
+
+            month = month.AddMonths(1);
+            currentColumn += 3;
+        } while (month <= to);
+    }
+
+    private void FillMonth(DateOnly month, uint column, Sheet sheet, PlannerGeneratorStyles styles, IEnumerable<Holiday> holidays1, IEnumerable<Holiday> holidays2)
+    {
+        var date = month.ToString("MMMM yyyy", m_Ci);
+        sheet.SetValue(new(column, 1), new CellSharedStringValue(date, styles.Month));
+        sheet.SetValue(new(column + 1, 1), new CellEmptyValue(styles.Month));
+        sheet.SetValue(new(column + 2, 1), new CellEmptyValue(styles.Month));
+        sheet.Merge(new(column, 1, column + 2, 1));
+        sheet.SetColumnWidth(column, styles.Column1Width);
+        sheet.SetColumnWidth(column + 1, styles.Column2Width);
+        sheet.SetColumnWidth(column + 2, styles.Column3Width);
+
+        uint currentRow = 2;
+        for (var day = month; day.Month == month.Month; day = day.AddDays(1))
+        {
+            FillDay(day, column, currentRow, sheet, styles, holidays1, holidays2);
+
+            currentRow += 2;
+        }
+    }
+
+    private void FillDay(DateOnly day, uint column, uint row, Sheet sheet, PlannerGeneratorStyles styles, IEnumerable<Holiday> holidays1, IEnumerable<Holiday> holidays2)
+    {
+        // set the day row
+        FillDayCell(day, column, row, sheet, styles);
+
+        // set correct descriptions and styles for milestones and holidays
+        var milestoneText = GetMilestoneDescriptionsForDate(m_Milestones, day);
+        if (!string.IsNullOrEmpty(milestoneText))
+            milestoneText = $"MS: {milestoneText}";
+        var (holidayText, holidayStyling) = EvaluateHolidayData(day, holidays1, holidays2);
+
+        // select correct row style
+        var (styleRow1, styleRow2) = EvaluateRowStyles(milestoneText, holidayText, holidayStyling);
+
+        // set values
+        FillHolidaysAndMilestoneCells(column, row, sheet, styles, milestoneText, holidayText, styleRow1, styleRow2);
+
+        // set the week row
+        FillWeekCell(day, column, row, sheet, styles, styleRow1, styleRow2);
+    }
+
+    private static void FillWeekCell(DateOnly day, uint column, uint row, Sheet sheet, PlannerGeneratorStyles styles, CellStyle styleRow1, CellStyle styleRow2)
+    {
+        if (day.DayOfWeek == DayOfWeek.Monday)
+        {
+            var calendar = CultureInfo.InvariantCulture.Calendar;
+            int weekOfYear = calendar.GetWeekOfYear(
+                day.ToDateTime(TimeOnly.MinValue),
+                CalendarWeekRule.FirstFourDayWeek,
+                DayOfWeek.Monday);
+            sheet.SetValue(new(column + 2, row), new CellIntegerValue(weekOfYear, styles.Week));
+            sheet.SetValue(new(column + 2, row + 1), new CellEmptyValue(styles.Week));
+            sheet.Merge(new(column + 2, row, column + 2, row + 1));
+        }
+        else
+        {
+            sheet.SetValue(
+                new(column + 2, row),
+                new CellSharedStringValue(string.Empty, styles.GetStyleIndex(styleRow1, 2, 1)));
+
+            sheet.SetValue(
+                new(column + 2, row + 1),
+                new CellSharedStringValue(string.Empty, styles.GetStyleIndex(styleRow2, 2, 2)));
+        }
+    }
+
+    private void FillDayCell(DateOnly day, uint column, uint row, Sheet sheet, PlannerGeneratorStyles styles)
+    {
+        var dayOfWeek = day.ToString("ddd", m_Ci);
+        var dayStyle = day.DayOfWeek switch
+        {
+            DayOfWeek.Saturday => styles.Saturday,
+            DayOfWeek.Sunday => styles.Sunday,
+            _ => styles.Day,
+        };
+        sheet.SetValue(new(column, row), new CellSharedStringValue($"{day.Day} {dayOfWeek}", dayStyle));
+        // notice: needs to fill also empty cells with style, otherwise excel messes up borders
+        sheet.SetValue(new(column, row + 1), new CellEmptyValue(dayStyle));
+        sheet.Merge(new(column, row, column, row + 1));
+    }
+
+    private static void FillHolidaysAndMilestoneCells(uint column, uint row, Sheet sheet, PlannerGeneratorStyles styles, string milestoneText, string holidayText, CellStyle styleRow1, CellStyle styleRow2)
+    {
+        if (!string.IsNullOrEmpty(milestoneText))
+        {
+            sheet.SetValue(
+                new(column + 1, row),
+                new CellSharedStringValue(milestoneText, styles.GetStyleIndex(styleRow1, 1, 1)));
+        }
+        else
+        {
+            sheet.SetValue(
+                new(column + 1, row),
+                new CellEmptyValue(styles.GetStyleIndex(styleRow1, 1, 1)));
+        }
+
+        if (!string.IsNullOrEmpty(holidayText))
+        {
+            sheet.SetValue(
+                new(column + 1, row + 1),
+                new CellSharedStringValue(holidayText, styles.GetStyleIndex(styleRow2, 1, 2)));
+        }
+        else
+        {
+            sheet.SetValue(
+                new(column + 1, row + 1),
+                new CellEmptyValue(styles.GetStyleIndex(styleRow2, 1, 2)));
+        }
+    }
+
+    private static (CellStyle styleRow1, CellStyle styleRow2) EvaluateRowStyles(string milestoneText, string holidayText, CellStyle holidayStyling)
+    {
+        var styleRow1 = CellStyle.Default;
+        var styleRow2 = CellStyle.Default;
+        if (!string.IsNullOrEmpty(milestoneText) && !string.IsNullOrEmpty(holidayText))
+        {
+            styleRow1 = CellStyle.Milestone;
+            styleRow2 = holidayStyling;
+        }
+        else if (!string.IsNullOrEmpty(milestoneText))
+        {
+            styleRow1 = CellStyle.Milestone;
+            styleRow2 = CellStyle.Milestone;
+        }
+        else if (!string.IsNullOrEmpty(holidayText))
+        {
+            styleRow1 = holidayStyling;
+            styleRow2 = holidayStyling;
+        }
+        return (styleRow1, styleRow2);
+    }
+
+    private (string holidayText, CellStyle holidayStyling) EvaluateHolidayData(DateOnly day, IEnumerable<Holiday> holidays1, IEnumerable<Holiday> holidays2)
+    {
+        var holidayText = string.Empty;
+        var holidayStyling = CellStyle.Default;
+        var firstCountryHolidayName = m_HolidayNameService.GetHolidayName(day, holidays1);
+        var secondCountryHolidayName = m_HolidayNameService.GetHolidayName(day, holidays2);
+        if (!string.IsNullOrEmpty(firstCountryHolidayName) && !string.IsNullOrEmpty(secondCountryHolidayName))
+        {
+            holidayText = $"{m_CountryCode1}&{m_CountryCode2}: {firstCountryHolidayName}";
+            holidayStyling = CellStyle.Holiday12;
+        }
+        else if (!string.IsNullOrEmpty(firstCountryHolidayName))
+        {
+            holidayText = $"{m_CountryCode1}: {firstCountryHolidayName}";
+            holidayStyling = CellStyle.Holiday2;
+        }
+        else if (!string.IsNullOrEmpty(secondCountryHolidayName))
+        {
+            holidayText = $"{m_CountryCode2}: {secondCountryHolidayName}";
+            holidayStyling = CellStyle.Holiday2;
+        }
+
+        return (holidayText, holidayStyling);
+    }
+
     private static string GetMilestoneDescriptionsForDate(IEnumerable<Milestone> milestones, DateOnly date)
     {
         var milestoneDescriptions = milestones.Where(x => date.Equals(x.Date)).Select(x => x.Description);
         return string.Join(", ", milestoneDescriptions);
     }
 
-    private Stylesheet GetStylesheetFromTemplate(string relativePath)
+    private static IEnumerable<Holiday> GetHolidays(IEnumerable<Holiday> allHolidays, string? countryCode)
     {
-        Stylesheet stylesheet = null;
+        if (string.IsNullOrEmpty(countryCode))
+            yield break;
 
-        try
+        foreach (var holiday in allHolidays)
         {
-            string basePath = AppDomain.CurrentDomain.BaseDirectory;
-            string fullPath = Path.Combine(basePath, relativePath);
-            using (SpreadsheetDocument templateDoc = SpreadsheetDocument.Open(fullPath, false))
-            {
-                WorkbookStylesPart stylesPart = templateDoc.WorkbookPart.GetPartsOfType<WorkbookStylesPart>().FirstOrDefault();
-                if (stylesPart != null)
-                {
-                    stylesheet = (Stylesheet)stylesPart.Stylesheet.Clone();
-                }
-            }
+            if (holiday.CountryCode.Equals(countryCode))
+                yield return holiday;
         }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"An error occurred while loading the template stylesheet: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-
-        return stylesheet;
     }
     #endregion private methods
 }

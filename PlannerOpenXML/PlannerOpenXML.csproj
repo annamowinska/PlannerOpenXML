@@ -40,6 +40,9 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>FontAwesome.xaml</LastGenOutput>
     </None>
+    <None Update="Resources\planner.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

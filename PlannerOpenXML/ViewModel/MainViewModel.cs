@@ -12,7 +12,8 @@ public partial class MainViewModel : ObservableObject
 {
     #region fields
     private readonly DialogService m_DialogService;
-    private readonly PlannerGenerator m_PlannerGenerator;
+    private readonly PlannerGenerator_old m_PlannerGenerator;
+    private readonly HolidayNameService m_HolidayNameService;
     private readonly HolidayCacheService m_HolidayCacheService;
     private readonly NotificationService m_NotificationService;
     private readonly ICountryListService m_CountryListService;
@@ -30,13 +31,13 @@ public partial class MainViewModel : ObservableObject
     private EditableObservableCollection<Milestone> m_Milestones;
 
     [ObservableProperty]
-    private int? m_Year;
+    private int? m_Year = DateTime.Now.Year;
 
     [ObservableProperty]
-    private int? m_FirstMonth;
+    private int? m_FirstMonth = 1;
 
     [ObservableProperty]
-    private int? m_NumberOfMonths;
+    private int? m_NumberOfMonths = 12;
 
     [ObservableProperty]
     private bool m_MonthsLabelVisibility = true;
@@ -104,8 +105,12 @@ public partial class MainViewModel : ObservableObject
         var to = from.AddMonths(NumberOfMonths.Value).AddDays(-1);
         var allHolidays = await m_HolidayCacheService.GetAllHolidaysInRangeAsync(from, to, countryCodes);
 
-        await m_PlannerGenerator.GeneratePlanner(from, to, allHolidays, path, firstCountryCode, secondCountryCode, Milestones);
-        
+
+        var generator = new PlannerGenerator(m_HolidayNameService, allHolidays, firstCountryCode, secondCountryCode, Milestones);
+        generator.Generate(from, to, path);
+
+        //await m_PlannerGenerator.GeneratePlanner(from, to, allHolidays, path, firstCountryCode, secondCountryCode, Milestones);
+
         Year = null;
         FirstMonth = null;
         NumberOfMonths = null;
@@ -245,16 +250,17 @@ public partial class MainViewModel : ObservableObject
 
     #region constructors
     public MainViewModel(
-    IApiService apiService, 
-    HolidayNameService holidayNameService,
-    PlannerStyleService plannerStyleService, 
-    HolidayCacheService holidayCacheService, 
-    NotificationService notificationService, 
-    DialogService dialogService,
-    ICountryListService countryListService)
+        IApiService apiService, 
+        HolidayNameService holidayNameService,
+        PlannerStyleService plannerStyleService, 
+        HolidayCacheService holidayCacheService, 
+        NotificationService notificationService, 
+        DialogService dialogService,
+        ICountryListService countryListService)
     {
         m_DialogService = dialogService;
-        m_PlannerGenerator = new PlannerGenerator(apiService, holidayNameService, plannerStyleService);
+        m_PlannerGenerator = new PlannerGenerator_old(apiService, holidayNameService, plannerStyleService);
+        m_HolidayNameService = holidayNameService;
         m_HolidayCacheService = holidayCacheService;
         m_NotificationService = notificationService;
         m_CountryListService = countryListService;

@@ -33,7 +33,7 @@ public partial class MainWindow : Window
         services.AddTransient<INotificationManager, NotificationManager>();
         services.AddSingleton<NotificationService>();
         services.AddTransient<PlannerStyleService>();
-        services.AddTransient<PlannerGenerator>();
+        services.AddTransient<PlannerGenerator_old>();
         services.AddTransient<DialogService>();
         services.AddTransient<MainViewModel>();
 
