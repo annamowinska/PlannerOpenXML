@@ -109,8 +109,6 @@ public partial class MainViewModel : ObservableObject
         var generator = new PlannerGenerator(m_HolidayNameService, allHolidays, firstCountryCode, secondCountryCode, Milestones);
         generator.Generate(from, to, path);
 
-        //await m_PlannerGenerator.GeneratePlanner(from, to, allHolidays, path, firstCountryCode, secondCountryCode, Milestones);
-
         Year = null;
         FirstMonth = null;
         NumberOfMonths = null;

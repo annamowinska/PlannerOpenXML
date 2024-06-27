@@ -1,7 +1,10 @@
-﻿using PlannerOpenXML.Model.Xlsx;
+﻿using PlannerOpenXML.Dialog;
+using PlannerOpenXML.Model.Xlsx;
 using PlannerOpenXML.Services;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Windows;
 
 namespace PlannerOpenXML.Model;
 
@@ -17,41 +20,56 @@ public class PlannerGenerator(HolidayNameService holidayNameService, IEnumerable
     #endregion fields
 
     #region methods
-    public void Generate(
-        DateOnly from,
-        DateOnly to,
-        string path)
+    public async Task Generate(DateOnly from, DateOnly to, string path)
     {
-        var source = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "planner.xlsx");
-        //TODO: implement try catch - copying may fail:
-        //      - no permission
-        //      - destination file already open/blocked by another application
-        File.Copy(source, path, true);
+        ProgressDialogWindow progressDialog = new ProgressDialogWindow();
+        progressDialog.Owner = Application.Current.MainWindow;
+        progressDialog.Show();
 
-        using var excel = XlsxFile.Open(path);
-
-        if (excel is null)
+        await Task.Run(() =>
         {
-            //TODO: if null then inform user that something broke
-            return;
-        }
+            try
+            {
+                var source = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "planner.xlsx");
+                File.Copy(source, path, true);
 
-        var styles = new PlannerGeneratorStyles(excel);
-        if (styles.Failed)
-        {
-            //TODO: if failed then inform user that the sheet "Template" is broken
-            return;
-        }
+                using (var excel = XlsxFile.Open(path))
+                {
+                    if (excel is null)
+                    {
+                        MessageBox.Show("Failed to open the XLSX file. Something went wrong.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
 
-        if (!excel.Sheets.TryGetByName("Planner", out var sheet))
-        {
-            //TODO: if null then inform user that no sheet with name "Planner" found
-            return;
-        }
+                    var styles = new PlannerGeneratorStyles(excel);
+                    if (styles.Failed)
+                    {
+                        MessageBox.Show("Failed to load styles from the 'Template' sheet. The sheet is broken.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
 
-        FillSheet(sheet, from, to, styles);
+                    if (!excel.Sheets.TryGetByName("Planner", out var sheet))
+                    {
+                        MessageBox.Show("Failed to find a sheet named 'Planner'.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
 
-        sheet.Save();
+                    FillSheet(sheet, from, to, styles);
+
+                    sheet.Save();
+                }
+
+                Process.Start("explorer.exe", $"/select,\"{path}\"");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                progressDialog.Dispatcher.Invoke(() => progressDialog.Close());
+            }
+        });
     }
     #endregion methods
 
@@ -218,7 +236,7 @@ public class PlannerGenerator(HolidayNameService holidayNameService, IEnumerable
         else if (!string.IsNullOrEmpty(firstCountryHolidayName))
         {
             holidayText = $"{m_CountryCode1}: {firstCountryHolidayName}";
-            holidayStyling = CellStyle.Holiday2;
+            holidayStyling = CellStyle.Holiday1;
         }
         else if (!string.IsNullOrEmpty(secondCountryHolidayName))
         {
