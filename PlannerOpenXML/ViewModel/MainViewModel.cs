@@ -40,37 +40,10 @@ public partial class MainViewModel : ObservableObject
     private int? m_NumberOfMonths = 12;
 
     [ObservableProperty]
-    private bool m_MonthsLabelVisibility = true;
-
-    [ObservableProperty]
-    private bool m_MonthsComboBoxVisibility = false;
-
-    [ObservableProperty]
-    private bool m_IsMonthsComboBoxOpen = false;
-
-    [ObservableProperty]
     private string? m_FirstCountryCode;
 
     [ObservableProperty]
     private string? m_SecondCountryCode;
-
-    [ObservableProperty]
-    private bool m_FirstCountryLabelVisibility = true;
-
-    [ObservableProperty]
-    private bool m_FirstCountryComboBoxVisibility = false;
-
-    [ObservableProperty]
-    private bool m_IsFirstCountryComboBoxOpen = false;
-
-    [ObservableProperty]
-    private bool m_SecondCountryLabelVisibility = true;
-
-    [ObservableProperty]
-    private bool m_SecondCountryComboBoxVisibility = false;
-
-    [ObservableProperty]
-    private bool m_IsSecondCountryComboBoxOpen = false;
     #endregion properties
 
     #region commands
@@ -108,43 +81,6 @@ public partial class MainViewModel : ObservableObject
 
         var generator = new PlannerGenerator(m_HolidayNameService, allHolidays, firstCountryCode, secondCountryCode, Milestones);
         generator.Generate(from, to, path);
-
-        Year = null;
-        FirstMonth = null;
-        NumberOfMonths = null;
-        FirstCountryCode = null;
-        SecondCountryCode = null;
-        MonthsLabelVisibility = true;
-        MonthsComboBoxVisibility = false;
-        FirstCountryLabelVisibility = true;
-        FirstCountryComboBoxVisibility = false;
-        SecondCountryLabelVisibility = true;
-        SecondCountryComboBoxVisibility = false;
-        MilestonesClear();
-    }
-
-    [RelayCommand]
-    private void MonthLabelClicked(string LabelName)
-    {
-        MonthsLabelVisibility = false;
-        MonthsComboBoxVisibility = true;
-        IsMonthsComboBoxOpen = true;
-    }
-
-    [RelayCommand]
-    private void FirstCountryLabelClicked(string LabelName)
-    {
-        FirstCountryLabelVisibility = false;
-        FirstCountryComboBoxVisibility = true;
-        IsFirstCountryComboBoxOpen = true;
-    }
-
-    [RelayCommand]
-    private void SecondCountryLabelClicked(string LabelName)
-    {
-        SecondCountryLabelVisibility = false;
-        SecondCountryComboBoxVisibility = true;
-        IsSecondCountryComboBoxOpen = true;
     }
 
     [RelayCommand]
