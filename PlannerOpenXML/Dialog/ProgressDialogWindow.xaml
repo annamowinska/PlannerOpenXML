@@ -20,7 +20,7 @@
             Grid.Row="0" 
             Text="Generating Planner..." 
             VerticalAlignment="Center" 
-            HorizontalAlignment="Center"/>
+            HorizontalAlignment="Center" FontWeight="Medium"/>
         <ProgressBar 
             Grid.Row="2" 
             Name="progressBar" 

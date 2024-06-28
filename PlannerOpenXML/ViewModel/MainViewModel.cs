@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PlannerOpenXML.Model;
 using PlannerOpenXML.Services;
@@ -201,7 +201,6 @@ public partial class MainViewModel : ObservableObject
         m_ApiService = apiService;
         Milestones = new EditableObservableCollection<Milestone>();
         CountryList = new SelectableCountriesList(apiService);
-        LoadCountriesAsync().ConfigureAwait(false);
     }
     #endregion constructors
 }
