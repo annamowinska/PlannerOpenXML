@@ -49,7 +49,7 @@ public partial class Sheet : ObservableObject
             Id = m_WorkbookPart.GetIdOfPart(m_WorksheetPart),
             SheetId = (uint)m_WorkbookPart.Workbook.GetFirstChild<DocumentFormat.OpenXml.Spreadsheet.Sheets>().ChildElements.Count + 1
         };
-        m_Name = m_Sheet?.Name?.Value ?? string.Empty;
+        m_Name = m_Sheet.Name?.Value ?? string.Empty;
     }
 
     internal Sheet(XlsxFile xlsxFile, WorkbookPart sourceWorkbookPart, DocumentFormat.OpenXml.Spreadsheet.Sheet sourceSheet, WorkbookPart destinationWorkbookPart)
@@ -80,7 +80,7 @@ public partial class Sheet : ObservableObject
             Id = m_WorkbookPart.GetIdOfPart(m_WorksheetPart),
             SheetId = (uint)m_WorkbookPart.Workbook.GetFirstChild<DocumentFormat.OpenXml.Spreadsheet.Sheets>().ChildElements.Count + 1
         };
-        m_Name = m_Sheet?.Name?.Value ?? string.Empty;
+        m_Name = m_Sheet.Name?.Value ?? string.Empty;
 
         m_Worksheet.Save();
     }
@@ -247,20 +247,26 @@ public partial class Sheet : ObservableObject
         return newCell;
     }
 
-    public static void PreFillToRow(WorksheetPart worksheetPart, RangeReference rangeReference)
+    public void PreFillToRow(RangeReference rangeReference)
     {
-        var sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
+        var sheetData = m_Worksheet.GetFirstChild<SheetData>();
+        if (sheetData is null)
+            return;
 
-        var row = Sheet.GetOrAddRow(sheetData, rangeReference.To.Row);
-
-        if (row.ChildElements.Count == 0)
+        for (var rowId = rangeReference.From.Row; rowId <= rangeReference.To.Row; rowId++)
         {
-            for (var i = rangeReference.From.Column; i <= rangeReference.To.Column; i++)
+            var row = GetOrAddRow(sheetData, rowId);
+            if (row.ChildElements.Count == 0)
             {
-                var cellReference = new CellReference(i, rangeReference.To.Row);
-                row.AppendChild(new Cell { CellReference = cellReference.ToString() });
+                for (var i = rangeReference.From.Column; i <= rangeReference.To.Column; i++)
+                {
+                    var cellReference = new CellReference(i, rowId);
+                    row.AppendChild(new Cell { CellReference = cellReference.ToString() });
+                }
             }
         }
+
+
     }
     #endregion methods
 }

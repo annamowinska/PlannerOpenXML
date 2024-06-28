@@ -1,4 +1,4 @@
-﻿﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PlannerOpenXML.Model;
 using PlannerOpenXML.Services;
@@ -12,12 +12,10 @@ public partial class MainViewModel : ObservableObject
 {
     #region fields
     private readonly DialogService m_DialogService;
-    private readonly PlannerGenerator_old m_PlannerGenerator;
     private readonly HolidayNameService m_HolidayNameService;
     private readonly HolidayCacheService m_HolidayCacheService;
     private readonly NotificationService m_NotificationService;
     private readonly ICountryListService m_CountryListService;
-    private readonly IApiService m_ApiService;
     #endregion fields
 
     #region properties
@@ -28,7 +26,10 @@ public partial class MainViewModel : ObservableObject
     public SelectableCountriesList CountryList { get; }
 
     [ObservableProperty]
-    private EditableObservableCollection<Milestone> m_Milestones;
+    private string m_Status = string.Empty;
+
+    [ObservableProperty]
+    private EditableObservableCollection<Milestone> m_Milestones = [];
 
     [ObservableProperty]
     private int? m_Year = DateTime.Now.Year;
@@ -54,9 +55,11 @@ public partial class MainViewModel : ObservableObject
         if (!Year.HasValue || !FirstMonth.HasValue || !NumberOfMonths.HasValue)
         {
             System.Windows.MessageBox.Show("Please fill in all the fields.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            Status = "Failed: Please fill in all the fields.";
             return;
         }
 
+        Status = "Select file path to save the planner...";
         var path = m_DialogService.SaveFileWithExtensionList(
             "Select file path to save the planner",
             DialogService.XLSX_FILES);
@@ -76,11 +79,16 @@ public partial class MainViewModel : ObservableObject
 
         var from = new DateOnly(Year.Value, FirstMonth.Value, 1);
         var to = from.AddMonths(NumberOfMonths.Value).AddDays(-1);
+        Status = "Getting holidays...";
         var allHolidays = await m_HolidayCacheService.GetAllHolidaysInRangeAsync(from, to, countryCodes);
 
 
+        Status = "Generating excel workbook...";
+        await Task.Delay(10);
         var generator = new PlannerGenerator(m_HolidayNameService, allHolidays, firstCountryCode, secondCountryCode, Milestones);
-        generator.Generate(from, to, path);
+        generator.Generate(from, NumberOfMonths.Value, path);
+
+        Status = "Finished...";
     }
 
     [RelayCommand]
@@ -114,10 +122,7 @@ public partial class MainViewModel : ObservableObject
       if (parameter is ComboBox comboBox)
       {
         var binding = comboBox.GetBindingExpression(ComboBox.SelectedValueProperty);
-        if (binding != null)
-        {
-          binding.UpdateSource();
-        }
+        binding?.UpdateSource();
 
         var countryCode = comboBox.SelectedValue?.ToString();
         var countryName = comboBox.Text;
@@ -186,20 +191,16 @@ public partial class MainViewModel : ObservableObject
     public MainViewModel(
         IApiService apiService, 
         HolidayNameService holidayNameService,
-        PlannerStyleService plannerStyleService, 
         HolidayCacheService holidayCacheService, 
         NotificationService notificationService, 
         DialogService dialogService,
         ICountryListService countryListService)
     {
         m_DialogService = dialogService;
-        m_PlannerGenerator = new PlannerGenerator_old(apiService, holidayNameService, plannerStyleService);
         m_HolidayNameService = holidayNameService;
         m_HolidayCacheService = holidayCacheService;
         m_NotificationService = notificationService;
         m_CountryListService = countryListService;
-        m_ApiService = apiService;
-        Milestones = new EditableObservableCollection<Milestone>();
         CountryList = new SelectableCountriesList(apiService);
     }
     #endregion constructors

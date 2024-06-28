@@ -3,7 +3,7 @@
 public class CountryListService : ICountryListService
 {
     #region fields
-    public List<string> m_CountryCodes = new List<string>();
+    public List<string> m_CountryCodes = [];
     #endregion fields
 
     #region methods

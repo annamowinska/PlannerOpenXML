@@ -8,7 +8,12 @@ using System.Windows;
 
 namespace PlannerOpenXML.Model;
 
-public class PlannerGenerator(HolidayNameService holidayNameService, IEnumerable<Holiday> allHolidays, string? countryCode1, string? countryCode2, IEnumerable<Milestone> milestones)
+public class PlannerGenerator(
+    HolidayNameService holidayNameService,
+    IEnumerable<Holiday> allHolidays,
+    string? countryCode1,
+    string? countryCode2,
+    IEnumerable<Milestone> milestones)
 {
     #region fields
     private readonly HolidayNameService m_HolidayNameService = holidayNameService;
@@ -20,46 +25,19 @@ public class PlannerGenerator(HolidayNameService holidayNameService, IEnumerable
     #endregion fields
 
     #region methods
-    public async Task Generate(DateOnly from, DateOnly to, string path)
+    public async Task Generate(DateOnly from, int months, string path)
     {
-        ProgressDialogWindow progressDialog = new ProgressDialogWindow();
-        progressDialog.Owner = Application.Current.MainWindow;
+        var progressDialog = new ProgressDialogWindow
+        {
+            Owner = Application.Current.MainWindow
+        };
         progressDialog.Show();
 
         await Task.Run(() =>
         {
             try
             {
-                var source = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "planner.xlsx");
-                File.Copy(source, path, true);
-
-                using (var excel = XlsxFile.Open(path))
-                {
-                    if (excel is null)
-                    {
-                        MessageBox.Show("Failed to open the XLSX file. Something went wrong.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        return;
-                    }
-
-                    var styles = new PlannerGeneratorStyles(excel);
-                    if (styles.Failed)
-                    {
-                        MessageBox.Show("Failed to load styles from the 'Template' sheet. The sheet is broken.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        return;
-                    }
-
-                    if (!excel.Sheets.TryGetByName("Planner", out var sheet))
-                    {
-                        MessageBox.Show("Failed to find a sheet named 'Planner'.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        return;
-                    }
-
-                    FillSheet(sheet, from, to, styles);
-
-                    sheet.Save();
-                }
-
-                Process.Start("explorer.exe", $"/select,\"{path}\"");
+                DoGenerate(from, months, path);
             }
             catch (Exception ex)
             {
@@ -74,13 +52,51 @@ public class PlannerGenerator(HolidayNameService holidayNameService, IEnumerable
     #endregion methods
 
     #region private methods
-    private void FillSheet(Sheet sheet, DateOnly from, DateOnly to, PlannerGeneratorStyles styles)
+    private void DoGenerate(DateOnly from, int months, string path)
+    {
+        var source = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "planner.xlsx");
+        File.Copy(source, path, true);
+
+        using (var excel = XlsxFile.Open(path))
+        {
+            if (excel is null)
+            {
+                MessageBox.Show("Failed to open the XLSX file. Something went wrong.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            var styles = new PlannerGeneratorStyles(excel);
+            if (styles.Failed)
+            {
+                MessageBox.Show("Failed to load styles from the 'Template' sheet. The sheet is broken.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            if (!excel.Sheets.TryGetByName("Planner", out var sheet))
+            {
+                MessageBox.Show("Failed to find a sheet named 'Planner'.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            FillSheet(sheet, from, months, styles);
+
+            sheet.Save();
+        }
+
+        Process.Start("explorer.exe", $"/select,\"{path}\"");
+    }
+
+    private void FillSheet(Sheet sheet, DateOnly from, int months, PlannerGeneratorStyles styles)
     {
         var firstCountryHolidaysList = GetHolidays(m_AllHolidays, m_CountryCode1);
         var secondCountryHolidaysList = GetHolidays(m_AllHolidays, m_CountryCode2);
         var month = from;
         uint currentColumn = 1;
         sheet.SetRowHeight(1, styles.Row1Height);
+
+        sheet.PreFillToRow(new(1, 1, (uint)(1 + months * 3), 1 + 31 * 2));
+        var to = from.AddMonths(months).AddDays(-1);
+
         do
         {
             FillMonth(month, currentColumn, sheet, styles, firstCountryHolidaysList, secondCountryHolidaysList);

@@ -1,26 +1,26 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using PlannerOpenXML.Services;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
 
-public class SelectableCountriesList : ObservableObject
+namespace PlannerOpenXML.Model;
+
+public class SelectableCountriesList(IApiService apiService)
 {
     #region fields
-    private readonly IApiService m_ApiService;
+    private readonly IApiService m_ApiService = apiService;
+    private readonly string m_Path
+        = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "Corsol GmbH",
+            "Planner",
+            "countries.json");
     #endregion fields
 
     #region properties
-    public ObservableCollection<CountryList> Countries { get; } = new ObservableCollection<CountryList>();
+    public ObservableCollection<CountryList> Countries { get; } = [];
     #endregion properties
-
-    #region constructors
-    public SelectableCountriesList(IApiService apiService)
-    {
-        m_ApiService = apiService;
-    }
-    #endregion constructors
 
     #region methods
     public async Task LoadCountriesAsync()
@@ -77,16 +77,12 @@ public class SelectableCountriesList : ObservableObject
     #region private methods
     private List<CountryList> LoadCountriesFromLocalFile()
     {
-        List<CountryList> countries = new List<CountryList>();
-
         try
         {
-            string filePath = "../../../Resources/countries.json";
-
-            if (File.Exists(filePath))
+            if (File.Exists(m_Path))
             {
-                string json = File.ReadAllText(filePath);
-                countries = JsonConvert.DeserializeObject<List<CountryList>>(json);
+                string json = File.ReadAllText(m_Path);
+                return JsonConvert.DeserializeObject<List<CountryList>>(json) ?? [];
             }
         }
         catch (Exception ex)
@@ -94,16 +90,16 @@ public class SelectableCountriesList : ObservableObject
             Console.WriteLine($"An error occurred while loading countries from local file: {ex.Message}");
         }
 
-        return countries;
+        return [];
     }
 
     private void SaveCountriesToLocalFile(IEnumerable<CountryList> countries)
     {
         try
         {
-            string filePath = "../../../Resources/countries.json";
             string json = JsonConvert.SerializeObject(countries);
-            File.WriteAllText(filePath, json);
+            Directory.CreateDirectory(Path.GetDirectoryName(m_Path));
+            File.WriteAllText(m_Path, json);
         }
         catch (Exception ex)
         {

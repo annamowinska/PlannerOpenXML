@@ -52,68 +52,69 @@
             </Setter>
         </Style>
     </Window.Resources>
-    <Grid Margin="0,30" VerticalAlignment="Center" HorizontalAlignment="Center">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-        <Image Grid.Row="0" Source="/Resources/logo.png" VerticalAlignment="Top" Width="200" Margin="0,0,0,20"/>
-        <TextBlock
-            Grid.Row="1"
-            HorizontalAlignment="Center"
-            Margin="0,0,0,30"
-            TextWrapping="Wrap"
-            VerticalAlignment="Top"
-            Width="260"
-            FontSize="22"
-            FontWeight="Bold"
-            TextAlignment="Center"
-            Text="Planner Generator"
-            Foreground="#FF333333"/>
-        <Grid Grid.Row="2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+    <DockPanel>
+        <Grid Margin="0,30" VerticalAlignment="Center" HorizontalAlignment="Center" DockPanel.Dock="Top">
             <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
+            <Image Grid.Row="0" Source="/Resources/logo.png" VerticalAlignment="Top" Width="200" Margin="0,0,0,20"/>
             <TextBlock
-                Grid.Column="0"
-                Grid.Row="0"
-                Text="Year:" 
-                FontWeight="Medium"
-                Width="180" HorizontalAlignment="Center" VerticalAlignment="Top"/>
-            <xctk:WatermarkTextBox
-                Grid.Column="0"
                 Grid.Row="1"
-                x:Name="YearTextBox"
-                Text="{Binding Year, Mode=TwoWay}"
                 HorizontalAlignment="Center"
+                Margin="0,0,0,30"
                 TextWrapping="Wrap"
                 VerticalAlignment="Top"
-                Width="180"
-                Height="30"
-                VerticalContentAlignment="Center"
-                Margin="0,5,10,0"
-                Padding="3, 5, 0, 5">
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="PreviewKeyDown">
-                        <i:InvokeCommandAction Command="{Binding CheckNumericInputCommand}" CommandParameter="{Binding ElementName=YearTextBox}"/>
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
-            </xctk:WatermarkTextBox>
-             <TextBlock
+                Width="260"
+                FontSize="22"
+                FontWeight="Bold"
+                TextAlignment="Center"
+                Text="Planner Generator"
+                Foreground="#FF333333"/>
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <TextBlock
+                    Grid.Column="0"
+                    Grid.Row="0"
+                    Text="Year:" 
+                    FontWeight="Medium"
+                    Width="180" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+                <xctk:WatermarkTextBox
+                    Grid.Column="0"
+                    Grid.Row="1"
+                    x:Name="YearTextBox"
+                    Text="{Binding Year, Mode=TwoWay}"
+                    HorizontalAlignment="Center"
+                    TextWrapping="Wrap"
+                    VerticalAlignment="Top"
+                    Width="180"
+                    Height="30"
+                    VerticalContentAlignment="Center"
+                    Margin="0,5,10,0"
+                    Padding="3, 5, 0, 5">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="PreviewKeyDown">
+                            <i:InvokeCommandAction Command="{Binding CheckNumericInputCommand}" CommandParameter="{Binding ElementName=YearTextBox}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </xctk:WatermarkTextBox>
+                <TextBlock
                  Grid.Column="1"
                  Grid.Row="0"
                  Text="First month:" 
                  FontWeight="Medium"
                  Width="180" HorizontalAlignment="Center" VerticalAlignment="Top"/>
-            <ComboBox
+                <ComboBox
                 x:Name="MonthsComboBox"
                 Grid.Column="1"
                 Grid.Row="1"
@@ -126,14 +127,14 @@
                 VerticalContentAlignment="Center"
                 Margin="0,5,10,0"
                 Padding="7, 5, 0, 5" Background="White" >
-            </ComboBox>
-            <TextBlock
+                </ComboBox>
+                <TextBlock
                 Grid.Column="2"
                 Grid.Row="0"
                 Text="Number of months:" 
                 FontWeight="Medium"
                 Width="174" HorizontalAlignment="Center" VerticalAlignment="Top"/>
-            <xctk:WatermarkTextBox
+                <xctk:WatermarkTextBox
                 x:Name="NumberOfMonthsTextBox"
                 Grid.Column="2"
                 Grid.Row="1"
@@ -146,37 +147,37 @@
                 Margin="0,5,0,20"
                 VerticalContentAlignment="Center"
                 Padding="3, 5, 0, 5">
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="PreviewKeyDown">
-                        <i:InvokeCommandAction Command="{Binding CheckNumericInputCommand}" CommandParameter="{Binding ElementName=NumberOfMonthsTextBox}"/>
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
-            </xctk:WatermarkTextBox>
-        </Grid>
-        <Grid Grid.Row="3" Margin="0,0,0,0">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" MinHeight="207.92"/>
-                <RowDefinition Height="Auto" MinHeight="60"/>
-            </Grid.RowDefinitions>
-            <Grid Width="Auto" Margin="0,0,0,60" Grid.RowSpan="2">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <Grid Grid.Column="0" HorizontalAlignment="Left" Margin="30,0,0,0">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <TextBlock
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="PreviewKeyDown">
+                            <i:InvokeCommandAction Command="{Binding CheckNumericInputCommand}" CommandParameter="{Binding ElementName=NumberOfMonthsTextBox}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </xctk:WatermarkTextBox>
+            </Grid>
+            <Grid Grid.Row="3" Margin="0,0,0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" MinHeight="207.92"/>
+                    <RowDefinition Height="Auto" MinHeight="60"/>
+                </Grid.RowDefinitions>
+                <Grid Width="Auto" Margin="0,0,0,60" Grid.RowSpan="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid Grid.Column="0" HorizontalAlignment="Left" Margin="30,0,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock
                     Grid.Row="0"
                     Text="Holiday countries:"
                     VerticalAlignment="Center" 
                     Padding="0, 0, 0, 5"
                     Foreground="Black"
                     FontWeight="Medium"/>
-                    <ComboBox 
+                        <ComboBox 
                     x:Name="FirstCountryHoliday"
                     Grid.Row="1"
                     ItemsSource="{Binding CountryList.Countries}"
@@ -191,16 +192,16 @@
                     Height="25"
                     Width="180" 
                     IsEditable="True">
-                        <i:Interaction.Triggers>
-                            <i:EventTrigger EventName="SelectionChanged">
-                                <i:InvokeCommandAction Command="{Binding CheckIfCountriesAreSameCommand}" CommandParameter="{Binding ElementName=FirstCountryHoliday}"/>
-                            </i:EventTrigger>
-                            <i:EventTrigger EventName="LostFocus">
-                                <i:InvokeCommandAction Command="{Binding ValidateCountryCommand}" CommandParameter="{Binding ElementName=FirstCountryHoliday}"/>
-                            </i:EventTrigger>
-                        </i:Interaction.Triggers>
-                    </ComboBox>
-                    <ComboBox 
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="SelectionChanged">
+                                    <i:InvokeCommandAction Command="{Binding CheckIfCountriesAreSameCommand}" CommandParameter="{Binding ElementName=FirstCountryHoliday}"/>
+                                </i:EventTrigger>
+                                <i:EventTrigger EventName="LostFocus">
+                                    <i:InvokeCommandAction Command="{Binding ValidateCountryCommand}" CommandParameter="{Binding ElementName=FirstCountryHoliday}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </ComboBox>
+                        <ComboBox 
                         x:Name="SecondCountryHoliday"
                         Grid.Row="2"
                         ItemsSource="{Binding CountryList.Countries}"
@@ -216,26 +217,26 @@
                         Height="25"
                         Width="180"
                         IsEditable="True">
-                        <i:Interaction.Triggers>
-                            <i:EventTrigger EventName="SelectionChanged">
-                                <i:InvokeCommandAction Command="{Binding CheckIfCountriesAreSameCommand}" CommandParameter="{Binding ElementName=SecondCountryHoliday}"/>
-                            </i:EventTrigger>
-                            <i:EventTrigger EventName="LostFocus">
-                                <i:InvokeCommandAction Command="{Binding ValidateCountryCommand}" CommandParameter="{Binding ElementName=SecondCountryHoliday}"/>
-                            </i:EventTrigger>
-                        </i:Interaction.Triggers>
-                    </ComboBox>
-                </Grid>
-                <Grid Grid.Column="1" HorizontalAlignment="Center">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <TextBlock
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="SelectionChanged">
+                                    <i:InvokeCommandAction Command="{Binding CheckIfCountriesAreSameCommand}" CommandParameter="{Binding ElementName=SecondCountryHoliday}"/>
+                                </i:EventTrigger>
+                                <i:EventTrigger EventName="LostFocus">
+                                    <i:InvokeCommandAction Command="{Binding ValidateCountryCommand}" CommandParameter="{Binding ElementName=SecondCountryHoliday}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </ComboBox>
+                    </Grid>
+                    <Grid Grid.Column="1" HorizontalAlignment="Center">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock
                             Text="Milestones:"
                             Grid.Row="0"
                             HorizontalAlignment="Left" 
@@ -255,7 +256,7 @@
                             Width="180"
                             Margin="0,0,0,10"
                             Background="White"/>
-                        <DatePicker
+                            <DatePicker
                             Grid.Row="2"
                             HorizontalAlignment="Center" 
                             Text="Enter date"
@@ -265,18 +266,18 @@
                             Background="White"
                             Visibility="{Binding Milestones.Selected, Converter={StaticResource NotNullToVisibility}}"
                             SelectedDate="{Binding Milestones.Selected.Date, Converter={StaticResource DateOnlyToDateTime}, UpdateSourceTrigger=PropertyChanged}"/>
-                        <TextBox 
+                            <TextBox 
                             Grid.Row="3"
                             Text="{Binding Milestones.Selected.Description}"
                             Margin="0,0,0,10"
                             Visibility="{Binding Milestones.Selected, Converter={StaticResource NotNullToVisibility}}" />
-                        <Grid Grid.Row="4">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Button
+                            <Grid Grid.Row="4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Button
                                 Grid.Column="0"
                                 Content="Load"
                                 Width="55"
@@ -284,7 +285,7 @@
                                 HorizontalAlignment="Left"
                                 Style="{StaticResource CustomButtonStyle}"
                                 Command="{Binding MilestonesLoadCommand}"/>
-                            <Button
+                                <Button
                                 Grid.Column="1"
                                 Content="Save"
                                 Width="55"
@@ -293,7 +294,7 @@
                                 Style="{StaticResource CustomButtonStyle}"
                                 IsEnabled="{Binding Milestones.CanSave}"
                                 Command="{Binding MilestonesSaveCommand}"/>
-                            <Button
+                                <Button
                                 Grid.Column="2"
                                 Content="Save as..."
                                 Width="55"
@@ -302,20 +303,26 @@
                                 Style="{StaticResource CustomButtonStyle}"
                                 IsEnabled="{Binding Milestones.Changed}"
                                 Command="{Binding MilestonesSaveAsCommand}"/>
+                            </Grid>
                         </Grid>
                     </Grid>
                 </Grid>
-            </Grid>
-            <Grid
+                <Grid
                 Grid.Row="4">
-                <Button
+                    <Button
                     Content="Generate"
                     Grid.Row="1"
                     Command="{Binding GenerateCommand}"
                     Height="40"
                     Margin="223,15,223,0"
                     Style="{StaticResource CustomButtonStyle}" VerticalAlignment="Top"/>
+                </Grid>
             </Grid>
         </Grid>
-    </Grid>
+        <StatusBar DockPanel.Dock="Bottom" Background="#FFB4B4B4">
+            <StatusBarItem>
+                <Label Content="{Binding Status}" />
+            </StatusBarItem>
+        </StatusBar>
+    </DockPanel>
 </Window>

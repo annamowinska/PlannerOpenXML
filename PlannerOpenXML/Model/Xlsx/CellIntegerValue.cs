@@ -4,10 +4,10 @@ using DocumentFormat.OpenXml;
 
 namespace PlannerOpenXML.Model.Xlsx;
 
-internal class CellIntegerValue : CellBaseValue
+internal class CellIntegerValue(int value, uint? styleIndex = default) : CellBaseValue
 {
     #region fields
-    private readonly uint? m_StyleIndex;
+    private readonly uint? m_StyleIndex = styleIndex;
     #endregion fields
 
     #region properties
@@ -16,16 +16,8 @@ internal class CellIntegerValue : CellBaseValue
     public override object Value => m_Value;
 
     public int DateTimeValue => m_Value;
-    private readonly int m_Value;
+    private readonly int m_Value = value;
     #endregion properties
-
-    #region constructors
-    public CellIntegerValue(int value, uint? styleIndex = default)
-    {
-        m_Value = value;
-        m_StyleIndex = styleIndex;
-    }
-    #endregion constructors
 
     #region methods
     internal override void Update(XlsxFile xlsxFile, WorkbookPart workbookPart, WorksheetPart worksheetPart, Cell cell)

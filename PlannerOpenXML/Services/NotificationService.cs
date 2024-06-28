@@ -3,18 +3,11 @@ using System.Windows.Media;
 
 namespace PlannerOpenXML.Services;
 
-public class NotificationService
+public class NotificationService(INotificationManager notificationManager)
 {
     #region fields
-    private readonly INotificationManager m_NotificationManager;
+    private readonly INotificationManager m_NotificationManager = notificationManager;
     #endregion fields
-
-    #region constructor
-    public NotificationService(INotificationManager notificationManager)
-    {
-        m_NotificationManager = notificationManager;
-    }
-    #endregion constructor
 
     #region methods
     public void ShowNotificationErrorYearAndFirstMonthInput()

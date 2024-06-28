@@ -4,13 +4,6 @@ namespace PlannerOpenXML.Model.Xlsx;
 
 public class Sheets : List<Sheet>
 {
-    #region constructors
-    public Sheets()
-    {
-
-    }
-    #endregion constructors
-
     #region methods
     public new void Add(Sheet sheet)
     {

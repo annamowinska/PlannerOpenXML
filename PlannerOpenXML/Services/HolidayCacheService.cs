@@ -5,20 +5,18 @@ using System.Windows;
 
 namespace PlannerOpenXML.Services;
 
-public class HolidayCacheService
+public class HolidayCacheService(IApiService apiService)
 {
     #region fields
-    private readonly string m_FilePath;
-    private readonly IApiService m_ApiService;
-    #endregion fields
+    private readonly IApiService m_ApiService = apiService;
+    private readonly string m_Path
+        = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "Corsol GmbH",
+            "Planner",
+            "holiday.json");
 
-    #region constructor
-    public HolidayCacheService(IApiService apiService, string filePath = "../../../Resources/holiday.json")
-    {
-        m_FilePath = filePath;
-        m_ApiService = apiService;
-    }
-    #endregion constructor
+    #endregion fields
 
     #region methods
     public async Task<List<Holiday>> GetAllHolidaysInRangeAsync(DateOnly fromDate, DateOnly toDate, List<string> selectedCountryCodes)
@@ -28,7 +26,7 @@ public class HolidayCacheService
         var countryservice = ServiceContainer.GetService<ICountryListService>();
         var countryCodes = countryservice.GetCountryCodes();
 
-        if (File.Exists(m_FilePath))
+        if (File.Exists(m_Path))
         {
             var holidaysFromFile = ReadHolidaysFromFile().ToList();
             var holidaysGroupedByCountryAndYear = holidaysFromFile.GroupBy(h => new { h.CountryCode, h.Date.Year }).ToList();
@@ -36,12 +34,12 @@ public class HolidayCacheService
             var missingYears = yearsFromUserInput.Except(yearsInFile).ToList();
             var missingYearsMessage = string.Join(", ", missingYears);
 
-            if (missingYears.Any())
+            if (missingYears.Count != 0)
             {
                 if (!InternetAvailabilityService.IsInternetAvailable())
                 {
                     MessageBox.Show($"No internet connection. Failed to download {missingYearsMessage} holidays. A planner will be created without {missingYearsMessage} holidays applied.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return new List<Holiday>();
+                    return [];
                 }
                 else
                 {
@@ -68,12 +66,12 @@ public class HolidayCacheService
                             .Where(g => g.Key.CountryCode == countryCode)
                             .Select(g => g.Key.Year))
                             .ToList();
-                        if (missingYearsForCountry.Any())
+                        if (missingYearsForCountry.Count != 0)
                         {
                             if (!InternetAvailabilityService.IsInternetAvailable())
                             {
                                 MessageBox.Show($"No internet connection. Failed to download {missingYearsMessage} holidays. A planner will be created without {missingYearsMessage} holidays applied.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                                return new List<Holiday>();
+                                return [];
                             }
                             else
                             {
@@ -98,7 +96,7 @@ public class HolidayCacheService
                     if (!InternetAvailabilityService.IsInternetAvailable())
                     {
                         MessageBox.Show($"No internet connection. Failed to download {countryCodes} holidays. A planner will be created without {countryCodes} holidays applied.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        return new List<Holiday>();
+                        return [];
                     }
                     else
                     {
@@ -123,7 +121,7 @@ public class HolidayCacheService
             if (!InternetAvailabilityService.IsInternetAvailable())
             {
                 MessageBox.Show("No internet connection. Failed to download the holidays. An empty planner will be created, with no holidays applied.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return new List<Holiday>();
+                return [];
             }
             else
             {
@@ -165,7 +163,8 @@ public class HolidayCacheService
         try
         {
             var json = JsonConvert.SerializeObject(holidays);
-            File.WriteAllText(m_FilePath, json);
+            Directory.CreateDirectory(Path.GetDirectoryName(m_Path));
+            File.WriteAllText(m_Path, json);
         }
         catch (Exception ex)
         {
@@ -178,9 +177,9 @@ public class HolidayCacheService
     {
         try
         {
-            if (File.Exists(m_FilePath))
+            if (File.Exists(m_Path))
             {
-                var json = File.ReadAllText(m_FilePath);
+                var json = File.ReadAllText(m_Path);
                 return JsonConvert.DeserializeObject<IEnumerable<Holiday>>(json);
             }
             else

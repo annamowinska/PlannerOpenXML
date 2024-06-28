@@ -5,19 +5,12 @@ using System.Net.Http;
 
 namespace PlannerOpenXML.Services;
 
-public class ApiNagerService : IApiService
+public class ApiNagerService(IHolidayConverter holidayConverter) : IApiService
 {
     #region fields
     private readonly HttpClient m_HttpClient = new();
-    private readonly IHolidayConverter m_HolidayConverter;
+    private readonly IHolidayConverter m_HolidayConverter = holidayConverter;
     #endregion fields
-
-    #region constructors
-    public ApiNagerService(IHolidayConverter holidayConverter)
-    {
-        m_HolidayConverter = holidayConverter;
-    }
-    #endregion constructors
 
     #region methods
     /// <summary>
@@ -37,7 +30,7 @@ public class ApiNagerService : IApiService
             if (nagerHolidays == null)
             {
                 Console.WriteLine($"Could not deserialize content for {countryCode}: \"{json}\"");
-                return Array.Empty<Holiday>();
+                return [];
             }
 
             var holidays = m_HolidayConverter.Convert(nagerHolidays);
@@ -59,7 +52,7 @@ public class ApiNagerService : IApiService
             Console.WriteLine($"An error occurred: {ex.Message}");
         }
 
-        return Array.Empty<Holiday>();
+        return [];
     }
 
     public async Task<IEnumerable<CountryList>> GetAvailableCountriesAsync()
@@ -73,7 +66,7 @@ public class ApiNagerService : IApiService
             if (nagerCountries == null)
             {
                 Console.WriteLine($"Could not deserialize content: \"{json}\"");
-                return Array.Empty<CountryList>();
+                return [];
             }
 
             var countries = new List<CountryList>();
@@ -97,7 +90,7 @@ public class ApiNagerService : IApiService
             Console.WriteLine($"An error occurred: {ex.Message}");
         }
 
-        return Array.Empty<CountryList>();
+        return [];
     }
     #endregion methods
 }

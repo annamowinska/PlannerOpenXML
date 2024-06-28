@@ -4,10 +4,10 @@ using DocumentFormat.OpenXml;
 
 namespace PlannerOpenXML.Model.Xlsx;
 
-public class CellSharedStringValue : CellBaseValue
+public class CellSharedStringValue(string value, uint? styleIndex = default) : CellBaseValue
 {
     #region fields
-    private readonly uint? m_StyleIndex;
+    private readonly uint? m_StyleIndex = styleIndex;
     #endregion fields
 
     #region properties
@@ -16,16 +16,9 @@ public class CellSharedStringValue : CellBaseValue
     public override object Value => m_Value;
 
     public string StringValue => m_Value;
-    private readonly string m_Value;
-    #endregion properties
+    private readonly string m_Value = value;
 
-    #region constructors
-    public CellSharedStringValue(string value, uint? styleIndex = default)
-    {
-        m_Value = value;
-        m_StyleIndex = styleIndex;
-    }
-    #endregion constructors
+    #endregion properties
 
     #region methods
     internal override void Update(XlsxFile xlsxFile, WorkbookPart workbookPart, WorksheetPart worksheetPart, Cell cell)
