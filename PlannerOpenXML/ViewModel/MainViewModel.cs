@@ -86,7 +86,7 @@ public partial class MainViewModel : ObservableObject
         Status = "Generating excel workbook...";
         await Task.Delay(10);
         var generator = new PlannerGenerator(m_HolidayNameService, allHolidays, firstCountryCode, secondCountryCode, Milestones);
-        generator.Generate(from, NumberOfMonths.Value, path);
+        await generator.Generate(from, NumberOfMonths.Value, path);
 
         Status = "Finished...";
     }

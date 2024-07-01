@@ -13,7 +13,7 @@
         Icon="/Resources/icon.png"
         Focusable="True"
         WindowStartupLocation="CenterScreen"
-        Title="Planner Generator" SizeToContent="Height" Width="670" Background="#FFB4B4B4" Height="619">
+        Title="Planner Generator" SizeToContent="Height" Background="#FFB4B4B4" Width="670">
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
             <i:InvokeCommandAction Command="{Binding LoadCountriesCommand}" PassEventArgsToCommand="False" />
@@ -52,9 +52,10 @@
             </Setter>
         </Style>
     </Window.Resources>
-    <DockPanel>
-        <Grid Margin="0,30" VerticalAlignment="Center" HorizontalAlignment="Center" DockPanel.Dock="Top">
+    <DockPanel Margin="0,0,0,0">
+        <Grid Margin="0,30,0,0" VerticalAlignment="Center" HorizontalAlignment="Center" DockPanel.Dock="Top">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -73,7 +74,7 @@
                 TextAlignment="Center"
                 Text="Planner Generator"
                 Foreground="#FF333333"/>
-            <Grid Grid.Row="2">
+            <Grid Grid.Row="2" Margin="30,0,30,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
@@ -159,7 +160,7 @@
                     <RowDefinition Height="Auto" MinHeight="207.92"/>
                     <RowDefinition Height="Auto" MinHeight="60"/>
                 </Grid.RowDefinitions>
-                <Grid Width="Auto" Margin="0,0,0,60" Grid.RowSpan="2">
+                <Grid Width="Auto" Margin="30,0,30,60" Grid.RowSpan="2">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
@@ -318,11 +319,23 @@
                     Style="{StaticResource CustomButtonStyle}" VerticalAlignment="Top"/>
                 </Grid>
             </Grid>
-        </Grid>
-        <StatusBar DockPanel.Dock="Bottom" Background="#FFB4B4B4">
-            <StatusBarItem>
-                <Label Content="{Binding Status}" />
-            </StatusBarItem>
-        </StatusBar>
+            <Grid
+                Grid.Row="5">
+                <StatusBar DockPanel.Dock="Top" Background="#FFB4B4B4" Height="40" Width="670" Margin="0,10,0,0">
+                    <StatusBarItem 
+                        Width="Auto" 
+                        Height="40" 
+                        HorizontalAlignment="Left" 
+                        VerticalAlignment="Top" >
+                        <Label 
+                            Content="{Binding Status}"
+                            Margin="15,0,0,0" 
+                            Foreground="#FF007ACC" 
+                            FontWeight="Medium" VerticalAlignment="Top" HorizontalAlignment="Left"
+                            />
+                    </StatusBarItem>
+                </StatusBar>
+            </Grid>
+        </Grid>   
     </DockPanel>
 </Window>

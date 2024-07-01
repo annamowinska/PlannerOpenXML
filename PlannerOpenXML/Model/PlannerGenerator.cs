@@ -1,5 +1,4 @@
-﻿using PlannerOpenXML.Dialog;
-using PlannerOpenXML.Model.Xlsx;
+﻿using PlannerOpenXML.Model.Xlsx;
 using PlannerOpenXML.Services;
 using System.Diagnostics;
 using System.Globalization;
@@ -27,65 +26,50 @@ public class PlannerGenerator(
     #region methods
     public async Task Generate(DateOnly from, int months, string path)
     {
-        var progressDialog = new ProgressDialogWindow
+        try
         {
-            Owner = Application.Current.MainWindow
-        };
-        progressDialog.Show();
+            var source = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "planner.xlsx");
+            File.Copy(source, path, true);
 
-        await Task.Run(() =>
+            await Task.Run(() =>
+            {
+                using (var excel = XlsxFile.Open(path))
+                {
+                    if (excel is null)
+                    {
+                        MessageBox.Show("Failed to open the XLSX file. Something went wrong.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+
+                    var styles = new PlannerGeneratorStyles(excel);
+                    if (styles.Failed)
+                    {
+                        MessageBox.Show("Failed to load styles from the 'Template' sheet. The sheet is broken.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+
+                    if (!excel.Sheets.TryGetByName("Planner", out var sheet))
+                    {
+                        MessageBox.Show("Failed to find a sheet named 'Planner'.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+
+                    FillSheet(sheet, from, months, styles);
+
+                    sheet.Save();
+                }
+            });
+
+            Process.Start("explorer.exe", $"/select,\"{path}\"");
+        }
+        catch (Exception ex)
         {
-            try
-            {
-                DoGenerate(from, months, path);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            finally
-            {
-                progressDialog.Dispatcher.Invoke(() => progressDialog.Close());
-            }
-        });
+            MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
     #endregion methods
 
     #region private methods
-    private void DoGenerate(DateOnly from, int months, string path)
-    {
-        var source = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "planner.xlsx");
-        File.Copy(source, path, true);
-
-        using (var excel = XlsxFile.Open(path))
-        {
-            if (excel is null)
-            {
-                MessageBox.Show("Failed to open the XLSX file. Something went wrong.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-
-            var styles = new PlannerGeneratorStyles(excel);
-            if (styles.Failed)
-            {
-                MessageBox.Show("Failed to load styles from the 'Template' sheet. The sheet is broken.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-
-            if (!excel.Sheets.TryGetByName("Planner", out var sheet))
-            {
-                MessageBox.Show("Failed to find a sheet named 'Planner'.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-
-            FillSheet(sheet, from, months, styles);
-
-            sheet.Save();
-        }
-
-        Process.Start("explorer.exe", $"/select,\"{path}\"");
-    }
-
     private void FillSheet(Sheet sheet, DateOnly from, int months, PlannerGeneratorStyles styles)
     {
         var firstCountryHolidaysList = GetHolidays(m_AllHolidays, m_CountryCode1);
