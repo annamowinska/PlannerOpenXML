@@ -140,7 +140,7 @@ public partial class Sheet : ObservableObject
     public uint? GetCellStyleIndex(CellReference cellReference)
     {
         var cell = GetSpreadsheetCell(m_Worksheet, cellReference);
-        return (cell?.StyleIndex) ?? null;
+        return (cell?.StyleIndex?.Value) ?? null;
     }
 
     public void Save()
@@ -151,14 +151,14 @@ public partial class Sheet : ObservableObject
 
     internal static Cell? GetSpreadsheetCell(Worksheet worksheet, CellReference cellReference)
     {
-        var row = worksheet.GetFirstChild<SheetData>().Elements<Row>().FirstOrDefault(r => r.RowIndex == cellReference.Row);
+        var row = worksheet.GetFirstChild<SheetData>()?.Elements<Row>().FirstOrDefault(r => r.RowIndex?.Value == cellReference.Row);
         if (row == null)
         {
             // A cell does not exist at the specified row.
             return null;
         }
 
-        var cell = row.Elements<Cell>().FirstOrDefault(c => string.Equals(c.CellReference.Value, cellReference.ToString(), StringComparison.OrdinalIgnoreCase));
+        var cell = row.Elements<Cell>().FirstOrDefault(c => string.Equals(c.CellReference?.Value, cellReference.ToString(), StringComparison.OrdinalIgnoreCase));
         // A cell does not exist at the specified column, in the specified row.
         return cell;
     }
@@ -169,13 +169,13 @@ public partial class Sheet : ObservableObject
         if (sheetData.ChildElements.Count > rowIndex - 1)
         {
             var testRow = sheetData.ChildElements[(int)rowIndex - 1] as Row;
-            if (testRow?.RowIndex == rowIndex)
+            if (testRow?.RowIndex?.Value == rowIndex)
             {
                 return testRow;
             }
         }
 
-        var row = sheetData.Elements<Row>().Reverse().SingleOrDefault(r => r.RowIndex == rowIndex);
+        var row = sheetData.Elements<Row>().Reverse().SingleOrDefault(r => r.RowIndex?.Value == rowIndex);
         if (row == null)
         {
             row = new Row { RowIndex = rowIndex };
@@ -194,7 +194,7 @@ public partial class Sheet : ObservableObject
             m_Worksheet.InsertBefore(columns, data);
         }
 
-        var result = columns.OfType<Column>().FirstOrDefault(x => x.Min == columnIndex && x.Max == columnIndex);
+        var result = columns.OfType<Column>().FirstOrDefault(x => x.Min?.Value == columnIndex && x.Max?.Value == columnIndex);
         if (result == null)
         {
             result = new()
@@ -220,11 +220,11 @@ public partial class Sheet : ObservableObject
         if (row.ChildElements.Count > colIndex - 1)
         {
             var testCell = row.ChildElements[(int)colIndex - 1] as Cell;
-            if (testCell?.CellReference.Value == cellReference)
+            if (testCell?.CellReference?.Value == cellReference)
                 return testCell;
         }
 
-        var cellWithColumn = row.Elements<Cell>().Reverse().SingleOrDefault(c => c.CellReference.Value == cellReference);
+        var cellWithColumn = row.Elements<Cell>().Reverse().SingleOrDefault(c => c.CellReference?.Value == cellReference);
         if (cellWithColumn != null)
             return cellWithColumn;
 
@@ -232,7 +232,7 @@ public partial class Sheet : ObservableObject
         Cell? refCell = null;
         foreach (var cell in row.Elements<Cell>())
         {
-            if (cell.CellReference.Value.Length == cellReference.Length)
+            if (cell.CellReference?.Value?.Length == cellReference.Length)
             {
                 if (string.Compare(cell.CellReference.Value, cellReference, true) > 0)
                 {

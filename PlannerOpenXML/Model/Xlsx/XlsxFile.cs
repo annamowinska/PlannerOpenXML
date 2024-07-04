@@ -29,7 +29,7 @@ public sealed class XlsxFile : IDisposable
 
             var workbookPart = m_SpreadSheet.WorkbookPart ?? throw new NotSupportedException();
 
-            if (isEditable)
+            if (isEditable && workbookPart.Workbook.CalculationProperties is not null)
             {
                 workbookPart.Workbook.CalculationProperties.ForceFullCalculation = true;
             }

@@ -1,4 +1,6 @@
-﻿namespace PlannerOpenXML.Services;
+﻿using Microsoft.Extensions.DependencyInjection;
+
+namespace PlannerOpenXML.Services;
 
 public static class ServiceContainer
 {
@@ -12,7 +14,9 @@ public static class ServiceContainer
 
     public static object GetService(Type serviceInterface)
     {
-        return Services.GetService(serviceInterface);
+        return Services is null
+            ? throw new ApplicationException("Services not initialized properly.")
+            : Services.GetRequiredService(serviceInterface);
     }
     #endregion methods
 }

@@ -2,14 +2,14 @@
 using PlannerOpenXML.Services;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Windows;
 
 namespace PlannerOpenXML.Model;
 
-public class SelectableCountriesList(IApiService apiService)
+public class SelectableCountriesList
 {
     #region fields
-    private readonly IApiService m_ApiService = apiService;
+    private readonly IApiService m_ApiService;
+    private readonly INotificationService m_NotificationService;
     private readonly string m_Path
         = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
@@ -21,6 +21,14 @@ public class SelectableCountriesList(IApiService apiService)
     #region properties
     public ObservableCollection<CountryList> Countries { get; } = [];
     #endregion properties
+
+    #region constructors
+    public SelectableCountriesList()
+    {
+        m_ApiService = ServiceContainer.GetService<IApiService>();
+        m_NotificationService = ServiceContainer.GetService<INotificationService>();
+    }
+    #endregion constructors
 
     #region methods
     public async Task LoadCountriesAsync()
@@ -42,12 +50,12 @@ public class SelectableCountriesList(IApiService apiService)
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"An error occurred while loading countries from local file: {ex.Message}");
+            m_NotificationService.NotifyError($"An error occurred while loading countries from local file: {ex.Message}");
         }
 
         if (!loadedFromLocalFile && !hasInternetConnection)
         {
-            MessageBox.Show("No internet connection and no local countries list available.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            m_NotificationService.NotifyError("No internet connection and no local countries list available.");
             return;
         }
 
@@ -68,7 +76,7 @@ public class SelectableCountriesList(IApiService apiService)
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"An error occurred while fetching countries from API: {ex.Message}");
+                m_NotificationService.NotifyError($"An error occurred while fetching countries from API: {ex.Message}");
             }
         }
     }
@@ -87,7 +95,7 @@ public class SelectableCountriesList(IApiService apiService)
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"An error occurred while loading countries from local file: {ex.Message}");
+            m_NotificationService.NotifyError($"An error occurred while loading countries from local file: {ex.Message}");
         }
 
         return [];
@@ -103,7 +111,7 @@ public class SelectableCountriesList(IApiService apiService)
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"An error occurred while saving countries to local file: {ex.Message}");
+            m_NotificationService.NotifyError($"An error occurred while saving countries to local file: {ex.Message}");
         }
     }
     #endregion private methods

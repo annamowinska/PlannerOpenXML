@@ -7,6 +7,8 @@ namespace PlannerOpenXML.Services;
 /// </summary>
 public interface IApiService
 {
+    #region methods
     Task<IEnumerable<Holiday>> GetHolidaysAsync(int year, string countryCode);
     Task<IEnumerable<CountryList>> GetAvailableCountriesAsync();
+    #endregion methods
 }

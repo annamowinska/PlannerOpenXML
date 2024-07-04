@@ -25,14 +25,13 @@ public partial class MainWindow
     {
         var services = new ServiceCollection();
 
+        services.AddTransient<INotificationManager, NotificationManager>();
+        services.AddSingleton<INotificationService, NotificationService>();
         services.AddSingleton<ICountryListService, CountryListService>();
         services.AddTransient<IHolidayConverter, NagerHolidayConverter>();
         services.AddTransient<IApiService, ApiNagerService>();
         services.AddTransient<HolidayNameService>();
         services.AddTransient<HolidayCacheService>();
-        services.AddTransient<INotificationManager, NotificationManager>();
-        services.AddSingleton<NotificationService>();
-        services.AddTransient<PlannerStyleService>();
         services.AddTransient<DialogService>();
         services.AddTransient<MainViewModel>();
 

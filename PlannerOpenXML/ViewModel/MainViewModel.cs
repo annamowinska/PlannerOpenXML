@@ -8,14 +8,19 @@ using System.Windows.Controls;
 
 namespace PlannerOpenXML.ViewModel;
 
-public partial class MainViewModel : ObservableObject
+public partial class MainViewModel(
+    DialogService dialogService,
+    HolidayCacheService holidayCacheService,
+    HolidayNameService holidayNameService,
+    ICountryListService countryListService,
+    INotificationService notificationService) : ObservableObject
 {
     #region fields
-    private readonly DialogService m_DialogService;
-    private readonly HolidayNameService m_HolidayNameService;
-    private readonly HolidayCacheService m_HolidayCacheService;
-    private readonly NotificationService m_NotificationService;
-    private readonly ICountryListService m_CountryListService;
+    private readonly DialogService m_DialogService = dialogService;
+    private readonly HolidayCacheService m_HolidayCacheService = holidayCacheService;
+    private readonly HolidayNameService m_HolidayNameService = holidayNameService;
+    private readonly ICountryListService m_CountryListService = countryListService;
+    private readonly INotificationService m_NotificationService = notificationService;
     #endregion fields
 
     #region properties
@@ -23,7 +28,7 @@ public partial class MainViewModel : ObservableObject
     /// Pregenerated list of month numbers: 1 - 12.
     /// </summary>
     public List<int> Months { get; } = Enumerable.Range(1, 12).ToList();
-    public SelectableCountriesList CountryList { get; }
+    public SelectableCountriesList CountryList { get; } = new();
 
     [ObservableProperty]
     private string m_Status = string.Empty;
@@ -101,45 +106,45 @@ public partial class MainViewModel : ObservableObject
                 if (!char.IsDigit(e.Text, 0))
                 {
                     e.Handled = true;
-                    m_NotificationService.ShowNotificationErrorYearAndFirstMonthInput();
+                    m_NotificationService.NotifyError("Please enter only numbers.");
                 }
             };
         }
     }
-    
+
     [RelayCommand]
     private void CheckIfCountriesAreSame()
     {
         if (FirstCountryCode != null && SecondCountryCode != null && FirstCountryCode.Equals(SecondCountryCode))
         {
-            m_NotificationService.ShowNotificationIsSameCountriesSelected();
+            m_NotificationService.NotifyError("The same country was chosen.");
         }
     }
 
     [RelayCommand]
     private void ValidateCountry(object parameter)
     {
-      if (parameter is ComboBox comboBox)
-      {
-        var binding = comboBox.GetBindingExpression(ComboBox.SelectedValueProperty);
-        binding?.UpdateSource();
-
-        var countryCode = comboBox.SelectedValue?.ToString();
-        var countryName = comboBox.Text;
-
-        if (!string.IsNullOrEmpty(countryCode) && !CountryList.Countries.Any(c => c.Code == countryCode))
+        if (parameter is ComboBox comboBox)
         {
-          m_NotificationService.ShowNotificationCountryInput();
-          comboBox.Text = "";
-          return;
-        }
+            var binding = comboBox.GetBindingExpression(ComboBox.SelectedValueProperty);
+            binding?.UpdateSource();
 
-        if (!string.IsNullOrEmpty(countryName) && !CountryList.Countries.Any(c => c.Name == countryName))
-        {
-          m_NotificationService.ShowNotificationCountryInput();
-          comboBox.Text = "";
+            var countryCode = comboBox.SelectedValue?.ToString();
+            var countryName = comboBox.Text;
+
+            if (!string.IsNullOrEmpty(countryCode) && !CountryList.Countries.Any(c => c.Code == countryCode))
+            {
+                m_NotificationService.NotifyError("The entered country is not on the list. Try selecting a country from the drop-down list.");
+                comboBox.Text = "";
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(countryName) && !CountryList.Countries.Any(c => c.Name == countryName))
+            {
+                m_NotificationService.NotifyError("The entered country is not on the list. Try selecting a country from the drop-down list.");
+                comboBox.Text = "";
+            }
         }
-      }
     }
 
     [RelayCommand]
@@ -186,22 +191,4 @@ public partial class MainViewModel : ObservableObject
         await CountryList.LoadCountriesAsync();
     }
     #endregion commands
-
-    #region constructors
-    public MainViewModel(
-        IApiService apiService, 
-        HolidayNameService holidayNameService,
-        HolidayCacheService holidayCacheService, 
-        NotificationService notificationService, 
-        DialogService dialogService,
-        ICountryListService countryListService)
-    {
-        m_DialogService = dialogService;
-        m_HolidayNameService = holidayNameService;
-        m_HolidayCacheService = holidayCacheService;
-        m_NotificationService = notificationService;
-        m_CountryListService = countryListService;
-        CountryList = new SelectableCountriesList(apiService);
-    }
-    #endregion constructors
 }

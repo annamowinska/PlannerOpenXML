@@ -5,11 +5,12 @@ using System.Net.Http;
 
 namespace PlannerOpenXML.Services;
 
-public class ApiNagerService(IHolidayConverter holidayConverter) : IApiService
+public class ApiNagerService(IHolidayConverter holidayConverter, INotificationService notificationService) : IApiService
 {
     #region fields
     private readonly HttpClient m_HttpClient = new();
     private readonly IHolidayConverter m_HolidayConverter = holidayConverter;
+    private readonly INotificationService m_NotificationService = notificationService;
     #endregion fields
 
     #region methods
@@ -29,7 +30,7 @@ public class ApiNagerService(IHolidayConverter holidayConverter) : IApiService
             var nagerHolidays = JsonConvert.DeserializeObject<IEnumerable<NagerHoliday>>(json);
             if (nagerHolidays == null)
             {
-                Console.WriteLine($"Could not deserialize content for {countryCode}: \"{json}\"");
+                m_NotificationService.NotifyError($"Could not deserialize content for {countryCode}: \"{json}\"");
                 return [];
             }
 
@@ -39,17 +40,17 @@ public class ApiNagerService(IHolidayConverter holidayConverter) : IApiService
 
         catch (HttpRequestException ex)
         {
-            Console.WriteLine($"An error occurred while fetching holidays for {countryCode}: {ex.Message}");
+            m_NotificationService.NotifyError($"An error occurred while fetching holidays for {countryCode}: {ex.Message}");
         }
 
         catch (JsonException ex)
         {
-            Console.WriteLine($"An error occurred while deserializing holidays for {countryCode}: {ex.Message}");
+            m_NotificationService.NotifyError($"An error occurred while deserializing holidays for {countryCode}: {ex.Message}");
         }
 
         catch (Exception ex)
         {
-            Console.WriteLine($"An error occurred: {ex.Message}");
+            m_NotificationService.NotifyError($"An error occurred: {ex.Message}");
         }
 
         return [];
@@ -65,7 +66,7 @@ public class ApiNagerService(IHolidayConverter holidayConverter) : IApiService
             var nagerCountries = JsonConvert.DeserializeObject<IEnumerable<NagerCountry>>(json);
             if (nagerCountries == null)
             {
-                Console.WriteLine($"Could not deserialize content: \"{json}\"");
+                m_NotificationService.NotifyError($"Could not deserialize content: \"{json}\"");
                 return [];
             }
 
@@ -79,15 +80,15 @@ public class ApiNagerService(IHolidayConverter holidayConverter) : IApiService
         }
         catch (HttpRequestException ex)
         {
-            Console.WriteLine($"An error occurred while fetching available countries: {ex.Message}");
+            m_NotificationService.NotifyError($"An error occurred while fetching available countries: {ex.Message}");
         }
         catch (JsonException ex)
         {
-            Console.WriteLine($"An error occurred while deserializing available countries: {ex.Message}");
+            m_NotificationService.NotifyError($"An error occurred while deserializing available countries: {ex.Message}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"An error occurred: {ex.Message}");
+            m_NotificationService.NotifyError($"An error occurred: {ex.Message}");
         }
 
         return [];

@@ -2,9 +2,11 @@
 
 public interface ICountryListService
 {
-    public List<string> GetCountryCodes();
+    #region methods
+    List<string> GetCountryCodes();
 
-    public void UpdateCountryCodes(List<string> newCountryCodes);
+    void UpdateCountryCodes(List<string> newCountryCodes);
 
     void AddCountryCode(string countryCode);
+    #endregion methods
 }

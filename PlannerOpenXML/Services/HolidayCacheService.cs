@@ -1,14 +1,14 @@
 ﻿using Newtonsoft.Json;
 using PlannerOpenXML.Model;
 using System.IO;
-using System.Windows;
 
 namespace PlannerOpenXML.Services;
 
-public class HolidayCacheService(IApiService apiService)
+public class HolidayCacheService(IApiService apiService, INotificationService notificationService)
 {
     #region fields
     private readonly IApiService m_ApiService = apiService;
+    private readonly INotificationService m_NotificationService = notificationService;
     private readonly string m_Path
         = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
@@ -38,7 +38,7 @@ public class HolidayCacheService(IApiService apiService)
             {
                 if (!InternetAvailabilityService.IsInternetAvailable())
                 {
-                    MessageBox.Show($"No internet connection. Failed to download {missingYearsMessage} holidays. A planner will be created without {missingYearsMessage} holidays applied.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    m_NotificationService.NotifyError($"No internet connection. Failed to download {missingYearsMessage} holidays. A planner will be created without {missingYearsMessage} holidays applied.");
                     return [];
                 }
                 else
@@ -70,7 +70,7 @@ public class HolidayCacheService(IApiService apiService)
                         {
                             if (!InternetAvailabilityService.IsInternetAvailable())
                             {
-                                MessageBox.Show($"No internet connection. Failed to download {missingYearsMessage} holidays. A planner will be created without {missingYearsMessage} holidays applied.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                                m_NotificationService.NotifyError($"No internet connection. Failed to download {missingYearsMessage} holidays. A planner will be created without {missingYearsMessage} holidays applied.");
                                 return [];
                             }
                             else
@@ -95,7 +95,7 @@ public class HolidayCacheService(IApiService apiService)
                 {
                     if (!InternetAvailabilityService.IsInternetAvailable())
                     {
-                        MessageBox.Show($"No internet connection. Failed to download {countryCodes} holidays. A planner will be created without {countryCodes} holidays applied.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        m_NotificationService.NotifyError($"No internet connection. Failed to download {countryCodes} holidays. A planner will be created without {countryCodes} holidays applied.");
                         return [];
                     }
                     else
@@ -120,7 +120,7 @@ public class HolidayCacheService(IApiService apiService)
         {
             if (!InternetAvailabilityService.IsInternetAvailable())
             {
-                MessageBox.Show("No internet connection. Failed to download the holidays. An empty planner will be created, with no holidays applied.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                m_NotificationService.NotifyError("No internet connection. Failed to download the holidays. An empty planner will be created, with no holidays applied.");
                 return [];
             }
             else
@@ -168,7 +168,7 @@ public class HolidayCacheService(IApiService apiService)
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error while saving holidays to file: {ex.Message}");
+            m_NotificationService.NotifyError($"Error while saving holidays to file: {ex.Message}");
             throw;
         }
     }
@@ -180,16 +180,16 @@ public class HolidayCacheService(IApiService apiService)
             if (File.Exists(m_Path))
             {
                 var json = File.ReadAllText(m_Path);
-                return JsonConvert.DeserializeObject<IEnumerable<Holiday>>(json);
+                return JsonConvert.DeserializeObject<IEnumerable<Holiday>>(json) ?? [];
             }
             else
             {
-                return new List<Holiday>();
+                return [];
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error while reading holidays from file: {ex.Message}");
+            m_NotificationService.NotifyError($"Error while reading holidays from file: {ex.Message}");
             throw;
         }
     }
