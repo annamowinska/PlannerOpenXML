@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace PlannerOpenXML.Model;
+
 public partial class Milestone : ObservableObject
 {
     #region properties

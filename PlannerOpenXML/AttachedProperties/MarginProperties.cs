@@ -4,12 +4,15 @@ namespace PlannerOpenXML.AttachedProperties;
 
 public class MarginProperties
 {
+    #region dependency properties
     public static readonly DependencyProperty RightProperty = DependencyProperty.RegisterAttached(
         "Right",
         typeof(double),
         typeof(MarginProperties),
         new UIPropertyMetadata(OnRightPropertyChanged));
+    #endregion dependency properties
 
+    #region methods
     public static double GetRight(FrameworkElement element)
     {
         return (double)element.GetValue(RightProperty);
@@ -19,7 +22,9 @@ public class MarginProperties
     {
         element.SetValue(RightProperty, value);
     }
+    #endregion methods
 
+    #region private methods
     private static void OnRightPropertyChanged(DependencyObject obj, DependencyPropertyChangedEventArgs args)
     {
         if (obj is FrameworkElement element && args.NewValue is double value)
@@ -29,4 +34,5 @@ public class MarginProperties
             element.Margin = margin;
         }
     }
+    #endregion private methods
 }

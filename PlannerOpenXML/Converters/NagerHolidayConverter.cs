@@ -14,7 +14,7 @@ public class NagerHolidayConverter : IHolidayConverter
         var holidays = new List<Holiday>();
         foreach (var nagerHoliday in nagerHolidays)
         {
-            DateOnly date = DateOnly.ParseExact(nagerHoliday.Date, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+            var date = DateOnly.ParseExact(nagerHoliday.Date, "yyyy-MM-dd", CultureInfo.InvariantCulture);
 
             var holiday = new Holiday
             {
