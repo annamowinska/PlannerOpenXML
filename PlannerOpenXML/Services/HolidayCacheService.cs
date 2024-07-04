@@ -95,7 +95,7 @@ public class HolidayCacheService(IApiService apiService, INotificationService no
                 {
                     if (!InternetAvailabilityService.IsInternetAvailable())
                     {
-                        m_NotificationService.NotifyError($"No internet connection. Failed to download {countryCodes} holidays. A planner will be created without {countryCodes} holidays applied.");
+                        m_NotificationService.NotifyError($"No internet connection. Failed to download {string.Join(", ", countryCodes)} holidays. A planner will be created without {string.Join(", ", countryCodes)} holidays applied.");
                         return [];
                     }
                     else
@@ -112,7 +112,6 @@ public class HolidayCacheService(IApiService apiService, INotificationService no
                             SaveHolidaysToFile(allHolidays);
                         }
                     }
-
                 }
             }
         }
