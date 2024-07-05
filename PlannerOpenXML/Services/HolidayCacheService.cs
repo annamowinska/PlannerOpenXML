@@ -25,6 +25,7 @@ public class HolidayCacheService(IApiService apiService, INotificationService no
         var yearsFromUserInput = Enumerable.Range(fromDate.Year, toDate.Year - fromDate.Year + 1).ToList();
         var countryservice = ServiceContainer.GetService<ICountryListService>();
         var countryCodes = countryservice.GetCountryCodes();
+        var countryCodesMessage = string.Join(", ", countryCodes);
 
         if (File.Exists(m_Path))
         {
@@ -95,7 +96,7 @@ public class HolidayCacheService(IApiService apiService, INotificationService no
                 {
                     if (!InternetAvailabilityService.IsInternetAvailable())
                     {
-                        m_NotificationService.NotifyError($"No internet connection. Failed to download {string.Join(", ", countryCodes)} holidays. A planner will be created without {string.Join(", ", countryCodes)} holidays applied.");
+                        m_NotificationService.NotifyError($"No internet connection. Failed to download {countryCodesMessage} holidays. A planner will be created without {countryCodesMessage} holidays applied.");
                         return [];
                     }
                     else
