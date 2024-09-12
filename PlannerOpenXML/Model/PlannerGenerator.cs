@@ -140,6 +140,12 @@ public class PlannerGenerator(
                 day.ToDateTime(TimeOnly.MinValue),
                 CalendarWeekRule.FirstFourDayWeek,
                 DayOfWeek.Monday);
+            
+             if (weekOfYear == 53)
+             {
+                weekOfYear = 1;
+             }
+
             sheet.SetValue(new(column + 2, row), new CellIntegerValue(weekOfYear, styles.Week));
             sheet.SetValue(new(column + 2, row + 1), new CellEmptyValue(styles.Week));
             sheet.Merge(new(column + 2, row, column + 2, row + 1));
