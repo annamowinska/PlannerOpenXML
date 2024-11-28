@@ -265,8 +265,6 @@ public partial class Sheet : ObservableObject
                 }
             }
         }
-
-
     }
     #endregion methods
 }

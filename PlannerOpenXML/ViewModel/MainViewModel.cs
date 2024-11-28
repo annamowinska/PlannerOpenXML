@@ -84,6 +84,9 @@ public partial class MainViewModel(
 
         var from = new DateOnly(Year.Value, FirstMonth.Value, 1);
         var to = from.AddMonths(NumberOfMonths.Value).AddDays(-1);
+        var yearStart = from.Year;
+        var yearEnd = to.Year;
+        var yearRange = yearStart == yearEnd ? yearStart.ToString() : $"{yearStart}/{yearEnd}";
         Status = "Getting holidays...";
         var allHolidays = await m_HolidayCacheService.GetAllHolidaysInRangeAsync(from, to, countryCodes);
 
@@ -91,7 +94,7 @@ public partial class MainViewModel(
         Status = "Generating excel workbook...";
         await Task.Delay(10);
         var generator = new PlannerGenerator(m_HolidayNameService, allHolidays, firstCountryCode, secondCountryCode, Milestones);
-        await generator.Generate(from, NumberOfMonths.Value, path);
+        await generator.Generate(from, NumberOfMonths.Value, path, yearRange);
 
         Status = "Finished...";
     }

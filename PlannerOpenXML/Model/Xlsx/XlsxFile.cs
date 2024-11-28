@@ -43,6 +43,36 @@ public sealed class XlsxFile : IDisposable
                 var xlsxSheet = new Sheet(this, workbookPart, sheet);
                 Sheets.Add(xlsxSheet);
             }
+
+            var workbookView = workbookPart.Workbook.BookViews?.Elements<WorkbookView>().FirstOrDefault();
+            if (workbookView is null)
+            {
+                workbookView = new WorkbookView();
+                workbookPart.Workbook.BookViews = new BookViews();
+                workbookPart.Workbook.BookViews.Append(workbookView);
+            }
+
+            var plannerSheet = workbookPart.Workbook.Descendants<DocumentFormat.OpenXml.Spreadsheet.Sheet>()
+                .FirstOrDefault(sheet => sheet.Name == "Planner");
+
+            if (plannerSheet != null)
+            {
+                var plannerSheetIndex = workbookPart.Workbook.Descendants<DocumentFormat.OpenXml.Spreadsheet.Sheet>()
+                    .ToList()
+                    .IndexOf(plannerSheet);
+
+                workbookView.ActiveTab = (uint)plannerSheetIndex;
+            }
+
+            var templateSheet = workbookPart.Workbook.Descendants<DocumentFormat.OpenXml.Spreadsheet.Sheet>()
+                .FirstOrDefault(sheet => sheet.Name == "Template");
+
+            if (templateSheet != null)
+            {
+                templateSheet.State = SheetStateValues.Hidden;
+            }
+
+            workbookPart.Workbook.Save();
         }
         else
         {

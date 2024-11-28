@@ -1,4 +1,5 @@
-﻿using PlannerOpenXML.Model.Xlsx;
+﻿using DocumentFormat.OpenXml.Wordprocessing;
+using PlannerOpenXML.Model.Xlsx;
 
 namespace PlannerOpenXML.Model;
 
@@ -27,13 +28,27 @@ internal class PlannerGeneratorStyles
 
     public uint? Month { get; private set; }
     public uint? Week { get; private set; }
-    public uint? Day { get; private set; }
-    public uint? Saturday { get; private set; }
-    public uint? Sunday { get; private set; }
-    public double Column1Width { get; private set; } = 8;
-    public double Column2Width { get; private set; } = 10;
-    public double Column3Width { get; private set; } = 8;
-    public double Row1Height { get; private set; } = 70;
+    public uint? MonthDay { get; private set; }
+    public uint? WeekDay { get; private set; }
+    public uint? MonthDaySaturday { get; private set; }
+    public uint? WeekDaySaturday { get; private set; }
+    public uint? MonthDaySunday { get; private set; }
+    public uint? WeekDaySunday { get; private set; }
+    public uint? Year { get; private set; }
+    public uint? Header { get; private set; }
+    public uint? Footer1 { get; private set; }
+    public uint? Footer2 { get; private set; }
+    public uint? Footer0 { get; private set; }
+    public double Column1Width { get; private set; } = 9;
+    public double Column2Width { get; private set; } = 5;
+    public double Column3Width { get; private set; } = 18;
+    public double Column4Width { get; private set; } = 7.5;
+    public double Row1Height { get; private set; } = 350;
+    public double Row2Height { get; private set; } = 130;
+    public double DayRowHeight { get; private set; } = 40;
+    public double Footer0RowHeight { get; private set; } = 20;
+    public double Footer1RowHeight { get; private set; } = 100;
+    public double Footer2RowHeight { get; private set; } = 200;
     #endregion properties
 
     #region constructors
@@ -84,9 +99,17 @@ internal class PlannerGeneratorStyles
 
         Month = template.GetCellStyleIndex(new("B1"));
         Week = template.GetCellStyleIndex(new("B2"));
-        Day = template.GetCellStyleIndex(new("B3"));
-        Saturday = template.GetCellStyleIndex(new("B4"));
-        Sunday = template.GetCellStyleIndex(new("B5"));
+        MonthDay = template.GetCellStyleIndex(new("B3"));
+        WeekDay = template.GetCellStyleIndex(new("B4"));
+        MonthDaySaturday = template.GetCellStyleIndex(new("B5"));
+        WeekDaySaturday = template.GetCellStyleIndex(new("B6"));
+        MonthDaySunday = template.GetCellStyleIndex(new("B7"));
+        WeekDaySunday = template.GetCellStyleIndex(new("B8"));
+        Year = template.GetCellStyleIndex(new("B9"));
+        Header = template.GetCellStyleIndex(new("B10"));
+        Footer1 = template.GetCellStyleIndex(new("B11"));
+        Footer2 = template.GetCellStyleIndex(new("B12"));
+        Footer0 = template.GetCellStyleIndex(new("B13"));
 
         if (template.TryGetDouble(new("E1"), out var column1Width))
             Column1Width = column1Width;
@@ -94,14 +117,26 @@ internal class PlannerGeneratorStyles
             Column2Width = column2Width;
         if (template.TryGetDouble(new("E3"), out var column3Width))
             Column3Width = column3Width;
-        if (template.TryGetDouble(new("E4"), out var row1Height))
+        if (template.TryGetDouble(new("E4"), out var column4Width))
+            Column4Width = column4Width;
+        if (template.TryGetDouble(new("E5"), out var row1Height))
             Row1Height = row1Height;
+        if (template.TryGetDouble(new("E6"), out var row2Height))
+            Row2Height = row2Height;
+        if (template.TryGetDouble(new("E7"), out var dayRowHeight))
+            DayRowHeight = dayRowHeight;
+        if (template.TryGetDouble(new("E8"), out var footer0RowHeight))
+            Footer0RowHeight = footer0RowHeight;
+        if (template.TryGetDouble(new("E9"), out var footer1RowHeight))
+            Footer1RowHeight = footer1RowHeight;
+        if (template.TryGetDouble(new("E10"), out var footer2RowHeight))
+            Footer2RowHeight = footer2RowHeight;
 
-        m_Default = GetTableStyle(template, 8);
-        m_Holiday1 = GetTableStyle(template, 12);
-        m_Holiday2 = GetTableStyle(template, 16);
-        m_Holiday12 = GetTableStyle(template, 20);
-        m_Milestone = GetTableStyle(template, 24);
+        m_Default = GetTableStyle(template, 16);
+        m_Holiday1 = GetTableStyle(template, 20);
+        m_Holiday2 = GetTableStyle(template, 24);
+        m_Holiday12 = GetTableStyle(template, 28);
+        m_Milestone = GetTableStyle(template, 32);
 
         return (failed, reason);
     }
