@@ -373,22 +373,48 @@ public class PlannerGenerator(
     {
         var holidayText = string.Empty;
         var holidayStyling = CellStyle.Default;
-        var firstCountryHolidayName = m_HolidayNameService.GetHolidayName(day, holidays1);
-        var secondCountryHolidayName = m_HolidayNameService.GetHolidayName(day, holidays2);
-        if (!string.IsNullOrEmpty(firstCountryHolidayName) && !string.IsNullOrEmpty(secondCountryHolidayName))
+
+        if (m_CountryCode1 == "DE")
         {
-            holidayText = $"{m_CountryCode1}&{m_CountryCode2}: {firstCountryHolidayName}";
-            holidayStyling = CellStyle.Holiday12;
+            var firstCountryHolidayName = m_HolidayNameService.GetHolidayNameForGermany(day, holidays1);
+            var secondCountryHolidayName = m_HolidayNameService.GetHolidayName(day, holidays2);
+
+            if (!string.IsNullOrEmpty(firstCountryHolidayName) && !string.IsNullOrEmpty(secondCountryHolidayName))
+            {
+                holidayText = $"{m_CountryCode1}&{m_CountryCode2}: {firstCountryHolidayName}";
+                holidayStyling = CellStyle.Holiday12;
+            }
+            else if (!string.IsNullOrEmpty(firstCountryHolidayName))
+            {
+                holidayText = $"{m_CountryCode1}: {firstCountryHolidayName}";
+                holidayStyling = CellStyle.Holiday1;
+            }
+            else if (!string.IsNullOrEmpty(secondCountryHolidayName))
+            {
+                holidayText = $"{m_CountryCode2}: {secondCountryHolidayName}";
+                holidayStyling = CellStyle.Holiday2;
+            }
         }
-        else if (!string.IsNullOrEmpty(firstCountryHolidayName))
+        else
         {
-            holidayText = $"{m_CountryCode1}: {firstCountryHolidayName}";
-            holidayStyling = CellStyle.Holiday1;
-        }
-        else if (!string.IsNullOrEmpty(secondCountryHolidayName))
-        {
-            holidayText = $"{m_CountryCode2}: {secondCountryHolidayName}";
-            holidayStyling = CellStyle.Holiday2;
+            var firstCountryHolidayName = m_HolidayNameService.GetHolidayName(day, holidays1);
+            var secondCountryHolidayName = m_HolidayNameService.GetHolidayName(day, holidays2);
+
+            if (!string.IsNullOrEmpty(firstCountryHolidayName) && !string.IsNullOrEmpty(secondCountryHolidayName))
+            {
+                holidayText = $"{m_CountryCode1}&{m_CountryCode2}: {firstCountryHolidayName}";
+                holidayStyling = CellStyle.Holiday12;
+            }
+            else if (!string.IsNullOrEmpty(firstCountryHolidayName))
+            {
+                holidayText = $"{m_CountryCode1}: {firstCountryHolidayName}";
+                holidayStyling = CellStyle.Holiday1;
+            }
+            else if (!string.IsNullOrEmpty(secondCountryHolidayName))
+            {
+                holidayText = $"{m_CountryCode2}: {secondCountryHolidayName}";
+                holidayStyling = CellStyle.Holiday2;
+            }
         }
 
         return (holidayText, holidayStyling);

@@ -19,8 +19,10 @@ public class NagerHolidayConverter : IHolidayConverter
             var holiday = new Holiday
             {
                 Name = nagerHoliday.Name,
+                LocalName = nagerHoliday.LocalName,
                 Date = date,
-                CountryCode = nagerHoliday.CountryCode
+                CountryCode = nagerHoliday.CountryCode,
+                Counties = nagerHoliday.Counties
             };
             holidays.Add(holiday);
         }

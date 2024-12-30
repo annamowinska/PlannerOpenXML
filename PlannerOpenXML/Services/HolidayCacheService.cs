@@ -49,6 +49,12 @@ public class HolidayCacheService(IApiService apiService, INotificationService no
                         foreach (var countryCode in selectedCountryCodes)
                         {
                             var fetchedHolidays = await m_ApiService.GetHolidaysAsync(missingYear, countryCode);
+                            if (countryCode == "DE")
+                            {
+                                fetchedHolidays = fetchedHolidays
+                                    .Where(h => h.Counties == null || h.Counties.Intersect(new[] { "DE-BY", "DE-SL" }).Any())
+                                    .ToList();
+                            }
                             allHolidays.AddRange(fetchedHolidays);
                         }
                     }
@@ -79,6 +85,12 @@ public class HolidayCacheService(IApiService apiService, INotificationService no
                                 foreach (var year in missingYearsForCountry)
                                 {
                                     var fetchedHolidays = await m_ApiService.GetHolidaysAsync(year, countryCode);
+                                    if (countryCode == "DE")
+                                    {
+                                        fetchedHolidays = fetchedHolidays
+                                            .Where(h => h.Counties == null || h.Counties.Intersect(new[] { "DE-BY", "DE-SL" }).Any())
+                                            .ToList();
+                                    }
                                     allHolidays.AddRange(fetchedHolidays);
                                 }
                             }
@@ -106,6 +118,13 @@ public class HolidayCacheService(IApiService apiService, INotificationService no
                             foreach (var countryCode in countryCodes)
                             {
                                 var fetchedHolidays = await m_ApiService.GetHolidaysAsync(year, countryCode);
+                                if (countryCode == "DE")
+                                {
+                                    fetchedHolidays = fetchedHolidays
+                                        .Where(h => h.Counties == null || h.Counties.Intersect(new[] { "DE-BY", "DE-SL" }).Any())
+                                        .ToList();
+                                }
+                            allHolidays.AddRange(fetchedHolidays);
                                 allHolidays.AddRange(fetchedHolidays);
                             }
                             allHolidays.AddRange(holidaysFromFile);
@@ -132,6 +151,13 @@ public class HolidayCacheService(IApiService apiService, INotificationService no
                         foreach (var countryCode in countryCodes)
                         {
                             var fetchedHolidays = await m_ApiService.GetHolidaysAsync(year, countryCode);
+                            if (countryCode == "DE")
+                            {
+                                fetchedHolidays = fetchedHolidays
+                                    .Where(h => h.Counties == null || h.Counties.Intersect(new[] { "DE-BY", "DE-SL" }).Any())
+                                    .ToList();
+                            }
+                            allHolidays.AddRange(fetchedHolidays);
                             allHolidays.AddRange(fetchedHolidays);
                         }
                     }
@@ -143,6 +169,13 @@ public class HolidayCacheService(IApiService apiService, INotificationService no
                         foreach (var countryCode in countryCodes)
                         {
                             var fetchedHolidays = await m_ApiService.GetHolidaysAsync(year, countryCode);
+                            if (countryCode == "DE")
+                            {
+                                fetchedHolidays = fetchedHolidays
+                                    .Where(h => h.Counties == null || h.Counties.Intersect(new[] { "DE-BY", "DE-SL" }).Any())
+                                    .ToList();
+                            }
+                            allHolidays.AddRange(fetchedHolidays);
                             allHolidays.AddRange(fetchedHolidays);
                         }
                     }

@@ -3,17 +3,10 @@
 public class NagerHoliday
 {
     #region properties
-    /// <summary>
-    /// Name of the holiday
-    /// </summary>
     public string Name { get; set; } = string.Empty;
-    /// <summary>
-    /// Date of holiday
-    /// </summary>
+    public string LocalName { get; set; } = string.Empty;
     public string Date { get; set; } = string.Empty;
-    /// <summary>
-    /// Country code of the holiday
-    /// </summary>
     public string CountryCode { get; set; } = string.Empty;
+    public List<string> Counties { get; set; } = new List<string>();
     #endregion properties
 }
